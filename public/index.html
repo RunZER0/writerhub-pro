@@ -2,8 +2,23 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>WriterHub Pro - Writers Management System</title>
+    
+    <!-- PWA Meta Tags -->
+    <meta name="description" content="Professional Writers Management Platform">
+    <meta name="theme-color" content="#6366f1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="WriterHub">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -956,6 +971,66 @@
         </div>
     </div>
 
+    <!-- PWA Install Prompt -->
+    <div id="installPrompt" class="install-prompt" style="display:none;">
+        <div class="install-prompt-content">
+            <i class="fas fa-download"></i>
+            <div>
+                <strong>Install WriterHub</strong>
+                <p>Add to home screen for the best experience</p>
+            </div>
+            <button id="installBtn" class="btn btn-primary">Install</button>
+            <button id="dismissInstall" class="btn btn-secondary"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
     <script src="app.js"></script>
+    <script>
+        // Register Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('/sw.js')
+                    .then(reg => console.log('SW registered:', reg.scope))
+                    .catch(err => console.log('SW registration failed:', err));
+            });
+        }
+
+        // PWA Install Prompt
+        let deferredPrompt;
+        const installPrompt = document.getElementById('installPrompt');
+        const installBtn = document.getElementById('installBtn');
+        const dismissInstall = document.getElementById('dismissInstall');
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Don't show if already dismissed recently
+            const dismissed = localStorage.getItem('installDismissed');
+            if (dismissed && Date.now() - parseInt(dismissed) < 7 * 24 * 60 * 60 * 1000) return;
+            
+            installPrompt.style.display = 'flex';
+        });
+
+        installBtn?.addEventListener('click', async () => {
+            if (!deferredPrompt) return;
+            deferredPrompt.prompt();
+            const { outcome } = await deferredPrompt.userChoice;
+            console.log('Install outcome:', outcome);
+            deferredPrompt = null;
+            installPrompt.style.display = 'none';
+        });
+
+        dismissInstall?.addEventListener('click', () => {
+            installPrompt.style.display = 'none';
+            localStorage.setItem('installDismissed', Date.now().toString());
+        });
+
+        window.addEventListener('appinstalled', () => {
+            installPrompt.style.display = 'none';
+            deferredPrompt = null;
+            console.log('PWA installed');
+        });
+    </script>
 </body>
 </html>
