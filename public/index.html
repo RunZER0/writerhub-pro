@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WriterHub Pro - Writers Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Login Page -->
+    <div id="loginPage" class="login-page">
+        <div class="login-container">
+            <div class="login-header">
+                <div class="login-logo">
+                    <i class="fas fa-feather-alt"></i>
+                </div>
+                <h1>WriterHub Pro</h1>
+                <p>Sign in to manage your writing team</p>
+            </div>
+            <form id="loginForm" class="login-form">
+                <div class="form-group">
+                    <label for="loginEmail">Email Address</label>
+                    <input type="email" id="loginEmail" required placeholder="you@example.com">
+                </div>
+                <div class="form-group">
+                    <label for="loginPassword">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••">
+                </div>
+                <button type="submit">
+                    <i class="fas fa-arrow-right"></i> Sign In
+                </button>
+            </form>
+            <div id="loginError" class="login-error"></div>
+            <div class="login-footer">
+                <p>© 2026 WriterHub Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main App -->
+    <div id="mainApp" class="app">
+        <!-- Sidebar Overlay (Mobile) -->
+        <div id="sidebarOverlay" class="sidebar-overlay"></div>
+        
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i class="fas fa-feather-alt"></i>
+                    </div>
+                    <span class="logo-text">WriterHub</span>
+                </div>
+            </div>
+            
+            <nav class="nav">
+                <div class="nav-section-title">Main Menu</div>
+                <a class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a class="nav-item writer-only" data-page="job-board">
+                    <i class="fas fa-briefcase"></i>
+                    <span>Job Board</span>
+                    <span class="nav-badge" id="jobBoardBadge" style="display:none">0</span>
+                </a>
+                <a class="nav-item admin-only" data-page="writers">
+                    <i class="fas fa-users"></i>
+                    <span>Writers</span>
+                </a>
+                <a class="nav-item" data-page="assignments">
+                    <i class="fas fa-tasks"></i>
+                    <span id="assignmentsNavLabel">Assignments</span>
+                </a>
+                <a class="nav-item" data-page="chat">
+                    <i class="fas fa-comments"></i>
+                    <span>Messages</span>
+                    <span class="nav-badge" id="chatBadge" style="display:none">0</span>
+                </a>
+                <a class="nav-item" data-page="payments">
+                    <i class="fas fa-wallet"></i>
+                    <span>Payments</span>
+                </a>
+                <a class="nav-item admin-only" data-page="reports">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+
+            <div class="user-section">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <span id="userInitials">AD</span>
+                        <span class="online-indicator" id="userOnlineIndicator"></span>
+                    </div>
+                    <div class="user-details">
+                        <div class="user-name" id="currentUserName">Admin User</div>
+                        <div class="user-role" id="currentUserRole">Administrator</div>
+                    </div>
+                </div>
+                <button id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i> Sign Out
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle"><i class="fas fa-bars"></i></button>
+                    <h1 class="page-title" id="pageTitle">Dashboard</h1>
+                </div>
+                <div class="header-right">
+                    <button class="notification-btn" id="notificationBtn" title="Notifications">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="notificationBadge" style="display:none">0</span>
+                    </button>
+                    <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                        <i class="fas fa-moon"></i>
+                        <i class="fas fa-sun"></i>
+                    </button>
+                    <button class="settings-btn" id="settingsBtn" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </header>
+
+            <div class="content">
+                <!-- Dashboard Page -->
+                <section id="dashboard-page" class="page active">
+                    <p class="greeting" id="dashboardGreeting">Welcome back!</p>
+                    
+                    <!-- Admin Stats -->
+                    <div id="adminStats" class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Total Writers</h3>
+                                <div class="stat-value" id="totalWriters">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon info">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Active Assignments</h3>
+                                <div class="stat-value" id="activeAssignments">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Pending Payments</h3>
+                                <div class="stat-value" id="pendingPayments">$0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Completed This Month</h3>
+                                <div class="stat-value" id="completedThisMonth">0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Writer Stats -->
+                    <div id="writerStats" class="stats-grid" style="display:none;">
+                        <div class="stat-card">
+                            <div class="stat-icon info">
+                                <i class="fas fa-briefcase"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Available Jobs</h3>
+                                <div class="stat-value" id="writerAvailableJobs">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>My Active Jobs</h3>
+                                <div class="stat-value" id="writerActiveAssignments">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon success">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Completed</h3>
+                                <div class="stat-value" id="writerCompletedAssignments">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon primary">
+                                <i class="fas fa-coins"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Total Earned</h3>
+                                <div class="stat-value" id="writerTotalEarned">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions (Admin) -->
+                    <div class="quick-actions admin-only" style="margin-bottom: 2rem;">
+                        <button class="quick-action-btn" onclick="document.getElementById('addWriterBtn').click()">
+                            <i class="fas fa-user-plus"></i> Add Writer
+                        </button>
+                        <button class="quick-action-btn" onclick="document.getElementById('addAssignmentBtn').click()">
+                            <i class="fas fa-plus"></i> New Assignment
+                        </button>
+                        <button class="quick-action-btn" onclick="document.getElementById('recordPaymentBtn').click()">
+                            <i class="fas fa-dollar-sign"></i> Record Payment
+                        </button>
+                    </div>
+
+                    <!-- Quick Actions (Writer) -->
+                    <div class="quick-actions writer-only" style="margin-bottom: 2rem;">
+                        <button class="quick-action-btn" onclick="navigateTo('job-board')">
+                            <i class="fas fa-briefcase"></i> Browse Jobs
+                        </button>
+                        <button class="quick-action-btn" onclick="navigateTo('assignments')">
+                            <i class="fas fa-tasks"></i> My Jobs
+                        </button>
+                    </div>
+
+                    <!-- Dashboard Grid -->
+                    <div class="dashboard-grid">
+                        <div class="card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-clock" style="margin-right:0.5rem;color:var(--primary)"></i> <span class="admin-only-inline">Recent Assignments</span><span class="writer-only-inline">My Jobs</span></h3>
+                                <a href="#" class="view-all" data-page="assignments">View All</a>
+                            </div>
+                            <div class="card-body" id="recentAssignmentsList">
+                                <div class="empty-state"><p>No assignments yet</p></div>
+                            </div>
+                        </div>
+                        <div class="card admin-only">
+                            <div class="card-header">
+                                <h3><i class="fas fa-trophy" style="margin-right:0.5rem;color:var(--accent-orange)"></i> Top Writers</h3>
+                                <a href="#" class="view-all" data-page="writers">View All</a>
+                            </div>
+                            <div class="card-body" id="topWritersList">
+                                <div class="empty-state"><p>No data yet</p></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Job Board Page (Writers Only) -->
+                <section id="job-board-page" class="page">
+                    <div class="page-header">
+                        <h2>Job Board</h2>
+                        <p class="page-subtitle">Available jobs matching your domains</p>
+                    </div>
+                    
+                    <div id="jobBoardList" class="job-board-grid">
+                        <div class="empty-state" style="grid-column: 1/-1;"><p>No jobs available at the moment</p></div>
+                    </div>
+                </section>
+
+                <!-- Writers Page -->
+                <section id="writers-page" class="page">
+                    <div class="page-header">
+                        <h2>Writers</h2>
+                        <div class="page-actions">
+                            <button id="addWriterBtn" class="btn btn-primary">
+                                <i class="fas fa-user-plus"></i> Add Writer
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Writer</th>
+                                        <th>Email</th>
+                                        <th>Domains</th>
+                                        <th>Rate/Word</th>
+                                        <th>Assignments</th>
+                                        <th>Balance Owed</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="writersTableBody">
+                                    <tr><td colspan="8" class="empty-state">No writers yet. Add your first writer!</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Assignments Page -->
+                <section id="assignments-page" class="page">
+                    <div class="page-header">
+                        <h2 id="assignmentsPageTitle">Assignments</h2>
+                        <div class="page-actions">
+                            <select id="assignmentStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                            </select>
+                            <button id="addAssignmentBtn" class="btn btn-primary admin-only">
+                                <i class="fas fa-plus"></i> New Assignment
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Extension Requests (Admin Only) -->
+                    <div id="extensionRequestsSection" class="card admin-only" style="margin-bottom:1.5rem;display:none;">
+                        <div class="card-header">
+                            <h3><i class="fas fa-clock" style="color:var(--accent-orange);margin-right:0.5rem"></i> Pending Extension Requests</h3>
+                        </div>
+                        <div class="card-body" id="extensionRequestsList"></div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th class="admin-only">Writer</th>
+                                        <th>Domain</th>
+                                        <th>Words</th>
+                                        <th>Deadline</th>
+                                        <th class="writer-only">My Deadline</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assignmentsTableBody">
+                                    <tr><td colspan="9" class="empty-state">No assignments found</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Chat Page -->
+                <section id="chat-page" class="page">
+                    <div class="chat-container">
+                        <!-- Chat List (Sidebar) -->
+                        <div class="chat-list">
+                            <div class="chat-list-header">
+                                <h3>Conversations</h3>
+                            </div>
+                            <div class="chat-threads" id="chatThreads">
+                                <div class="empty-state"><p>No conversations yet</p></div>
+                            </div>
+                        </div>
+                        
+                        <!-- Chat Window -->
+                        <div class="chat-window" id="chatWindow">
+                            <div class="chat-window-header" id="chatWindowHeader">
+                                <div class="chat-user-info">
+                                    <span class="chat-user-name">Select a conversation</span>
+                                </div>
+                            </div>
+                            <div class="chat-messages" id="chatMessages">
+                                <div class="empty-state"><p>Select a conversation to start messaging</p></div>
+                            </div>
+                            <div class="chat-input" id="chatInputArea" style="display:none;">
+                                <label class="chat-file-upload" title="Attach file">
+                                    <i class="fas fa-paperclip"></i>
+                                    <input type="file" id="chatFileInput" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif" style="display:none;">
+                                </label>
+                                <input type="text" id="chatMessageInput" placeholder="Type a message...">
+                                <button id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Payments Page -->
+                <section id="payments-page" class="page">
+                    <div class="page-header">
+                        <h2>Payments</h2>
+                        <div class="page-actions admin-only">
+                            <button id="recordPaymentBtn" class="btn btn-primary">
+                                <i class="fas fa-dollar-sign"></i> Record Payment
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Summary (Admin) -->
+                    <div class="admin-only">
+                        <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                            <div class="stat-card">
+                                <div class="stat-icon success">
+                                    <i class="fas fa-check-circle"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3>Total Paid</h3>
+                                    <div class="stat-value" id="totalPaid">$0</div>
+                                </div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-icon warning">
+                                    <i class="fas fa-clock"></i>
+                                </div>
+                                <div class="stat-content">
+                                    <h3>Total Pending</h3>
+                                    <div class="stat-value" id="totalPending">$0</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card" style="margin-bottom: 1.5rem;">
+                            <div class="card-header">
+                                <h3>Payment Summary by Writer</h3>
+                            </div>
+                            <div class="table-container">
+                                <table>
+                                    <thead>
+                                        <tr>
+                                            <th>Writer</th>
+                                            <th>Completed</th>
+                                            <th>Total Earned</th>
+                                            <th>Total Paid</th>
+                                            <th>Balance Owed</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="paymentsTableBody">
+                                        <tr><td colspan="6" class="empty-state">No payment data</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment History -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Payment History</h3>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th class="admin-only">Writer</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentHistoryBody">
+                                    <tr><td colspan="5" class="empty-state">No payments yet</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reports Page -->
+                <section id="reports-page" class="page">
+                    <div class="page-header">
+                        <h2>Reports</h2>
+                    </div>
+                    
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div class="card-body">
+                            <div class="report-filters">
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label>Start Date</label>
+                                    <input type="date" id="reportStartDate">
+                                </div>
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label>End Date</label>
+                                    <input type="date" id="reportEndDate">
+                                </div>
+                                <button id="generateReportBtn" class="btn btn-primary">
+                                    <i class="fas fa-chart-bar"></i> Generate Report
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="report-summary">
+                        <div class="report-stat">
+                            <div class="label">Total Assignments</div>
+                            <div class="value" id="reportTotalAssignments">0</div>
+                        </div>
+                        <div class="report-stat">
+                            <div class="label">Total Spent</div>
+                            <div class="value" id="reportTotalSpent">$0</div>
+                        </div>
+                        <div class="report-stat">
+                            <div class="label">Total Words</div>
+                            <div class="value" id="reportTotalWords">0</div>
+                        </div>
+                        <div class="report-stat">
+                            <div class="label">Avg Rate/Word</div>
+                            <div class="value" id="reportAvgRate">$0</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Writer Performance</h3>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Writer</th>
+                                        <th>Assignments</th>
+                                        <th>Words Written</th>
+                                        <th>Completed</th>
+                                        <th>Earnings</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody">
+                                    <tr><td colspan="5" class="empty-state">Generate a report to see data</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </div>
+
+    <!-- Writer Modal -->
+    <div id="writerModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="writerModalTitle">Add New Writer</h3>
+                <button class="modal-close" data-close="writerModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="writerForm">
+                    <input type="hidden" id="writerId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="writerName">Full Name *</label>
+                            <input type="text" id="writerName" required placeholder="John Doe">
+                        </div>
+                        <div class="form-group">
+                            <label for="writerEmail">Email *</label>
+                            <input type="email" id="writerEmail" required placeholder="john@example.com">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="writerPhone">Phone</label>
+                            <input type="tel" id="writerPhone" placeholder="+1 (555) 000-0000">
+                        </div>
+                        <div class="form-group">
+                            <label for="writerRate">Rate per Word ($) *</label>
+                            <input type="number" id="writerRate" step="0.001" min="0.001" required value="0.01" placeholder="0.01">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="writerDomains">Domains/Specialties</label>
+                            <input type="text" id="writerDomains" placeholder="e.g. Tech, Health, Finance">
+                            <span class="form-helper">Comma-separated list of writing domains</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="writerStatusSelect">Status</label>
+                            <select id="writerStatusSelect">
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="writerNotes">Notes</label>
+                        <textarea id="writerNotes" placeholder="Additional notes about the writer..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="writerModal">Cancel</button>
+                <button type="submit" form="writerForm" class="btn btn-primary">Save Writer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Modal (Admin - Create/Edit) -->
+    <div id="assignmentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="assignmentModalTitle">New Assignment</h3>
+                <button class="modal-close" data-close="assignmentModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="assignmentForm">
+                    <input type="hidden" id="assignmentId">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="assignmentTitle">Title *</label>
+                            <input type="text" id="assignmentTitle" required placeholder="Article about...">
+                        </div>
+                        <div class="form-group">
+                            <label for="assignmentDomain">Domain</label>
+                            <select id="assignmentDomain">
+                                <option value="">General (all writers notified)</option>
+                            </select>
+                            <span class="form-helper">Writers in this domain will be notified</span>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Word Count Range *</label>
+                            <div style="display: flex; gap: 0.5rem; align-items: center;">
+                                <input type="number" id="assignmentWordCountMin" required min="1" placeholder="Min" style="flex:1;">
+                                <span>-</span>
+                                <input type="number" id="assignmentWordCountMax" required min="1" placeholder="Max" style="flex:1;">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="assignmentAmount">Amount ($) *</label>
+                            <input type="number" id="assignmentAmount" step="0.01" min="0.01" required placeholder="50.00">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="assignmentDeadline">Client Deadline *</label>
+                            <input type="datetime-local" id="assignmentDeadline" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignmentLinks">Links (one per line)</label>
+                        <textarea id="assignmentLinks" placeholder="https://example.com/reference1&#10;https://example.com/reference2" rows="3"></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignmentDescription">Description & Instructions</label>
+                        <textarea id="assignmentDescription" placeholder="Assignment details and requirements..."></textarea>
+                    </div>
+                    <div class="form-group" id="instructionUploadGroup" style="display:none;">
+                        <label>Upload Instructions (PDF, DOC, DOCX)</label>
+                        <input type="file" id="instructionFile" accept=".pdf,.doc,.docx,.txt">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="assignmentModal">Cancel</button>
+                <button type="submit" form="assignmentForm" class="btn btn-primary">Post to Job Board</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pick Job Modal (Writer) -->
+    <div id="pickJobModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Pick This Job</h3>
+                <button class="modal-close" data-close="pickJobModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="job-summary" id="pickJobSummary"></div>
+                <form id="pickJobForm">
+                    <input type="hidden" id="pickJobId">
+                    <div class="form-group">
+                        <label for="writerDeadline">Your Delivery Deadline *</label>
+                        <input type="datetime-local" id="writerDeadline" required>
+                        <span class="form-helper">Must be at least 30 minutes before client deadline</span>
+                    </div>
+                    <div id="deadlineWarning" class="warning-text" style="display:none;"></div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="pickJobModal">Cancel</button>
+                <button type="submit" form="pickJobForm" class="btn btn-primary"><i class="fas fa-check"></i> Pick Job</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Assignment Details Modal (for viewing files, chat, submit work) -->
+    <div id="assignmentDetailsModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="assignmentDetailsTitle">Assignment Details</h3>
+                <button class="modal-close" data-close="assignmentDetailsModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <div class="assignment-details-grid">
+                    <div class="assignment-info">
+                        <div id="assignmentDetailsInfo"></div>
+                        
+                        <!-- Files Section -->
+                        <div class="files-section">
+                            <h4><i class="fas fa-paperclip"></i> Files</h4>
+                            <div id="assignmentFiles" class="files-list"></div>
+                            
+                            <!-- Writer: Upload submission -->
+                            <div id="writerUploadSection" class="writer-only" style="margin-top:1rem;">
+                                <label class="upload-label">
+                                    <i class="fas fa-cloud-upload-alt"></i> Upload Completed Work
+                                    <input type="file" id="submissionFile" accept=".pdf,.doc,.docx,.txt" style="display:none;">
+                                </label>
+                            </div>
+                            
+                            <!-- Admin: Upload instructions -->
+                            <div id="adminUploadSection" class="admin-only" style="margin-top:1rem;">
+                                <label class="upload-label">
+                                    <i class="fas fa-cloud-upload-alt"></i> Upload Instructions
+                                    <input type="file" id="adminInstructionFile" accept=".pdf,.doc,.docx,.txt,.jpg,.png" style="display:none;">
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Quick Chat -->
+                    <div class="assignment-chat">
+                        <h4><i class="fas fa-comments"></i> Quick Chat</h4>
+                        <div class="mini-chat-messages" id="miniChatMessages"></div>
+                        <div class="mini-chat-input">
+                            <input type="text" id="miniChatInput" placeholder="Type a message...">
+                            <button id="miniChatSend"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="assignmentDetailsModal">Close</button>
+                <button id="markCompletedBtn" class="btn btn-success writer-only"><i class="fas fa-check"></i> Mark as Completed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Extension Request Modal (Writer) -->
+    <div id="extensionModal" class="modal">
+        <div class="modal-content" style="max-width: 450px;">
+            <div class="modal-header">
+                <h3>Request Extension</h3>
+                <button class="modal-close" data-close="extensionModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="extensionForm">
+                    <input type="hidden" id="extensionAssignmentId">
+                    <div class="form-group">
+                        <label for="newDeadline">New Delivery Deadline *</label>
+                        <input type="datetime-local" id="newDeadline" required>
+                        <span class="form-helper">Must still be before client deadline</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="extensionReason">Reason *</label>
+                        <textarea id="extensionReason" required placeholder="Please explain why you need more time..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="extensionModal">Cancel</button>
+                <button type="submit" form="extensionForm" class="btn btn-primary">Submit Request</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Admin: Override Deadline Modal -->
+    <div id="overrideDeadlineModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Override Writer Deadline</h3>
+                <button class="modal-close" data-close="overrideDeadlineModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="overrideDeadlineForm">
+                    <input type="hidden" id="overrideAssignmentId">
+                    <div class="form-group">
+                        <label for="overrideDeadline">New Writer Deadline *</label>
+                        <input type="datetime-local" id="overrideDeadline" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="overrideDeadlineModal">Cancel</button>
+                <button type="submit" form="overrideDeadlineForm" class="btn btn-primary">Update Deadline</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Record Payment</h3>
+                <button class="modal-close" data-close="paymentModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="paymentForm">
+                    <div class="form-group">
+                        <label for="paymentWriter">Writer *</label>
+                        <select id="paymentWriter" required>
+                            <option value="">Select Writer</option>
+                        </select>
+                    </div>
+                    <div class="calculated-amount">
+                        <span>Balance Owed:</span>
+                        <span id="writerBalance">$0.00</span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="paymentAmount">Amount ($) *</label>
+                            <input type="number" id="paymentAmount" step="0.01" min="0.01" required placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentDate">Date *</label>
+                            <input type="date" id="paymentDate" required>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="paymentMethod">Method</label>
+                            <select id="paymentMethod">
+                                <option value="bank-transfer">Bank Transfer</option>
+                                <option value="paypal">PayPal</option>
+                                <option value="wise">Wise</option>
+                                <option value="crypto">Cryptocurrency</option>
+                                <option value="cash">Cash</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="paymentReference">Reference/Transaction ID</label>
+                            <input type="text" id="paymentReference" placeholder="TXN-123456">
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="paymentModal">Cancel</button>
+                <button type="submit" form="paymentForm" class="btn btn-primary">Record Payment</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirm Modal -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Confirm Action</h3>
+                <button class="modal-close" data-close="confirmModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage" style="text-align: center; font-size: 1rem;">Are you sure?</p>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="confirmModal">Cancel</button>
+                <button id="confirmActionBtn" class="btn btn-primary" style="background: var(--accent-red);">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notifications Panel -->
+    <div id="notificationsPanel" class="notifications-panel">
+        <div class="notifications-header">
+            <h3>Notifications</h3>
+            <button id="markAllReadBtn" class="btn btn-secondary" style="padding:0.375rem 0.75rem;font-size:0.6875rem">Mark all read</button>
+        </div>
+        <div class="notifications-list" id="notificationsList">
+            <div class="empty-state"><p>No notifications</p></div>
+        </div>
+    </div>
+
+    <!-- Settings Dropdown -->
+    <div id="settingsDropdown" class="settings-dropdown">
+        <button class="settings-item" id="changePasswordBtn">
+            <i class="fas fa-key"></i>
+            <span>Change Password</span>
+        </button>
+        <button class="settings-item admin-only" id="resetWriterPasswordBtn">
+            <i class="fas fa-user-lock"></i>
+            <span>Reset Writer Password</span>
+        </button>
+        <button class="settings-item admin-only" id="checkOverdueBtn">
+            <i class="fas fa-clock"></i>
+            <span>Check Overdue Jobs</span>
+        </button>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-header">
+                <h3>Change Password</h3>
+                <button class="modal-close" data-close="passwordModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="passwordForm">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password *</label>
+                        <input type="password" id="currentPassword" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password *</label>
+                        <input type="password" id="newPassword" required minlength="6">
+                        <span class="form-helper">Minimum 6 characters</span>
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password *</label>
+                        <input type="password" id="confirmPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="passwordModal">Cancel</button>
+                <button type="submit" form="passwordForm" class="btn btn-primary">Update Password</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Writer Credentials Modal -->
+    <div id="credentialsModal" class="modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-key" style="margin-right:0.5rem;color:var(--accent-green)"></i> Writer Credentials</h3>
+                <button class="modal-close" data-close="credentialsModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom:1rem;color:var(--text-secondary)">Share these login credentials with the writer. They'll be prompted to change their password on first login.</p>
+                <div class="credentials-box">
+                    <div class="credential-item">
+                        <span class="credential-label">Email</span>
+                        <span class="credential-value" id="credentialEmail">-</span>
+                        <button class="copy-btn" onclick="copyToClipboard('credentialEmail')"><i class="fas fa-copy"></i></button>
+                    </div>
+                    <div class="credential-item">
+                        <span class="credential-label">Password</span>
+                        <span class="credential-value" id="credentialPassword">-</span>
+                        <button class="copy-btn" onclick="copyToClipboard('credentialPassword')"><i class="fas fa-copy"></i></button>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" data-close="credentialsModal">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
