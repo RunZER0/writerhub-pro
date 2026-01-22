@@ -1,6 +1,7 @@
 const express = require('express');
 const db = require('../db');
 const { authenticate, isAdmin } = require('../middleware/auth');
+const { sendPushToUser, sendPushToRole, sendPushToDomain } = require('./push');
 
 const router = express.Router();
 
@@ -461,6 +462,8 @@ router.post('/', authenticate, isAdmin, async (req, res) => {
                     VALUES ($1, $2, $3, $4, $5)
                 `, [writer.id, 'New Job Available', `New ${domain} job posted: ${title}`, 'assignment', '/job-board']);
             }
+            // Send push notification to domain writers
+            sendPushToDomain(domain, '🆕 New Job Available', `${domain} job: ${title}`, '/job-board');
         } else {
             // Notify all active writers
             const allWriters = await db.query(`
@@ -473,6 +476,8 @@ router.post('/', authenticate, isAdmin, async (req, res) => {
                     VALUES ($1, $2, $3, $4, $5)
                 `, [writer.id, 'New Job Available', `New job posted: ${title}`, 'assignment', '/job-board']);
             }
+            // Send push notification to all writers
+            sendPushToDomain(null, '🆕 New Job Available', title, '/job-board');
         }
 
         res.status(201).json(assignment);

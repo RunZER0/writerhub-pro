@@ -11,6 +11,7 @@ const paymentRoutes = require('./routes/payments');
 const dashboardRoutes = require('./routes/dashboard');
 const filesRoutes = require('./routes/files');
 const messagesRoutes = require('./routes/messages');
+const pushRoutes = require('./routes/push');
 
 const app = express();
 
@@ -28,6 +29,7 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/files', filesRoutes);
 app.use('/api/messages', messagesRoutes);
+app.use('/api/push', pushRoutes);
 
 // Serve frontend for all other routes
 app.get('*', (req, res) => {

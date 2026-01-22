@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { pool } = require('../db');
 const { authenticate } = require('../middleware/auth');
+const { sendPushToUser } = require('./push');
 
 // Create uploads directory for chat files
 const chatUploadsDir = path.join(__dirname, '../uploads/chat');
@@ -132,6 +133,8 @@ router.post('/assignment/:assignmentId', authenticate, async (req, res) => {
                 'info',
                 `/chat/${assignmentId}`
             ]);
+            // Send push notification
+            sendPushToUser(receiverId, '💬 New Message', `${req.user.name}: ${message.substring(0, 50)}...`, `/chat/${assignmentId}`);
         }
 
         // Get full message with sender info

@@ -60,23 +60,35 @@ self.addEventListener('fetch', (event) => {
 
 // Push notification event
 self.addEventListener('push', (event) => {
+  let data = { title: 'WriterHub Pro', body: 'New notification', url: '/' };
+  
+  try {
+    if (event.data) {
+      data = event.data.json();
+    }
+  } catch (e) {
+    data.body = event.data ? event.data.text() : 'New notification';
+  }
+
   const options = {
-    body: event.data ? event.data.text() : 'New notification from WriterHub',
-    icon: '/icons/icon-192.png',
-    badge: '/icons/icon-72.png',
-    vibrate: [100, 50, 100],
+    body: data.body,
+    icon: data.icon || '/icons/icon.svg',
+    badge: '/icons/icon.svg',
+    vibrate: [200, 100, 200],
+    tag: 'writerhub-notification',
+    renotify: true,
     data: {
-      dateOfArrival: Date.now(),
-      primaryKey: 1
+      url: data.url || '/',
+      timestamp: data.timestamp || Date.now()
     },
     actions: [
-      { action: 'open', title: 'Open App' },
+      { action: 'open', title: 'Open' },
       { action: 'close', title: 'Dismiss' }
     ]
   };
 
   event.waitUntil(
-    self.registration.showNotification('WriterHub Pro', options)
+    self.registration.showNotification(data.title, options)
   );
 });
 

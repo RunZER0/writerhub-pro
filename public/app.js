@@ -69,6 +69,75 @@ function updateSoundIcon() {
 }
 
 // ========================================
+// Push Notifications
+// ========================================
+async function initPushNotifications() {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+        console.log('Push notifications not supported');
+        return;
+    }
+
+    try {
+        // Get VAPID public key from server
+        const response = await fetch('/api/push/vapid-key');
+        const { publicKey } = await response.json();
+        
+        if (!publicKey) {
+            console.log('Push not configured on server');
+            return;
+        }
+
+        // Check if already subscribed
+        const registration = await navigator.serviceWorker.ready;
+        let subscription = await registration.pushManager.getSubscription();
+
+        if (!subscription) {
+            // Ask for permission and subscribe
+            const permission = await Notification.requestPermission();
+            if (permission !== 'granted') {
+                console.log('Notification permission denied');
+                return;
+            }
+
+            subscription = await registration.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: urlBase64ToUint8Array(publicKey)
+            });
+        }
+
+        // Send subscription to server
+        const token = localStorage.getItem('token');
+        if (token) {
+            await fetch('/api/push/subscribe', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({ subscription })
+            });
+            console.log('Push subscription saved');
+        }
+    } catch (error) {
+        console.error('Push init error:', error);
+    }
+}
+
+// Helper function to convert VAPID key
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding)
+        .replace(/-/g, '+')
+        .replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+        outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+}
+
+// ========================================
 // Theme Management
 // ========================================
 function initTheme() {
@@ -306,6 +375,9 @@ function showApp() {
     // Start online status updates
     updateOnlineStatus(true);
     statusUpdateInterval = setInterval(() => updateOnlineStatus(true), 60000);
+
+    // Initialize push notifications
+    initPushNotifications();
 
     loadDashboard();
     loadNotifications();
