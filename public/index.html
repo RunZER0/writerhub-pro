@@ -902,6 +902,10 @@
             <i class="fas fa-key"></i>
             <span>Change Password</span>
         </button>
+        <button class="settings-item" id="telegramLinkBtn">
+            <i class="fab fa-telegram"></i>
+            <span>Link Telegram</span>
+        </button>
         <button class="settings-item admin-only" id="resetWriterPasswordBtn">
             <i class="fas fa-user-lock"></i>
             <span>Reset Writer Password</span>
@@ -967,6 +971,24 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" data-close="credentialsModal">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Telegram Link Modal -->
+    <div id="telegramModal" class="modal">
+        <div class="modal-content" style="max-width: 420px;">
+            <div class="modal-header">
+                <h3><i class="fab fa-telegram" style="margin-right:0.5rem;color:#0088cc"></i> Link Telegram</h3>
+                <button class="modal-close" data-close="telegramModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body" id="telegramModalBody">
+                <div class="telegram-status" id="telegramStatus">
+                    <i class="fas fa-spinner fa-spin"></i> Checking status...
+                </div>
+            </div>
+            <div class="modal-footer" id="telegramModalFooter">
+                <button class="btn btn-secondary" data-close="telegramModal">Close</button>
             </div>
         </div>
     </div>

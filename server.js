@@ -12,6 +12,7 @@ const dashboardRoutes = require('./routes/dashboard');
 const filesRoutes = require('./routes/files');
 const messagesRoutes = require('./routes/messages');
 const pushRoutes = require('./routes/push');
+const telegramRoutes = require('./routes/telegram');
 
 const app = express();
 
@@ -30,6 +31,8 @@ app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/files', filesRoutes);
 app.use('/api/messages', messagesRoutes);
 app.use('/api/push', pushRoutes);
+app.use('/api/telegram', telegramRoutes);
+app.use('/api/telegram/webhook', telegramRoutes); // Public webhook endpoint
 
 // Serve frontend for all other routes
 app.get('*', (req, res) => {

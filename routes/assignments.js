@@ -2,6 +2,7 @@ const express = require('express');
 const db = require('../db');
 const { authenticate, isAdmin } = require('../middleware/auth');
 const { sendPushToUser, sendPushToRole, sendPushToDomain } = require('./push');
+const { sendTelegramToUser, sendTelegramToDomain } = require('./telegram');
 
 const router = express.Router();
 
@@ -464,6 +465,8 @@ router.post('/', authenticate, isAdmin, async (req, res) => {
             }
             // Send push notification to domain writers
             sendPushToDomain(domain, '🆕 New Job Available', `${domain} job: ${title}`, '/job-board');
+            // Send Telegram notification to domain writers
+            sendTelegramToDomain(domain, `🆕 <b>New Job Available!</b>\n\n📋 ${title}\n🏷️ Domain: ${domain}\n\nOpen WriterHub Pro to pick this job.`);
         } else {
             // Notify all active writers
             const allWriters = await db.query(`
@@ -478,6 +481,8 @@ router.post('/', authenticate, isAdmin, async (req, res) => {
             }
             // Send push notification to all writers
             sendPushToDomain(null, '🆕 New Job Available', title, '/job-board');
+            // Send Telegram notification to all writers
+            sendTelegramToDomain(null, `🆕 <b>New Job Available!</b>\n\n📋 ${title}\n\nOpen WriterHub Pro to pick this job.`);
         }
 
         res.status(201).json(assignment);

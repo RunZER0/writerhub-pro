@@ -138,6 +138,116 @@ function urlBase64ToUint8Array(base64String) {
 }
 
 // ========================================
+// Telegram Integration
+// ========================================
+async function checkTelegramStatus() {
+    try {
+        const response = await fetch('/api/telegram/status', {
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        return await response.json();
+    } catch (error) {
+        console.error('Telegram status error:', error);
+        return { linked: false };
+    }
+}
+
+async function showTelegramModal() {
+    const modal = document.getElementById('telegramModal');
+    const body = document.getElementById('telegramModalBody');
+    const footer = document.getElementById('telegramModalFooter');
+    
+    modal.classList.add('active');
+    body.innerHTML = `<div class="telegram-status"><i class="fas fa-spinner fa-spin"></i> Checking status...</div>`;
+    
+    try {
+        const status = await checkTelegramStatus();
+        
+        if (status.linked) {
+            const linkedDate = new Date(status.linkedAt).toLocaleDateString();
+            body.innerHTML = `
+                <div class="telegram-linked">
+                    <i class="fab fa-telegram"></i>
+                    <p>✅ <strong>Telegram Connected</strong></p>
+                    <p class="username">@${status.username || 'Unknown'}</p>
+                    <p class="linked-date">Linked on ${linkedDate}</p>
+                </div>
+            `;
+            footer.innerHTML = `
+                <button class="btn btn-secondary" data-close="telegramModal">Close</button>
+                <button class="btn btn-danger" id="unlinkTelegramBtn">Unlink</button>
+            `;
+            document.getElementById('unlinkTelegramBtn')?.addEventListener('click', unlinkTelegram);
+        } else {
+            await generateTelegramCode();
+        }
+    } catch (error) {
+        body.innerHTML = `<div class="telegram-status" style="color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Failed to load</div>`;
+    }
+}
+
+async function generateTelegramCode() {
+    const body = document.getElementById('telegramModalBody');
+    const footer = document.getElementById('telegramModalFooter');
+    
+    try {
+        const response = await fetch('/api/telegram/generate-link-code', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        
+        if (data.code) {
+            body.innerHTML = `
+                <div class="telegram-unlinked">
+                    <p>Link your Telegram to receive notifications even when the app is closed.</p>
+                    
+                    <div class="telegram-code-box">
+                        <div class="telegram-code">${data.code}</div>
+                        <small>Code expires in 10 minutes</small>
+                    </div>
+                    
+                    <ol class="telegram-steps">
+                        <li>Open <strong>Telegram</strong> on your phone</li>
+                        <li>Search for the bot or click the link below</li>
+                        <li>Send the code <strong>${data.code}</strong> to the bot</li>
+                    </ol>
+                    
+                    <a href="${data.botLink}" target="_blank" class="telegram-bot-link">
+                        <i class="fab fa-telegram"></i> Open Telegram Bot
+                    </a>
+                </div>
+            `;
+            footer.innerHTML = `
+                <button class="btn btn-secondary" data-close="telegramModal">Cancel</button>
+                <button class="btn btn-primary" id="refreshTelegramBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
+            `;
+            document.getElementById('refreshTelegramBtn')?.addEventListener('click', showTelegramModal);
+        }
+    } catch (error) {
+        body.innerHTML = `<div class="telegram-status" style="color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Failed to generate code</div>`;
+    }
+}
+
+async function unlinkTelegram() {
+    if (!confirm('Are you sure you want to unlink Telegram? You will no longer receive notifications there.')) return;
+    
+    try {
+        const response = await fetch('/api/telegram/unlink', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+        });
+        
+        if (response.ok) {
+            showToast('Telegram unlinked successfully', 'success');
+            showTelegramModal(); // Refresh modal
+        }
+    } catch (error) {
+        showToast('Failed to unlink Telegram', 'error');
+    }
+}
+
+// ========================================
 // Theme Management
 // ========================================
 function initTheme() {
@@ -2052,6 +2162,11 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('settingsDropdown').classList.remove('active');
         document.getElementById('passwordForm').reset();
         openModal('passwordModal');
+    });
+    
+    document.getElementById('telegramLinkBtn')?.addEventListener('click', () => {
+        document.getElementById('settingsDropdown').classList.remove('active');
+        showTelegramModal();
     });
     
     document.getElementById('checkOverdueBtn')?.addEventListener('click', () => {

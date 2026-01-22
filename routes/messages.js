@@ -6,6 +6,7 @@ const fs = require('fs');
 const { pool } = require('../db');
 const { authenticate } = require('../middleware/auth');
 const { sendPushToUser } = require('./push');
+const { sendTelegramToUser } = require('./telegram');
 
 // Create uploads directory for chat files
 const chatUploadsDir = path.join(__dirname, '../uploads/chat');
@@ -135,6 +136,8 @@ router.post('/assignment/:assignmentId', authenticate, async (req, res) => {
             ]);
             // Send push notification
             sendPushToUser(receiverId, '💬 New Message', `${req.user.name}: ${message.substring(0, 50)}...`, `/chat/${assignmentId}`);
+            // Send Telegram notification
+            sendTelegramToUser(receiverId, `💬 <b>New Message</b>\n\nFrom: ${req.user.name}\nJob: ${a.title}\n\n"${message.substring(0, 100)}${message.length > 100 ? '...' : ''}"`);
         }
 
         // Get full message with sender info

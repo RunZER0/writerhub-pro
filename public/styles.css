@@ -1517,6 +1517,106 @@ select:focus {
 }
 
 /* ========================================
+   Telegram Link Styles
+======================================== */
+.telegram-status {
+    padding: 1rem;
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.telegram-linked {
+    background: rgba(0, 200, 83, 0.1);
+    border: 1px solid var(--accent-green);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+}
+
+.telegram-linked i {
+    font-size: 2rem;
+    color: var(--accent-green);
+    margin-bottom: 0.5rem;
+}
+
+.telegram-linked .username {
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-top: 0.5rem;
+}
+
+.telegram-linked .linked-date {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+.telegram-unlinked {
+    text-align: center;
+}
+
+.telegram-unlinked p {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.telegram-code-box {
+    background: var(--primary-light);
+    border: 2px dashed var(--border-light);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    margin: 1rem 0;
+    text-align: center;
+}
+
+.telegram-code {
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: 0.25rem;
+    color: #0088cc;
+}
+
+.telegram-code-box small {
+    display: block;
+    margin-top: 0.5rem;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+}
+
+.telegram-steps {
+    text-align: left;
+    background: var(--background);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-top: 1rem;
+}
+
+.telegram-steps li {
+    padding: 0.5rem 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.telegram-steps li strong {
+    color: var(--text-primary);
+}
+
+.telegram-bot-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #0088cc;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 1rem;
+}
+
+.telegram-bot-link:hover {
+    text-decoration: underline;
+}
+
+/* ========================================
    Approval Badge (for submitted amounts)
    ======================================== */
 .approval-needed {
