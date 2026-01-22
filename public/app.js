@@ -498,6 +498,13 @@ function getInitials(name) {
     return name ? name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) : '?';
 }
 
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 function showToast(type, title, message) {
     const container = document.getElementById('toastContainer');
     const toast = document.createElement('div');
@@ -1651,18 +1658,38 @@ function renderChatThreads() {
     }
 
     container.innerHTML = chatThreads.map(t => `
-        <div class="chat-thread ${currentChatType === 'assignment' && currentChatTarget === t.assignment_id ? 'active' : ''}" onclick="openAssignmentChat(${t.assignment_id})">
+        <div class="chat-thread ${currentChatType === 'assignment' && currentChatTarget === t.assignment_id ? 'active' : ''}" data-chat-type="assignment" data-assignment-id="${t.assignment_id}">
             <div class="chat-thread-avatar">
                 ${getInitials(t.writer_name || 'Writer')}
                 <span class="online-dot ${t.writer_online ? '' : 'offline'}"></span>
             </div>
             <div class="chat-thread-info">
-                <div class="chat-thread-name">${t.writer_name || 'Writer'}</div>
-                <div class="chat-thread-title">${t.title}</div>
+                <div class="chat-thread-name">${escapeHtml(t.writer_name || 'Writer')}</div>
+                <div class="chat-thread-title">${escapeHtml(t.title)}</div>
             </div>
             ${t.unread_count > 0 ? `<span class="chat-thread-badge">${t.unread_count}</span>` : ''}
         </div>
     `).join('');
+    
+    // Add click handlers using event delegation
+    attachChatThreadListeners(container);
+}
+
+// Event delegation for chat thread clicks
+function attachChatThreadListeners(container) {
+    container.querySelectorAll('.chat-thread').forEach(thread => {
+        thread.addEventListener('click', function() {
+            const chatType = this.dataset.chatType;
+            if (chatType === 'direct') {
+                const userId = parseInt(this.dataset.userId);
+                const userName = this.dataset.userName;
+                openDirectChat(userId, userName);
+            } else if (chatType === 'assignment') {
+                const assignmentId = parseInt(this.dataset.assignmentId);
+                openAssignmentChat(assignmentId);
+            }
+        });
+    });
 }
 
 function renderWriterChatThreads(data) {
@@ -1676,13 +1703,13 @@ function renderWriterChatThreads(data) {
     if (admins.length > 0) {
         html += '<div class="chat-section-title" style="padding:0.5rem 1rem;font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;">Admins</div>';
         html += admins.map(a => `
-            <div class="chat-thread ${currentChatType === 'direct' && currentChatTarget === a.user_id ? 'active' : ''}" onclick="openDirectChat(${a.user_id}, '${a.name.replace(/'/g, "\\'")}')">
+            <div class="chat-thread ${currentChatType === 'direct' && currentChatTarget === a.user_id ? 'active' : ''}" data-chat-type="direct" data-user-id="${a.user_id}" data-user-name="${escapeHtml(a.name)}">
                 <div class="chat-thread-avatar">
                     ${getInitials(a.name)}
                     <span class="online-dot ${a.is_online ? '' : 'offline'}"></span>
                 </div>
                 <div class="chat-thread-info">
-                    <div class="chat-thread-name">${a.name}</div>
+                    <div class="chat-thread-name">${escapeHtml(a.name)}</div>
                     <div class="chat-thread-title">${a.is_online ? 'Online' : (a.last_seen ? 'Last seen ' + formatTimeAgo(a.last_seen) : 'Offline')}</div>
                 </div>
             </div>
@@ -1693,12 +1720,12 @@ function renderWriterChatThreads(data) {
     if (assignmentThreads.length > 0) {
         html += '<div class="chat-section-title" style="padding:0.5rem 1rem;font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;margin-top:0.5rem;">Job Conversations</div>';
         html += assignmentThreads.map(t => `
-            <div class="chat-thread ${currentChatType === 'assignment' && currentChatTarget === t.assignment_id ? 'active' : ''}" onclick="openAssignmentChat(${t.assignment_id})">
+            <div class="chat-thread ${currentChatType === 'assignment' && currentChatTarget === t.assignment_id ? 'active' : ''}" data-chat-type="assignment" data-assignment-id="${t.assignment_id}">
                 <div class="chat-thread-avatar">
                     <i class="fas fa-file-alt" style="font-size:0.875rem;"></i>
                 </div>
                 <div class="chat-thread-info">
-                    <div class="chat-thread-name">${t.title}</div>
+                    <div class="chat-thread-name">${escapeHtml(t.title)}</div>
                     <div class="chat-thread-title">Job discussion</div>
                 </div>
                 ${t.unread_count > 0 ? `<span class="chat-thread-badge">${t.unread_count}</span>` : ''}
@@ -1711,6 +1738,9 @@ function renderWriterChatThreads(data) {
     }
     
     container.innerHTML = html;
+    
+    // Add click handlers using event delegation
+    attachChatThreadListeners(container);
 }
 
 async function openDirectChat(userId, userName) {
