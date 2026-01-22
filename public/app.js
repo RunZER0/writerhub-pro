@@ -15,6 +15,58 @@ let notifications = [];
 let chatThreads = [];
 let currentChatAssignment = null;
 let statusUpdateInterval = null;
+let lastNotificationCount = 0;
+let notificationSoundEnabled = localStorage.getItem('notificationSound') !== 'false';
+
+// Notification Sound using Web Audio API
+function playNotificationSound() {
+    if (!notificationSoundEnabled) return;
+    
+    try {
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        
+        // Create a pleasant chime sound
+        const playTone = (freq, startTime, duration) => {
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.value = freq;
+            oscillator.type = 'sine';
+            
+            gainNode.gain.setValueAtTime(0.3, startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+            
+            oscillator.start(startTime);
+            oscillator.stop(startTime + duration);
+        };
+        
+        // Play a pleasant two-tone chime
+        const now = audioContext.currentTime;
+        playTone(830, now, 0.15);        // High note
+        playTone(1046, now + 0.15, 0.2); // Higher note
+        
+    } catch (e) {
+        console.log('Audio not supported');
+    }
+}
+
+function toggleNotificationSound() {
+    notificationSoundEnabled = !notificationSoundEnabled;
+    localStorage.setItem('notificationSound', notificationSoundEnabled);
+    updateSoundIcon();
+    showToast('info', 'Sound ' + (notificationSoundEnabled ? 'Enabled' : 'Disabled'), 
+        notificationSoundEnabled ? 'You will hear notification sounds' : 'Notification sounds are muted');
+}
+
+function updateSoundIcon() {
+    const icon = document.getElementById('soundIcon');
+    if (icon) {
+        icon.className = notificationSoundEnabled ? 'fas fa-volume-up' : 'fas fa-volume-mute';
+    }
+}
 
 // ========================================
 // Theme Management
@@ -1693,7 +1745,15 @@ async function generateReport() {
 // ========================================
 async function loadNotifications() {
     try {
+        const prevUnreadCount = notifications.filter(n => !n.read).length;
         notifications = await api('/auth/notifications');
+        const newUnreadCount = notifications.filter(n => !n.read).length;
+        
+        // Play sound if there are new unread notifications
+        if (newUnreadCount > prevUnreadCount && prevUnreadCount >= 0) {
+            playNotificationSound();
+        }
+        
         renderNotifications();
         updateNotificationBadge();
     } catch (error) {
@@ -1828,6 +1888,7 @@ function openNewAssignmentModal() {
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
     checkAuth();
+    updateSoundIcon(); // Initialize sound icon state
     
     // Login form
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
