@@ -211,6 +211,36 @@ async function testPushNotification() {
     }
 }
 
+// Delayed test push - gives time to close the app
+async function testDelayedPush() {
+    try {
+        const statusRes = await fetch('/api/push/status', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const status = await statusRes.json();
+        
+        if (!status.subscribed) {
+            showToast('warning', 'Not Subscribed', 'Enable push notifications first');
+            return;
+        }
+        
+        const testRes = await fetch('/api/push/test-delayed', {
+            method: 'POST',
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ delay: 10 })
+        });
+        
+        if (testRes.ok) {
+            showToast('info', '⏱️ Close the app NOW!', 'Push will arrive in 10 seconds');
+        }
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
 // Helper function to convert VAPID key
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);

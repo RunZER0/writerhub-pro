@@ -102,6 +102,21 @@ router.post('/test', authenticate, async (req, res) => {
     }
 });
 
+// Delayed test push - gives you time to close the app
+router.post('/test-delayed', authenticate, async (req, res) => {
+    const userId = req.user.id;
+    const delay = parseInt(req.body.delay) || 10; // Default 10 seconds
+    
+    res.json({ success: true, message: `Push will be sent in ${delay} seconds. Close the app now!` });
+    
+    // Send push after delay
+    setTimeout(async () => {
+        console.log(`⏰ Sending delayed push to user ${userId}`);
+        await sendPushToUser(userId, '🔔 Delayed Test', `This was sent ${delay} seconds ago. Push works when app is closed!`, '/');
+    }, delay * 1000);
+});
+});
+
 // Send push notification to a user
 async function sendPushToUser(userId, title, body, url = '/') {
     if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
