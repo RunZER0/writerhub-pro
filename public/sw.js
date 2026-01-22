@@ -1,4 +1,4 @@
-const CACHE_NAME = 'homeworkhub-v1';
+const CACHE_NAME = 'homeworkhub-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -9,8 +9,10 @@ const STATIC_ASSETS = [
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
+  console.log('[SW] Installing service worker v2...');
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
+      console.log('[SW] Caching static assets');
       return cache.addAll(STATIC_ASSETS);
     })
   );
@@ -19,12 +21,16 @@ self.addEventListener('install', (event) => {
 
 // Activate event - clean old caches
 self.addEventListener('activate', (event) => {
+  console.log('[SW] Activating service worker v2...');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames
           .filter((name) => name !== CACHE_NAME)
-          .map((name) => caches.delete(name))
+          .map((name) => {
+            console.log('[SW] Deleting old cache:', name);
+            return caches.delete(name);
+          })
       );
     })
   );
@@ -60,13 +66,17 @@ self.addEventListener('fetch', (event) => {
 
 // Push notification event
 self.addEventListener('push', (event) => {
+  console.log('[SW] Push received!', event);
+  
   let data = { title: 'HomeworkHub', body: 'New notification', url: '/' };
   
   try {
     if (event.data) {
       data = event.data.json();
+      console.log('[SW] Push data:', data);
     }
   } catch (e) {
+    console.log('[SW] Push data parse error, using text');
     data.body = event.data ? event.data.text() : 'New notification';
   }
 
@@ -75,8 +85,9 @@ self.addEventListener('push', (event) => {
     icon: data.icon || '/icons/icon.svg',
     badge: '/icons/icon.svg',
     vibrate: [200, 100, 200],
-    tag: 'homeworkhub-notification',
+    tag: data.tag || 'homeworkhub-notification-' + Date.now(),
     renotify: true,
+    requireInteraction: true, // Keep notification visible until user interacts
     data: {
       url: data.url || '/',
       timestamp: data.timestamp || Date.now()
@@ -89,6 +100,8 @@ self.addEventListener('push', (event) => {
 
   event.waitUntil(
     self.registration.showNotification(data.title, options)
+      .then(() => console.log('[SW] Notification shown'))
+      .catch(err => console.error('[SW] Failed to show notification:', err))
   );
 });
 
