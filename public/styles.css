@@ -2221,25 +2221,50 @@ select:focus {
 .mini-chat-input {
     display: flex;
     gap: 0.5rem;
+    padding: 0.5rem;
+    background: var(--surface);
+    border-top: 1px solid var(--border);
+    position: sticky;
+    bottom: 0;
 }
 
 .mini-chat-input input {
     flex: 1;
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
     border: 1px solid var(--border);
-    border-radius: 6px;
+    border-radius: 8px;
     background: var(--background);
     color: var(--text-primary);
-    font-size: 0.8125rem;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 44px; /* Touch-friendly size */
+}
+
+.mini-chat-input input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
 }
 
 .mini-chat-input button {
-    padding: 0.5rem 0.75rem;
+    padding: 0.75rem 1rem;
     background: var(--primary);
     color: white;
     border: none;
-    border-radius: 6px;
+    border-radius: 8px;
     cursor: pointer;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.mini-chat-input button:active {
+    background: var(--primary-hover);
+    transform: scale(0.95);
 }
 
 /* ========================================
@@ -2608,31 +2633,39 @@ body.role-admin .writer-only-inline {
     align-items: center;
     background: var(--background);
     border-top: 1px solid var(--border-light);
+    position: sticky;
+    bottom: 0;
 }
 
 .chat-input input {
     flex: 1;
-    padding: 0.625rem 1rem;
+    padding: 0.75rem 1rem;
     border: 1px solid var(--border);
     border-radius: 20px;
     background: var(--surface-hover);
     color: var(--text-primary);
-    font-size: 0.875rem;
+    font-size: 16px; /* Prevents iOS zoom on focus */
+    -webkit-appearance: none;
+    appearance: none;
+    min-height: 44px;
 }
 
 .chat-input input:focus {
     outline: none;
     border-color: var(--primary);
+    box-shadow: 0 0 0 2px var(--primary-light);
 }
 
 .chat-input button {
-    width: 40px;
-    height: 40px;
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     background: var(--primary);
+    -webkit-tap-highlight-color: transparent;
     color: white;
     border: none;
     border-radius: 50%;

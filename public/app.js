@@ -17,26 +17,39 @@ let currentChatAssignment = null;
 let statusUpdateInterval = null;
 let lastNotificationCount = 0;
 let notificationSoundEnabled = localStorage.getItem('notificationSound') !== 'false';
+let audioContext = null;
+
+// Initialize audio context on first user interaction (required for mobile)
+function initAudioContext() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    // Resume if suspended (mobile requirement)
+    if (audioContext.state === 'suspended') {
+        audioContext.resume();
+    }
+    return audioContext;
+}
 
 // Notification Sound using Web Audio API
 function playNotificationSound() {
     if (!notificationSoundEnabled) return;
     
     try {
-        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = initAudioContext();
         
         // Create a pleasant chime sound
         const playTone = (freq, startTime, duration) => {
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
+            const oscillator = ctx.createOscillator();
+            const gainNode = ctx.createGain();
             
             oscillator.connect(gainNode);
-            gainNode.connect(audioContext.destination);
+            gainNode.connect(ctx.destination);
             
             oscillator.frequency.value = freq;
             oscillator.type = 'sine';
             
-            gainNode.gain.setValueAtTime(0.3, startTime);
+            gainNode.gain.setValueAtTime(0.4, startTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
             
             oscillator.start(startTime);
@@ -44,19 +57,28 @@ function playNotificationSound() {
         };
         
         // Play a pleasant two-tone chime
-        const now = audioContext.currentTime;
+        const now = ctx.currentTime;
         playTone(830, now, 0.15);        // High note
         playTone(1046, now + 0.15, 0.2); // Higher note
         
     } catch (e) {
-        console.log('Audio not supported');
+        console.log('Audio error:', e);
     }
 }
 
 function toggleNotificationSound() {
+    // Initialize audio on user interaction
+    initAudioContext();
+    
     notificationSoundEnabled = !notificationSoundEnabled;
     localStorage.setItem('notificationSound', notificationSoundEnabled);
     updateSoundIcon();
+    
+    // Play test sound when enabling
+    if (notificationSoundEnabled) {
+        playNotificationSound();
+    }
+    
     showToast('info', 'Sound ' + (notificationSoundEnabled ? 'Enabled' : 'Disabled'), 
         notificationSoundEnabled ? 'You will hear notification sounds' : 'Notification sounds are muted');
 }
@@ -72,9 +94,16 @@ function updateSoundIcon() {
 // Push Notifications
 // ========================================
 async function initPushNotifications() {
-    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
-        console.log('Push notifications not supported');
-        return;
+    console.log('🔔 Initializing push notifications...');
+    
+    if (!('serviceWorker' in navigator)) {
+        console.log('❌ Service Worker not supported');
+        return false;
+    }
+    
+    if (!('PushManager' in window)) {
+        console.log('❌ Push Manager not supported');
+        return false;
     }
 
     try {
@@ -83,32 +112,41 @@ async function initPushNotifications() {
         const { publicKey } = await response.json();
         
         if (!publicKey) {
-            console.log('Push not configured on server');
-            return;
+            console.log('❌ No VAPID key from server');
+            return false;
         }
+        console.log('✅ Got VAPID key');
 
-        // Check if already subscribed
+        // Wait for service worker to be ready
         const registration = await navigator.serviceWorker.ready;
+        console.log('✅ Service worker ready');
+        
         let subscription = await registration.pushManager.getSubscription();
 
         if (!subscription) {
-            // Ask for permission and subscribe
+            console.log('📱 Requesting notification permission...');
             const permission = await Notification.requestPermission();
+            console.log('📱 Permission:', permission);
+            
             if (permission !== 'granted') {
-                console.log('Notification permission denied');
-                return;
+                console.log('❌ Notification permission denied');
+                return false;
             }
 
+            console.log('🔔 Creating push subscription...');
             subscription = await registration.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: urlBase64ToUint8Array(publicKey)
             });
+            console.log('✅ Subscription created');
+        } else {
+            console.log('✅ Already subscribed');
         }
 
         // Send subscription to server
         const token = localStorage.getItem('token');
         if (token) {
-            await fetch('/api/push/subscribe', {
+            const saveRes = await fetch('/api/push/subscribe', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -116,10 +154,30 @@ async function initPushNotifications() {
                 },
                 body: JSON.stringify({ subscription })
             });
-            console.log('Push subscription saved');
+            
+            if (saveRes.ok) {
+                console.log('✅ Push subscription saved to server');
+                return true;
+            } else {
+                console.log('❌ Failed to save subscription:', await saveRes.text());
+            }
         }
+        return true;
     } catch (error) {
-        console.error('Push init error:', error);
+        console.error('❌ Push init error:', error);
+        return false;
+    }
+}
+
+// Manual enable push (for settings button)
+async function enablePushNotifications() {
+    initAudioContext(); // Init audio on user interaction
+    
+    const result = await initPushNotifications();
+    if (result) {
+        showToast('success', 'Push Enabled', 'You will receive push notifications');
+    } else {
+        showToast('error', 'Push Failed', 'Check browser permissions and try again');
     }
 }
 

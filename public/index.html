@@ -399,8 +399,8 @@
                                     <i class="fas fa-paperclip"></i>
                                     <input type="file" id="chatFileInput" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif" style="display:none;">
                                 </label>
-                                <input type="text" id="chatMessageInput" placeholder="Type a message...">
-                                <button id="sendMessageBtn"><i class="fas fa-paper-plane"></i></button>
+                                <input type="text" id="chatMessageInput" placeholder="Type a message..." autocomplete="off" autocapitalize="sentences" inputmode="text" enterkeyhint="send">
+                                <button id="sendMessageBtn" type="button"><i class="fas fa-paper-plane"></i></button>
                             </div>
                         </div>
                     </div>
@@ -744,8 +744,8 @@
                         <h4><i class="fas fa-comments"></i> Quick Chat</h4>
                         <div class="mini-chat-messages" id="miniChatMessages"></div>
                         <div class="mini-chat-input">
-                            <input type="text" id="miniChatInput" placeholder="Type a message...">
-                            <button id="miniChatSend"><i class="fas fa-paper-plane"></i></button>
+                            <input type="text" id="miniChatInput" placeholder="Type a message..." autocomplete="off" autocapitalize="sentences" inputmode="text" enterkeyhint="send">
+                            <button id="miniChatSend" type="button"><i class="fas fa-paper-plane"></i></button>
                         </div>
                     </div>
                 </div>
@@ -975,6 +975,10 @@
 
     <!-- Settings Dropdown -->
     <div id="settingsDropdown" class="settings-dropdown">
+        <button class="settings-item" id="enablePushBtn" onclick="enablePushNotifications()">
+            <i class="fas fa-bell"></i>
+            <span>Enable Push Notifications</span>
+        </button>
         <button class="settings-item" id="changePasswordBtn">
             <i class="fas fa-key"></i>
             <span>Change Password</span>
