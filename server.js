@@ -46,8 +46,47 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 3000;
+const { pool } = require('./db');
 
-app.listen(PORT, () => {
+// Auto-run essential migrations on startup
+async function runMigrations() {
+    try {
+        // Telegram link codes table
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS telegram_link_codes (
+                id SERIAL PRIMARY KEY,
+                user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+                code VARCHAR(10) NOT NULL UNIQUE,
+                expires_at TIMESTAMP NOT NULL,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+        
+        // Telegram columns on users
+        await pool.query(`
+            ALTER TABLE users 
+            ADD COLUMN IF NOT EXISTS telegram_chat_id VARCHAR(50),
+            ADD COLUMN IF NOT EXISTS telegram_username VARCHAR(100),
+            ADD COLUMN IF NOT EXISTS telegram_linked_at TIMESTAMP
+        `);
+        
+        // Submission tracking columns
+        await pool.query(`
+            ALTER TABLE assignments
+            ADD COLUMN IF NOT EXISTS submission_links TEXT,
+            ADD COLUMN IF NOT EXISTS submission_notes TEXT,
+            ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP,
+            ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP
+        `);
+        
+        console.log('✅ Database migrations complete');
+    } catch (error) {
+        console.error('⚠️ Migration warning:', error.message);
+    }
+}
+
+app.listen(PORT, async () => {
     console.log(`🚀 HomeworkHub running on port ${PORT}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+    await runMigrations();
 });
