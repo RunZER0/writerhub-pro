@@ -70,10 +70,42 @@ router.post('/unsubscribe', authenticate, async (req, res) => {
     }
 });
 
+// Check push subscription status for current user
+router.get('/status', authenticate, async (req, res) => {
+    try {
+        const result = await pool.query(
+            'SELECT id, endpoint, created_at FROM push_subscriptions WHERE user_id = $1',
+            [req.user.id]
+        );
+        
+        res.json({
+            subscribed: result.rows.length > 0,
+            subscriptions: result.rows.length,
+            devices: result.rows.map(r => ({
+                id: r.id,
+                endpoint: r.endpoint.substring(0, 50) + '...',
+                created: r.created_at
+            }))
+        });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to check status' });
+    }
+});
+
+// Test push notification to self
+router.post('/test', authenticate, async (req, res) => {
+    try {
+        await sendPushToUser(req.user.id, '🔔 Test Notification', 'If you see this, push notifications are working!', '/');
+        res.json({ success: true, message: 'Test push sent - check your notifications' });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to send test push' });
+    }
+});
+
 // Send push notification to a user
 async function sendPushToUser(userId, title, body, url = '/') {
     if (!VAPID_PUBLIC_KEY || !VAPID_PRIVATE_KEY) {
-        console.log('Push skipped - VAPID not configured');
+        console.log('❌ Push skipped - VAPID not configured');
         return;
     }
 
@@ -82,6 +114,13 @@ async function sendPushToUser(userId, title, body, url = '/') {
             'SELECT * FROM push_subscriptions WHERE user_id = $1',
             [userId]
         );
+
+        console.log(`📤 Sending push to user ${userId}: "${title}" - Found ${result.rows.length} subscriptions`);
+
+        if (result.rows.length === 0) {
+            console.log(`⚠️ No push subscriptions found for user ${userId}`);
+            return;
+        }
 
         const payload = JSON.stringify({
             title,
@@ -103,15 +142,17 @@ async function sendPushToUser(userId, title, body, url = '/') {
 
             try {
                 await webpush.sendNotification(subscription, payload);
+                console.log(`✅ Push sent successfully to subscription ${sub.id}`);
             } catch (error) {
+                console.error(`❌ Push send error for subscription ${sub.id}:`, error.message);
                 if (error.statusCode === 410 || error.statusCode === 404) {
                     // Subscription expired or invalid - remove it
                     await pool.query(
                         'DELETE FROM push_subscriptions WHERE id = $1',
                         [sub.id]
                     );
+                    console.log(`🗑️ Removed invalid subscription ${sub.id}`);
                 }
-                console.error('Push send error:', error.message);
             }
         }
     } catch (error) {

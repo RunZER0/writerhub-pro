@@ -181,6 +181,36 @@ async function enablePushNotifications() {
     }
 }
 
+// Test push notification
+async function testPushNotification() {
+    try {
+        // First check subscription status
+        const statusRes = await fetch('/api/push/status', {
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        const status = await statusRes.json();
+        
+        if (!status.subscribed) {
+            showToast('warning', 'Not Subscribed', 'Enable push notifications first');
+            return;
+        }
+        
+        // Send test push
+        const testRes = await fetch('/api/push/test', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+        });
+        
+        if (testRes.ok) {
+            showToast('info', 'Test Sent', `Push sent to ${status.subscriptions} device(s). Check your notifications!`);
+        } else {
+            showToast('error', 'Test Failed', 'Could not send test notification');
+        }
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
 // Helper function to convert VAPID key
 function urlBase64ToUint8Array(base64String) {
     const padding = '='.repeat((4 - base64String.length % 4) % 4);
