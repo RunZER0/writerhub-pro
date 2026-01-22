@@ -115,7 +115,6 @@ router.post('/test-delayed', authenticate, async (req, res) => {
         await sendPushToUser(userId, '🔔 Delayed Test', `This was sent ${delay} seconds ago. Push works when app is closed!`, '/');
     }, delay * 1000);
 });
-});
 
 // Send push notification to a user
 async function sendPushToUser(userId, title, body, url = '/') {
