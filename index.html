@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WriterHub Pro - Writers Management System</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo">
+                <i class="fas fa-feather-alt"></i>
+                <span>WriterHub Pro</span>
+            </div>
+            <nav class="nav-menu">
+                <a href="#" class="nav-item active" data-page="dashboard">
+                    <i class="fas fa-th-large"></i>
+                    <span>Dashboard</span>
+                </a>
+                <a href="#" class="nav-item" data-page="writers">
+                    <i class="fas fa-users"></i>
+                    <span>Writers</span>
+                </a>
+                <a href="#" class="nav-item" data-page="assignments">
+                    <i class="fas fa-tasks"></i>
+                    <span>Assignments</span>
+                </a>
+                <a href="#" class="nav-item" data-page="payments">
+                    <i class="fas fa-wallet"></i>
+                    <span>Payments</span>
+                </a>
+                <a href="#" class="nav-item" data-page="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    <span>Reports</span>
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">Admin</span>
+                        <span class="user-role">Manager</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="header">
+                <div class="header-left">
+                    <button class="menu-toggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="Search writers, assignments..." id="globalSearch">
+                    </div>
+                </div>
+                <div class="header-right">
+                    <button class="icon-btn notification-btn">
+                        <i class="fas fa-bell"></i>
+                        <span class="badge">3</span>
+                    </button>
+                    <button class="icon-btn">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Page Content -->
+            <div class="page-content">
+                <!-- Dashboard Page -->
+                <section id="dashboard-page" class="page active">
+                    <div class="page-header">
+                        <h1>Dashboard</h1>
+                        <p class="subtitle">Welcome back! Here's your overview</p>
+                    </div>
+                    
+                    <!-- Stats Cards -->
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="totalWriters">0</span>
+                                <span class="stat-label">Total Writers</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-tasks"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="activeAssignments">0</span>
+                                <span class="stat-label">Active Assignments</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="pendingPayments">$0</span>
+                                <span class="stat-label">Pending Payments</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="completedThisMonth">0</span>
+                                <span class="stat-label">Completed This Month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Recent Activity -->
+                    <div class="content-grid">
+                        <div class="card recent-assignments">
+                            <div class="card-header">
+                                <h3>Recent Assignments</h3>
+                                <a href="#" class="view-all" data-page="assignments">View All</a>
+                            </div>
+                            <div class="card-body">
+                                <div id="recentAssignmentsList" class="assignments-list">
+                                    <!-- Dynamic content -->
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card top-writers">
+                            <div class="card-header">
+                                <h3>Top Writers</h3>
+                                <a href="#" class="view-all" data-page="writers">View All</a>
+                            </div>
+                            <div class="card-body">
+                                <div id="topWritersList" class="writers-list">
+                                    <!-- Dynamic content -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Writers Page -->
+                <section id="writers-page" class="page">
+                    <div class="page-header">
+                        <div>
+                            <h1>Writers</h1>
+                            <p class="subtitle">Manage your writing team</p>
+                        </div>
+                        <button class="btn btn-primary" id="addWriterBtn">
+                            <i class="fas fa-plus"></i>
+                            Add Writer
+                        </button>
+                    </div>
+
+                    <div class="filters-bar">
+                        <div class="filter-group">
+                            <select id="writerStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="active">Active</option>
+                                <option value="inactive">Inactive</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <input type="text" placeholder="Search writers..." id="writerSearch">
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-container">
+                            <table class="data-table" id="writersTable">
+                                <thead>
+                                    <tr>
+                                        <th>Writer</th>
+                                        <th>Email</th>
+                                        <th>Rate/Word</th>
+                                        <th>Assignments</th>
+                                        <th>Total Owed</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="writersTableBody">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Assignments Page -->
+                <section id="assignments-page" class="page">
+                    <div class="page-header">
+                        <div>
+                            <h1>Assignments</h1>
+                            <p class="subtitle">Track and manage all assignments</p>
+                        </div>
+                        <button class="btn btn-primary" id="addAssignmentBtn">
+                            <i class="fas fa-plus"></i>
+                            New Assignment
+                        </button>
+                    </div>
+
+                    <div class="filters-bar">
+                        <div class="filter-group">
+                            <select id="assignmentStatusFilter">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="revision">Revision</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <select id="assignmentWriterFilter">
+                                <option value="all">All Writers</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <input type="text" placeholder="Search assignments..." id="assignmentSearch">
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="table-container">
+                            <table class="data-table" id="assignmentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Title</th>
+                                        <th>Writer</th>
+                                        <th>Word Count</th>
+                                        <th>Deadline</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Payment</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="assignmentsTableBody">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Payments Page -->
+                <section id="payments-page" class="page">
+                    <div class="page-header">
+                        <div>
+                            <h1>Payments</h1>
+                            <p class="subtitle">Track payments to writers</p>
+                        </div>
+                        <button class="btn btn-primary" id="recordPaymentBtn">
+                            <i class="fas fa-plus"></i>
+                            Record Payment
+                        </button>
+                    </div>
+
+                    <div class="stats-grid small">
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="totalPaid">$0</span>
+                                <span class="stat-label">Total Paid</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="totalPending">$0</span>
+                                <span class="stat-label">Total Pending</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Writer Balances</h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="paymentsTable">
+                                <thead>
+                                    <tr>
+                                        <th>Writer</th>
+                                        <th>Completed Assignments</th>
+                                        <th>Total Earned</th>
+                                        <th>Total Paid</th>
+                                        <th>Balance Owed</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentsTableBody">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="card mt-20">
+                        <div class="card-header">
+                            <h3>Payment History</h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="paymentHistoryTable">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Writer</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                        <th>Reference</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="paymentHistoryBody">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reports Page -->
+                <section id="reports-page" class="page">
+                    <div class="page-header">
+                        <div>
+                            <h1>Reports</h1>
+                            <p class="subtitle">Analytics and insights</p>
+                        </div>
+                        <button class="btn btn-secondary" id="exportReportBtn">
+                            <i class="fas fa-download"></i>
+                            Export Report
+                        </button>
+                    </div>
+
+                    <div class="filters-bar">
+                        <div class="filter-group">
+                            <label>Date Range:</label>
+                            <input type="date" id="reportStartDate">
+                            <span>to</span>
+                            <input type="date" id="reportEndDate">
+                        </div>
+                        <button class="btn btn-primary" id="generateReportBtn">Generate</button>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-icon blue">
+                                <i class="fas fa-file-alt"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="reportTotalAssignments">0</span>
+                                <span class="stat-label">Total Assignments</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon green">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="reportTotalSpent">$0</span>
+                                <span class="stat-label">Total Spent</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon purple">
+                                <i class="fas fa-file-word"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="reportTotalWords">0</span>
+                                <span class="stat-label">Total Words</span>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon orange">
+                                <i class="fas fa-calculator"></i>
+                            </div>
+                            <div class="stat-info">
+                                <span class="stat-value" id="reportAvgRate">$0</span>
+                                <span class="stat-label">Avg Cost/Word</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Writer Performance</h3>
+                        </div>
+                        <div class="table-container">
+                            <table class="data-table" id="reportTable">
+                                <thead>
+                                    <tr>
+                                        <th>Writer</th>
+                                        <th>Assignments</th>
+                                        <th>Words Written</th>
+                                        <th>On-Time Rate</th>
+                                        <th>Total Earned</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="reportTableBody">
+                                    <!-- Dynamic content -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Modals -->
+    <!-- Writer Modal -->
+    <div class="modal" id="writerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="writerModalTitle">Add New Writer</h2>
+                <button class="close-btn" data-close="writerModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="writerForm">
+                <input type="hidden" id="writerId">
+                <div class="form-group">
+                    <label for="writerName">Full Name *</label>
+                    <input type="text" id="writerName" required>
+                </div>
+                <div class="form-group">
+                    <label for="writerEmail">Email Address *</label>
+                    <input type="email" id="writerEmail" required>
+                </div>
+                <div class="form-group">
+                    <label for="writerPhone">Phone Number</label>
+                    <input type="tel" id="writerPhone">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="writerRate">Rate per Word ($) *</label>
+                        <input type="number" id="writerRate" step="0.001" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="writerStatus">Status</label>
+                        <select id="writerStatusSelect">
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="writerNotes">Notes</label>
+                    <textarea id="writerNotes" rows="3"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" data-close="writerModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Writer</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Assignment Modal -->
+    <div class="modal" id="assignmentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="assignmentModalTitle">New Assignment</h2>
+                <button class="close-btn" data-close="assignmentModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="assignmentForm">
+                <input type="hidden" id="assignmentId">
+                <div class="form-group">
+                    <label for="assignmentTitle">Title *</label>
+                    <input type="text" id="assignmentTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="assignmentWriter">Assign to Writer *</label>
+                    <select id="assignmentWriter" required>
+                        <option value="">Select Writer</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assignmentWordCount">Word Count *</label>
+                        <input type="number" id="assignmentWordCount" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="assignmentDeadline">Deadline *</label>
+                        <input type="date" id="assignmentDeadline" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="assignmentRate">Rate Override ($/word)</label>
+                        <input type="number" id="assignmentRate" step="0.001" min="0" placeholder="Leave blank for writer's default">
+                    </div>
+                    <div class="form-group">
+                        <label for="assignmentStatusSelect">Status</label>
+                        <select id="assignmentStatusSelect">
+                            <option value="pending">Pending</option>
+                            <option value="in-progress">In Progress</option>
+                            <option value="completed">Completed</option>
+                            <option value="revision">Revision</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Calculated Amount: <strong id="calculatedAmount">$0.00</strong></label>
+                </div>
+                <div class="form-group">
+                    <label for="assignmentDescription">Description / Instructions</label>
+                    <textarea id="assignmentDescription" rows="4"></textarea>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" data-close="assignmentModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Save Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Payment Modal -->
+    <div class="modal" id="paymentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Record Payment</h2>
+                <button class="close-btn" data-close="paymentModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="paymentForm">
+                <div class="form-group">
+                    <label for="paymentWriter">Writer *</label>
+                    <select id="paymentWriter" required>
+                        <option value="">Select Writer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Balance Owed: <strong id="writerBalance">$0.00</strong></label>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="paymentAmount">Amount *</label>
+                        <input type="number" id="paymentAmount" step="0.01" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="paymentDate">Date *</label>
+                        <input type="date" id="paymentDate" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method</label>
+                    <select id="paymentMethod">
+                        <option value="bank-transfer">Bank Transfer</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="cash">Cash</option>
+                        <option value="check">Check</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="paymentReference">Reference / Transaction ID</label>
+                    <input type="text" id="paymentReference">
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" data-close="paymentModal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Record Payment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content small">
+            <div class="modal-header">
+                <h2>Confirm Action</h2>
+                <button class="close-btn" data-close="confirmModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="confirmMessage">Are you sure you want to proceed?</p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" data-close="confirmModal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script src="app.js"></script>
+</body>
+</html>
