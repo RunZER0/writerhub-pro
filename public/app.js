@@ -1678,8 +1678,11 @@ function renderChatThreads() {
 // Event delegation for chat thread clicks
 function attachChatThreadListeners(container) {
     container.querySelectorAll('.chat-thread').forEach(thread => {
-        thread.addEventListener('click', function() {
+        thread.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
             const chatType = this.dataset.chatType;
+            console.log('Chat thread clicked:', chatType, this.dataset);
             if (chatType === 'direct') {
                 const userId = parseInt(this.dataset.userId);
                 const userName = this.dataset.userName;
@@ -1744,11 +1747,16 @@ function renderWriterChatThreads(data) {
 }
 
 async function openDirectChat(userId, userName) {
+    console.log('openDirectChat called:', userId, userName);
     currentChatType = 'direct';
     currentChatTarget = userId;
     currentChatAssignment = null;
     
-    // Re-render threads to show active state
+    // Show input area immediately
+    const inputArea = document.getElementById('chatInputArea');
+    if (inputArea) inputArea.style.display = 'flex';
+    
+    // Re-render threads to show active state (don't await - let it run in background)
     loadChatThreads();
     
     try {
@@ -1786,11 +1794,16 @@ async function openDirectChat(userId, userName) {
 }
 
 async function openAssignmentChat(assignmentId) {
+    console.log('openAssignmentChat called:', assignmentId);
     currentChatType = 'assignment';
     currentChatTarget = assignmentId;
     currentChatAssignment = assignmentId;
     
-    // Re-render threads
+    // Show input area immediately
+    const inputArea = document.getElementById('chatInputArea');
+    if (inputArea) inputArea.style.display = 'flex';
+    
+    // Re-render threads (don't await)
     loadChatThreads();
     
     try {
