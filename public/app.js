@@ -949,6 +949,7 @@ function renderAssignmentsTable() {
         const writerDeadlineOverdue = a.writer_deadline && new Date(a.writer_deadline) < new Date() && a.status !== 'completed';
         const hasSubmittedAmount = a.submitted_amount && !a.amount_approved;
         const hasExtensionRequest = a.extension_requested;
+        const needsRevision = a.revision_requested;
         
         let amountHtml = `<strong>${formatCurrency(a.amount)}</strong>`;
         if (hasSubmittedAmount && isAdmin()) {
@@ -963,12 +964,17 @@ function renderAssignmentsTable() {
         }
         
         let statusBadge = `<span class="status-badge ${a.status}">${a.status.replace('_', ' ')}</span>`;
+        if (needsRevision) {
+            statusBadge = `<span class="status-badge pending" style="background:var(--warning);color:white;"><i class="fas fa-redo"></i> Needs Revision</span>`;
+        }
         if (hasExtensionRequest && isAdmin()) {
             statusBadge += ` <span class="status-badge pending" title="Extension requested"><i class="fas fa-clock"></i></span>`;
         }
         
+        const highlightRow = hasSubmittedAmount || hasExtensionRequest || needsRevision;
+        
         return `
-            <tr ${hasSubmittedAmount || hasExtensionRequest ? 'style="background:var(--accent-orange-bg)"' : ''}>
+            <tr ${highlightRow ? 'style="background:var(--accent-orange-bg)"' : ''}>
                 <td><strong>${a.title}</strong></td>
                 ${isAdmin() ? `<td>
                     ${a.writer_name ? `
@@ -1075,7 +1081,23 @@ async function viewAssignment(id) {
             `<a href="${link.trim()}" target="_blank" rel="noopener" style="display:block;color:var(--primary);word-break:break-all;">${link.trim()}</a>`
         ).join('') : '';
         
+        // Revision alert
+        const revisionHtml = assignment.revision_requested ? `
+            <div class="revision-alert">
+                <div class="revision-alert-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Revision Requested</strong>
+                    ${assignment.revision_count > 1 ? `<span class="revision-count">(Revision #${assignment.revision_count})</span>` : ''}
+                </div>
+                <div class="revision-reason">${assignment.revision_reason}</div>
+                ${!isAdmin() ? `<button class="btn btn-primary btn-sm" onclick="resubmitWork(${assignment.id})" style="margin-top:0.75rem;">
+                    <i class="fas fa-paper-plane"></i> Resubmit Work
+                </button>` : ''}
+            </div>
+        ` : '';
+        
         let infoHtml = `
+            ${revisionHtml}
             <div style="margin-bottom:1rem;">
                 <strong style="font-size:1.125rem;">${assignment.title}</strong>
                 ${assignment.domain ? `<span class="domain-badge" style="margin-left:0.5rem;">${assignment.domain}</span>` : ''}
@@ -1118,11 +1140,20 @@ async function viewAssignment(id) {
         
         // Show/hide mark completed button
         const markCompletedBtn = document.getElementById('markCompletedBtn');
-        if (!isAdmin() && assignment.status !== 'completed') {
+        if (!isAdmin() && assignment.status !== 'completed' && !assignment.revision_requested) {
             markCompletedBtn.style.display = 'inline-flex';
             markCompletedBtn.onclick = () => markAssignmentCompleted(id);
         } else {
             markCompletedBtn.style.display = 'none';
+        }
+        
+        // Show/hide request revision button for admin
+        const requestRevisionBtn = document.getElementById('requestRevisionBtn');
+        if (isAdmin() && assignment.writer_id && assignment.status === 'completed') {
+            requestRevisionBtn.style.display = 'inline-flex';
+            requestRevisionBtn.onclick = () => openRevisionModal(id, assignment.title);
+        } else if (requestRevisionBtn) {
+            requestRevisionBtn.style.display = 'none';
         }
         
         openModal('assignmentDetailsModal');
@@ -1171,6 +1202,52 @@ async function approveAmount(id) {
     try {
         await api(`/assignments/${id}`, { method: 'PUT', body: { amount_approved: true } });
         showToast('success', 'Approved', 'Amount approved successfully');
+        loadAssignments();
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+// ========================================
+// Revision Workflow
+// ========================================
+function openRevisionModal(id, title) {
+    document.getElementById('revisionAssignmentId').value = id;
+    document.getElementById('revisionAssignmentTitle').textContent = title;
+    document.getElementById('revisionReason').value = '';
+    openModal('revisionModal');
+}
+
+async function submitRevisionRequest(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('revisionAssignmentId').value;
+    const reason = document.getElementById('revisionReason').value.trim();
+    
+    if (!reason) {
+        showToast('error', 'Error', 'Please provide a revision reason');
+        return;
+    }
+    
+    try {
+        await api(`/assignments/${id}/request-revision`, { 
+            method: 'POST', 
+            body: { reason } 
+        });
+        showToast('success', 'Sent', 'Revision request sent to writer');
+        closeModal('revisionModal');
+        closeModal('assignmentDetailsModal');
+        loadAssignments();
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+async function resubmitWork(id) {
+    try {
+        await api(`/assignments/${id}/clear-revision`, { method: 'POST' });
+        showToast('success', 'Resubmitted', 'Work resubmitted for review');
+        closeModal('assignmentDetailsModal');
         loadAssignments();
     } catch (error) {
         showToast('error', 'Error', error.message);

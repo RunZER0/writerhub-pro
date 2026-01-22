@@ -752,7 +752,34 @@
             </div>
             <div class="modal-footer">
                 <button class="btn btn-secondary" data-close="assignmentDetailsModal">Close</button>
+                <button id="requestRevisionBtn" class="btn btn-warning admin-only" style="display:none;"><i class="fas fa-redo"></i> Request Revision</button>
                 <button id="markCompletedBtn" class="btn btn-success writer-only"><i class="fas fa-check"></i> Mark as Completed</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Revision Request Modal (Admin) -->
+    <div id="revisionModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-redo" style="margin-right:0.5rem;color:var(--warning)"></i> Request Revision</h3>
+                <button class="modal-close" data-close="revisionModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);margin-bottom:1rem;">
+                    Request changes for: <strong id="revisionAssignmentTitle"></strong>
+                </p>
+                <form id="revisionForm" onsubmit="submitRevisionRequest(event)">
+                    <input type="hidden" id="revisionAssignmentId">
+                    <div class="form-group">
+                        <label for="revisionReason">What needs to be changed? *</label>
+                        <textarea id="revisionReason" required rows="5" placeholder="Describe the changes needed...&#10;&#10;Be specific about:&#10;• What's wrong&#10;• What you expect&#10;• Any specific sections"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="revisionModal">Cancel</button>
+                <button type="submit" form="revisionForm" class="btn btn-warning"><i class="fas fa-paper-plane"></i> Send Revision Request</button>
             </div>
         </div>
     </div>

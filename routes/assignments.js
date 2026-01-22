@@ -602,6 +602,126 @@ router.put('/:id', authenticate, async (req, res) => {
     }
 });
 
+// Request revision (Admin only)
+router.post('/:id/request-revision', authenticate, isAdmin, async (req, res) => {
+    try {
+        const { reason } = req.body;
+        const assignmentId = req.params.id;
+
+        if (!reason || reason.trim().length === 0) {
+            return res.status(400).json({ error: 'Revision reason is required' });
+        }
+
+        // Get assignment details
+        const assignment = await db.query(
+            'SELECT * FROM assignments WHERE id = $1',
+            [assignmentId]
+        );
+
+        if (assignment.rows.length === 0) {
+            return res.status(404).json({ error: 'Assignment not found' });
+        }
+
+        const a = assignment.rows[0];
+
+        if (!a.writer_id) {
+            return res.status(400).json({ error: 'Assignment has no writer assigned' });
+        }
+
+        // Update assignment with revision request
+        const result = await db.query(`
+            UPDATE assignments 
+            SET revision_requested = TRUE,
+                revision_reason = $1,
+                revision_count = COALESCE(revision_count, 0) + 1,
+                last_revision_at = NOW(),
+                status = 'in_progress'
+            WHERE id = $2
+            RETURNING *
+        `, [reason.trim(), assignmentId]);
+
+        // Create notification for writer
+        await db.query(`
+            INSERT INTO notifications (user_id, title, message, type, link)
+            VALUES ($1, $2, $3, $4, $5)
+        `, [
+            a.writer_id,
+            '⚠️ Revision Requested',
+            `Revision needed for "${a.title}": ${reason.substring(0, 100)}${reason.length > 100 ? '...' : ''}`,
+            'warning',
+            `/assignments`
+        ]);
+
+        // Send push notification
+        sendPushToUser(a.writer_id, '⚠️ Revision Requested', `"${a.title}" needs revisions`, '/assignments');
+        
+        // Send Telegram notification
+        sendTelegramToUser(a.writer_id, 
+            `⚠️ <b>Revision Requested</b>\n\n` +
+            `📋 Job: ${a.title}\n\n` +
+            `📝 Reason:\n${reason}\n\n` +
+            `Please make the requested changes and resubmit.`
+        );
+
+        res.json({ 
+            message: 'Revision requested successfully',
+            assignment: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Request revision error:', error);
+        res.status(500).json({ error: 'Failed to request revision' });
+    }
+});
+
+// Clear revision (when writer resubmits)
+router.post('/:id/clear-revision', authenticate, async (req, res) => {
+    try {
+        const assignmentId = req.params.id;
+
+        // Verify writer owns this assignment
+        const assignment = await db.query(
+            'SELECT * FROM assignments WHERE id = $1',
+            [assignmentId]
+        );
+
+        if (assignment.rows.length === 0) {
+            return res.status(404).json({ error: 'Assignment not found' });
+        }
+
+        const a = assignment.rows[0];
+
+        if (req.user.role !== 'admin' && a.writer_id !== req.user.id) {
+            return res.status(403).json({ error: 'Not authorized' });
+        }
+
+        // Clear revision flag and mark as completed (resubmitted)
+        const result = await db.query(`
+            UPDATE assignments 
+            SET revision_requested = FALSE,
+                status = 'completed'
+            WHERE id = $1
+            RETURNING *
+        `, [assignmentId]);
+
+        // Notify admin about resubmission
+        const admins = await db.query("SELECT id FROM users WHERE role = 'admin'");
+        for (const admin of admins.rows) {
+            await db.query(`
+                INSERT INTO notifications (user_id, title, message, type, link)
+                VALUES ($1, $2, $3, $4, $5)
+            `, [admin.id, '📤 Work Resubmitted', `"${a.title}" has been resubmitted after revision`, 'info', '/assignments']);
+        }
+
+        res.json({ 
+            message: 'Work resubmitted successfully',
+            assignment: result.rows[0]
+        });
+    } catch (error) {
+        console.error('Clear revision error:', error);
+        res.status(500).json({ error: 'Failed to resubmit' });
+    }
+});
+
 // Delete assignment (Admin only)
 router.delete('/:id', authenticate, isAdmin, async (req, res) => {
     try {
