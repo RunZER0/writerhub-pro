@@ -603,6 +603,13 @@ function navigateTo(page) {
     };
     document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
     
+    // Stop chat polling when leaving chat page
+    if (page !== 'chat') {
+        stopChatPolling();
+        currentChatType = null;
+        currentChatTarget = null;
+    }
+    
     // Load specific content
     if (page === 'job-board' && !isAdmin()) loadJobBoard();
     if (page === 'chat') loadChatThreads();
@@ -1680,6 +1687,9 @@ async function openDirectChat(userId, userName) {
         // Auto-scroll
         const messagesContainer = document.getElementById('chatMessages');
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Start real-time polling for this chat
+        startChatPolling();
     } catch (error) {
         console.error('Open direct chat error:', error);
     }
@@ -1712,6 +1722,9 @@ async function openAssignmentChat(assignmentId) {
         // Auto-scroll
         const messagesContainer = document.getElementById('chatMessages');
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        
+        // Start real-time polling for this chat
+        startChatPolling();
     } catch (error) {
         console.error('Open assignment chat error:', error);
     }
@@ -1908,6 +1921,7 @@ async function sendMessage() {
 // Online status polling
 let statusPollInterval = null;
 let chatPollInterval = null;
+let lastMessageCount = 0;
 
 function startStatusPolling() {
     // Update own status to online
@@ -1919,54 +1933,70 @@ function startStatusPolling() {
         // Keep online
         api('/messages/status', { method: 'POST', body: { online: true } }).catch(() => {});
         
-        // Refresh threads to get updated online statuses
+        // Refresh threads to get updated online statuses and unread counts
         if (document.getElementById('chat-page')?.classList.contains('active')) {
             loadChatThreads();
         }
     }, 30000);
-    
-    // Start chat message polling (every 3 seconds when chat is open)
-    startChatPolling();
 }
 
-// Poll for new chat messages
+// Poll for new chat messages - runs every 1.5 seconds for real-time feel
 function startChatPolling() {
+    console.log('🔄 Starting chat polling...');
     if (chatPollInterval) clearInterval(chatPollInterval);
+    lastMessageCount = 0;
     
-    chatPollInterval = setInterval(async () => {
-        if (!currentChatType || !currentChatTarget) return;
-        if (document.visibilityState !== 'visible') return;
+    // Immediate first poll
+    pollChatMessages();
+    
+    chatPollInterval = setInterval(pollChatMessages, 1500); // Poll every 1.5 seconds
+}
+
+async function pollChatMessages() {
+    if (!currentChatType || !currentChatTarget) return;
+    
+    try {
+        let messages;
+        if (currentChatType === 'direct') {
+            messages = await api(`/messages/direct/${currentChatTarget}`);
+        } else if (currentChatType === 'assignment') {
+            messages = await api(`/messages/assignment/${currentChatTarget}`);
+        }
         
-        try {
-            let messages;
-            if (currentChatType === 'direct') {
-                messages = await api(`/messages/direct/${currentChatTarget}`);
-            } else if (currentChatType === 'assignment') {
-                messages = await api(`/messages/assignment/${currentChatTarget}`);
+        if (messages && messages.length !== lastMessageCount) {
+            console.log(`📨 Chat updated: ${lastMessageCount} → ${messages.length} messages`);
+            lastMessageCount = messages.length;
+            
+            const container = document.getElementById('chatMessages');
+            if (!container) return;
+            
+            const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 100;
+            
+            renderChatMessages(messages);
+            
+            // Auto-scroll if user was at bottom or new messages arrived
+            if (wasAtBottom) {
+                container.scrollTop = container.scrollHeight;
             }
             
-            if (messages) {
-                const container = document.getElementById('chatMessages');
-                const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
-                
-                renderChatMessages(messages);
-                
-                // Auto-scroll only if user was at bottom
-                if (wasAtBottom) {
-                    container.scrollTop = container.scrollHeight;
-                }
+            // Play sound for new messages (if not from current user)
+            const lastMsg = messages[messages.length - 1];
+            if (lastMsg && parseInt(lastMsg.sender_id) !== parseInt(currentUser.id)) {
+                playNotificationSound();
             }
-        } catch (e) {
-            console.log('Chat poll error:', e);
         }
-    }, 3000); // Poll every 3 seconds
+    } catch (e) {
+        // Silent fail - don't spam console
+    }
 }
 
 function stopChatPolling() {
+    console.log('⏹️ Stopping chat polling');
     if (chatPollInterval) {
         clearInterval(chatPollInterval);
         chatPollInterval = null;
     }
+    lastMessageCount = 0;
 }
 
 function stopStatusPolling() {
@@ -1980,10 +2010,16 @@ function stopStatusPolling() {
     }
 }
 
-// Update visibility handling for online status
+// Update visibility handling - resume/pause polling when app is foregrounded/backgrounded
 document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
         api('/messages/status', { method: 'POST', body: { online: true } }).catch(() => {});
+        
+        // Resume chat polling if we're in a chat
+        if (currentChatType && currentChatTarget && !chatPollInterval) {
+            console.log('📱 App visible - resuming chat polling');
+            startChatPolling();
+        }
     } else {
         api('/messages/status', { method: 'POST', body: { online: false } }).catch(() => {});
     }
