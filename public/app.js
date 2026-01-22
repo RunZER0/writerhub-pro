@@ -1,5 +1,5 @@
 // ========================================
-// WriterHub Pro - Frontend Application
+// HomeworkHub - Frontend Application
 // ========================================
 
 const API_URL = '/api';

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'writerhub-v1';
+const CACHE_NAME = 'homeworkhub-v1';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -60,7 +60,7 @@ self.addEventListener('fetch', (event) => {
 
 // Push notification event
 self.addEventListener('push', (event) => {
-  let data = { title: 'WriterHub Pro', body: 'New notification', url: '/' };
+  let data = { title: 'HomeworkHub', body: 'New notification', url: '/' };
   
   try {
     if (event.data) {
@@ -75,7 +75,7 @@ self.addEventListener('push', (event) => {
     icon: data.icon || '/icons/icon.svg',
     badge: '/icons/icon.svg',
     vibrate: [200, 100, 200],
-    tag: 'writerhub-notification',
+    tag: 'homeworkhub-notification',
     renotify: true,
     data: {
       url: data.url || '/',

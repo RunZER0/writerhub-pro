@@ -167,8 +167,8 @@ router.post('/webhook', async (req, res) => {
       
       if (text === '/start') {
         await sendTelegramMessage(chatId, 
-          '👋 Welcome to <b>WriterHub Pro</b> notifications!\n\n' +
-          'To link your account, go to WriterHub Pro settings and generate a link code, then send it here.\n\n' +
+          '👋 Welcome to <b>HomeworkHub</b> notifications!\n\n' +
+          'To link your account, go to HomeworkHub settings and generate a link code, then send it here.\n\n' +
           'Commands:\n' +
           '/start - Show this message\n' +
           '/status - Check link status\n' +
@@ -186,8 +186,8 @@ router.post('/webhook', async (req, res) => {
           );
         } else {
           await sendTelegramMessage(chatId, 
-            '❌ Your Telegram is not linked to any WriterHub account.\n\n' +
-            'Generate a link code in WriterHub Pro settings to connect.'
+            '❌ Your Telegram is not linked to any HomeworkHub account.\n\n' +
+            'Generate a link code in HomeworkHub settings to connect.'
           );
         }
       } else if (text === '/unlink') {
@@ -236,7 +236,7 @@ router.post('/webhook', async (req, res) => {
         } else {
           await sendTelegramMessage(chatId, 
             '❌ Invalid or expired code.\n\n' +
-            'Please generate a new code in WriterHub Pro settings.'
+            'Please generate a new code in HomeworkHub settings.'
           );
         }
       } else {

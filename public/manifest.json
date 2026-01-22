@@ -1,6 +1,6 @@
 {
-  "name": "WriterHub Pro",
-  "short_name": "WriterHub",
+  "name": "HomeworkHub",
+  "short_name": "HomeworkHub",
   "description": "Professional Writers Management Platform",
   "start_url": "/",
   "display": "standalone",

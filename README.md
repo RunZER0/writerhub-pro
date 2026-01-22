@@ -1,8 +1,8 @@
-# WriterHub Pro - Writers Management System
+# HomeworkHub - Assignment Management System
 
 A professional, modern web application for managing freelance writers, assignments, and payments.
 
-![WriterHub Pro](https://img.shields.io/badge/WriterHub-Pro-6366f1?style=for-the-badge)
+![HomeworkHub](https://img.shields.io/badge/HomeworkHub-blue?style=for-the-badge)
 
 ## Features
 
