@@ -1907,6 +1907,7 @@ async function sendMessage() {
 
 // Online status polling
 let statusPollInterval = null;
+let chatPollInterval = null;
 
 function startStatusPolling() {
     // Update own status to online
@@ -1923,11 +1924,55 @@ function startStatusPolling() {
             loadChatThreads();
         }
     }, 30000);
+    
+    // Start chat message polling (every 3 seconds when chat is open)
+    startChatPolling();
+}
+
+// Poll for new chat messages
+function startChatPolling() {
+    if (chatPollInterval) clearInterval(chatPollInterval);
+    
+    chatPollInterval = setInterval(async () => {
+        if (!currentChatType || !currentChatTarget) return;
+        if (document.visibilityState !== 'visible') return;
+        
+        try {
+            let messages;
+            if (currentChatType === 'direct') {
+                messages = await api(`/messages/direct/${currentChatTarget}`);
+            } else if (currentChatType === 'assignment') {
+                messages = await api(`/messages/assignment/${currentChatTarget}`);
+            }
+            
+            if (messages) {
+                const container = document.getElementById('chatMessages');
+                const wasAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 50;
+                
+                renderChatMessages(messages);
+                
+                // Auto-scroll only if user was at bottom
+                if (wasAtBottom) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+        } catch (e) {
+            console.log('Chat poll error:', e);
+        }
+    }, 3000); // Poll every 3 seconds
+}
+
+function stopChatPolling() {
+    if (chatPollInterval) {
+        clearInterval(chatPollInterval);
+        chatPollInterval = null;
+    }
 }
 
 function stopStatusPolling() {
     // Set offline
     api('/messages/status', { method: 'POST', body: { online: false } }).catch(() => {});
+    stopChatPolling();
     
     if (statusPollInterval) {
         clearInterval(statusPollInterval);
@@ -2464,4 +2509,51 @@ document.addEventListener('DOMContentLoaded', () => {
     // Poll for new notifications
     setInterval(loadNotifications, 60000);
     setInterval(loadUnreadCount, 30000);
+    
+    // Mobile keyboard handling
+    initMobileKeyboardHandling();
 });
+
+// Mobile keyboard handling for chat
+function initMobileKeyboardHandling() {
+    if (!('visualViewport' in window)) return;
+    
+    const viewport = window.visualViewport;
+    let initialHeight = viewport.height;
+    
+    viewport.addEventListener('resize', () => {
+        const heightDiff = initialHeight - viewport.height;
+        const keyboardOpen = heightDiff > 150; // Keyboard is likely open
+        
+        document.body.classList.toggle('keyboard-open', keyboardOpen);
+        
+        if (keyboardOpen) {
+            // Scroll chat to bottom when keyboard opens
+            const chatMessages = document.getElementById('chatMessages');
+            const miniChatMessages = document.getElementById('miniChatMessages');
+            
+            if (chatMessages) {
+                setTimeout(() => chatMessages.scrollTop = chatMessages.scrollHeight, 100);
+            }
+            if (miniChatMessages) {
+                setTimeout(() => miniChatMessages.scrollTop = miniChatMessages.scrollHeight, 100);
+            }
+        }
+    });
+    
+    // Update initial height on orientation change
+    window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+            initialHeight = viewport.height;
+        }, 300);
+    });
+    
+    // Focus handling for inputs
+    document.querySelectorAll('input[type="text"], textarea').forEach(input => {
+        input.addEventListener('focus', () => {
+            setTimeout(() => {
+                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }, 300);
+        });
+    });
+}
