@@ -5,6 +5,8 @@ const path = require('path');
 const fs = require('fs');
 const { pool } = require('../db');
 const { authenticate } = require('../middleware/auth');
+const { sendPushToUser, sendPushToRole } = require('./push');
+const { sendTelegramToUser, sendTelegramToRole } = require('./telegram');
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, '../uploads');
@@ -120,6 +122,15 @@ router.post('/:assignmentId', authenticate, upload.single('file'), async (req, r
                     `/assignments/${assignmentId}`
                 ]);
             }
+            // Send push and Telegram to all admins
+            sendPushToRole('admin', '📤 Work Submitted', `New submission for "${assignment.rows[0].title}"`, '/assignments');
+            sendTelegramToRole('admin', 
+                `📤 <b>Work Submitted</b>\n\n` +
+                `📋 Job: ${assignment.rows[0].title}\n` +
+                `👤 Writer: ${req.user.name}\n` +
+                `📎 File: ${req.file.originalname}\n\n` +
+                `Review the submission in HomeworkHub.`
+            );
         } else {
             // Notify writer of new instructions
             if (assignment.rows[0].writer_id) {
@@ -230,6 +241,65 @@ router.delete('/:fileId', authenticate, async (req, res) => {
         res.json({ message: 'File deleted successfully' });
     } catch (error) {
         console.error('Delete file error:', error);
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Submit work with links (for Google Docs, etc.)
+router.post('/:assignmentId/submit-links', authenticate, async (req, res) => {
+    try {
+        const { assignmentId } = req.params;
+        const { links, notes } = req.body;
+
+        // Check assignment exists and user is assigned
+        const assignment = await pool.query('SELECT * FROM assignments WHERE id = $1', [assignmentId]);
+        if (assignment.rows.length === 0) {
+            return res.status(404).json({ error: 'Assignment not found' });
+        }
+
+        const a = assignment.rows[0];
+        if (req.user.role === 'writer' && a.writer_id !== req.user.id) {
+            return res.status(403).json({ error: 'You are not assigned to this job' });
+        }
+
+        // Update assignment with submission links
+        await pool.query(`
+            UPDATE assignments 
+            SET submission_links = $1,
+                submission_notes = $2,
+                submitted_at = NOW()
+            WHERE id = $3
+        `, [links, notes, assignmentId]);
+
+        // Notify admins
+        const admins = await pool.query("SELECT id FROM users WHERE role = 'admin'");
+        for (const admin of admins.rows) {
+            await pool.query(`
+                INSERT INTO notifications (user_id, title, message, type, link)
+                VALUES ($1, $2, $3, $4, $5)
+            `, [
+                admin.id,
+                '🔗 Links Submitted',
+                `Writer submitted work links for "${a.title}"`,
+                'info',
+                `/assignments`
+            ]);
+        }
+
+        // Send push and Telegram
+        sendPushToRole('admin', '🔗 Links Submitted', `New submission for "${a.title}"`, '/assignments');
+        sendTelegramToRole('admin', 
+            `🔗 <b>Work Links Submitted</b>\n\n` +
+            `📋 Job: ${a.title}\n` +
+            `👤 Writer: ${req.user.name}\n\n` +
+            `📎 Links:\n${links}\n\n` +
+            `${notes ? `📝 Notes: ${notes}\n\n` : ''}` +
+            `Review the submission in HomeworkHub.`
+        );
+
+        res.json({ message: 'Links submitted successfully' });
+    } catch (error) {
+        console.error('Submit links error:', error);
         res.status(500).json({ error: error.message });
     }
 });

@@ -2738,3 +2738,146 @@ body.role-admin .writer-only-inline {
     }
 }
 
+/* ========================================
+   Submission Links Section (View Assignment)
+   ======================================== */
+.submission-links-section {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: var(--accent-green-bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--accent-green);
+}
+
+.submission-links-section h4 {
+    color: var(--accent-green);
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.submission-link-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--surface);
+    border-radius: 6px;
+    margin-bottom: 0.5rem;
+    word-break: break-all;
+    transition: var(--transition);
+}
+
+.submission-link-item:hover {
+    background: var(--surface-hover);
+}
+
+.submission-link-item a {
+    color: var(--primary);
+    text-decoration: none;
+    flex: 1;
+    font-size: 0.9rem;
+}
+
+.submission-link-item a:hover {
+    text-decoration: underline;
+}
+
+.submission-link-item i {
+    color: var(--accent-green);
+    flex-shrink: 0;
+}
+
+.submission-notes {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    background: var(--surface);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    white-space: pre-wrap;
+}
+
+.submission-notes strong {
+    color: var(--text-primary);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.submission-meta {
+    margin-top: 0.75rem;
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* ========================================
+   Submit Work Modal
+   ======================================== */
+#submitWorkForm .form-group {
+    margin-bottom: 1rem;
+}
+
+#submitWorkForm label {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 0.4rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+#submitWorkForm label i {
+    color: var(--primary);
+    font-size: 0.85rem;
+}
+
+#submitWorkForm textarea,
+#submitWorkForm input[type="file"] {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--background);
+    color: var(--text-primary);
+    font-family: inherit;
+    font-size: 0.9rem;
+    transition: var(--transition);
+}
+
+#submitWorkForm textarea:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px var(--primary-light);
+}
+
+#submitWorkForm input[type="file"] {
+    padding: 0.5rem;
+    cursor: pointer;
+}
+
+.form-helper {
+    display: block;
+    margin-top: 0.3rem;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.submit-work-tip {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    background: var(--accent-blue-bg);
+    border-radius: var(--radius);
+    font-size: 0.85rem;
+    color: var(--accent-blue);
+}
+
+.submit-work-tip i {
+    flex-shrink: 0;
+}

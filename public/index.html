@@ -784,6 +784,56 @@
         </div>
     </div>
 
+    <!-- Submit Work Modal (Writer) -->
+    <div id="submitWorkModal" class="modal">
+        <div class="modal-content" style="max-width: 550px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-paper-plane" style="margin-right:0.5rem;color:var(--success)"></i> Submit Work</h3>
+                <button class="modal-close" data-close="submitWorkModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="color:var(--text-secondary);margin-bottom:1rem;">
+                    Submitting work for: <strong id="submitWorkTitle"></strong>
+                </p>
+                <form id="submitWorkForm" onsubmit="submitWork(event)">
+                    <input type="hidden" id="submitWorkAssignmentId">
+                    
+                    <div class="form-group">
+                        <label for="submitWorkLinks">
+                            <i class="fas fa-link"></i> Work Links (Google Docs, etc.)
+                        </label>
+                        <textarea id="submitWorkLinks" rows="3" placeholder="Paste your Google Doc link(s) here...&#10;&#10;One link per line if multiple"></textarea>
+                        <span class="form-helper">Share links with "Anyone with the link can view"</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="submitWorkFile">
+                            <i class="fas fa-upload"></i> Upload File (optional)
+                        </label>
+                        <input type="file" id="submitWorkFile" accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png,.gif">
+                        <span class="form-helper">PDF, DOC, DOCX, TXT, or images (max 10MB)</span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="submitWorkNotes">
+                            <i class="fas fa-sticky-note"></i> Notes (optional)
+                        </label>
+                        <textarea id="submitWorkNotes" rows="2" placeholder="Any additional notes for admin..."></textarea>
+                    </div>
+                </form>
+                
+                <div class="submit-work-tip">
+                    <i class="fas fa-info-circle"></i>
+                    <span>Admin will be notified immediately when you submit.</span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="submitWorkModal">Cancel</button>
+                <button type="submit" form="submitWorkForm" class="btn btn-success"><i class="fas fa-check"></i> Submit Work</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Extension Request Modal (Writer) -->
     <div id="extensionModal" class="modal">
         <div class="modal-content" style="max-width: 450px;">

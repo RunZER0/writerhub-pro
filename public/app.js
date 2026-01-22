@@ -1114,6 +1114,26 @@ async function viewAssignment(id) {
             ${assignment.description ? `<div style="margin-bottom:1rem;"><span style="color:var(--text-muted);font-size:0.75rem;">Description</span><p style="margin-top:0.25rem;">${assignment.description}</p></div>` : ''}
         `;
         
+        // Add submission links section for admin
+        const submissionLinksHtml = assignment.submission_links ? assignment.submission_links.split('\n').filter(l => l.trim()).map(link => 
+            `<a href="${link.trim()}" target="_blank" rel="noopener" class="submission-link-item">
+                <i class="fas fa-external-link-alt"></i> ${link.trim()}
+            </a>`
+        ).join('') : '';
+        
+        if (submissionLinksHtml || assignment.submission_notes) {
+            infoHtml += `
+                <div class="submission-links-section">
+                    <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.5rem;">
+                        <i class="fas fa-link"></i> Submitted Work Links
+                    </div>
+                    ${submissionLinksHtml ? `<div class="submission-links-list">${submissionLinksHtml}</div>` : ''}
+                    ${assignment.submission_notes ? `<div class="submission-notes"><strong>Notes:</strong> ${assignment.submission_notes}</div>` : ''}
+                    ${assignment.submitted_at ? `<div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.5rem;">Submitted ${formatTimeAgo(assignment.submitted_at)}</div>` : ''}
+                </div>
+            `;
+        }
+        
         document.getElementById('assignmentDetailsTitle').textContent = assignment.title;
         document.getElementById('assignmentDetailsInfo').innerHTML = infoHtml;
         
@@ -1186,11 +1206,70 @@ async function downloadFile(fileId) {
     window.open(`${API_URL}/files/download/${fileId}?token=${token}`, '_blank');
 }
 
-async function markAssignmentCompleted(id) {
+// Open submission modal instead of direct marking
+function markAssignmentCompleted(id) {
+    const assignment = assignments.find(a => a.id === id);
+    if (!assignment) return;
+    
+    document.getElementById('submitWorkAssignmentId').value = id;
+    document.getElementById('submitWorkTitle').textContent = assignment.title;
+    document.getElementById('submitWorkLinks').value = assignment.submission_links || '';
+    document.getElementById('submitWorkNotes').value = assignment.submission_notes || '';
+    document.getElementById('submitWorkFile').value = '';
+    
+    closeModal('assignmentDetailsModal');
+    openModal('submitWorkModal');
+}
+
+async function submitWork(e) {
+    e.preventDefault();
+    
+    const id = document.getElementById('submitWorkAssignmentId').value;
+    const links = document.getElementById('submitWorkLinks').value.trim();
+    const notes = document.getElementById('submitWorkNotes').value.trim();
+    const fileInput = document.getElementById('submitWorkFile');
+    
+    if (!links && !fileInput.files.length) {
+        showToast('error', 'Error', 'Please provide at least a link or file');
+        return;
+    }
+    
     try {
-        await api(`/assignments/${id}`, { method: 'PUT', body: { status: 'completed' } });
-        showToast('success', 'Completed', 'Job marked as completed');
-        closeModal('assignmentDetailsModal');
+        // Upload file if provided
+        if (fileInput.files.length > 0) {
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+            formData.append('upload_type', 'submission');
+            
+            const token = localStorage.getItem('token');
+            const uploadRes = await fetch(`${API_URL}/files/${id}`, {
+                method: 'POST',
+                headers: { 'Authorization': `Bearer ${token}` },
+                body: formData
+            });
+            
+            if (!uploadRes.ok) {
+                const err = await uploadRes.json();
+                throw new Error(err.error || 'File upload failed');
+            }
+        }
+        
+        // Submit links if provided
+        if (links) {
+            await api(`/files/${id}/submit-links`, { 
+                method: 'POST', 
+                body: { links, notes } 
+            });
+        }
+        
+        // Mark as completed
+        await api(`/assignments/${id}`, { 
+            method: 'PUT', 
+            body: { status: 'completed' } 
+        });
+        
+        showToast('success', 'Submitted', 'Work submitted successfully! Admin has been notified.');
+        closeModal('submitWorkModal');
         loadAssignments();
         loadDashboard();
     } catch (error) {
