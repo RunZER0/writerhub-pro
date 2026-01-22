@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
 const crypto = require('crypto');
+const { authenticate } = require('../middleware/auth');
 
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}`;
@@ -92,7 +93,7 @@ async function sendTelegramToDomain(domain, message) {
 }
 
 // Generate a link code for connecting Telegram
-router.post('/generate-link-code', async (req, res) => {
+router.post('/generate-link-code', authenticate, async (req, res) => {
   try {
     const userId = req.user.id;
     
@@ -123,7 +124,7 @@ router.post('/generate-link-code', async (req, res) => {
 });
 
 // Check if user has Telegram linked
-router.get('/status', async (req, res) => {
+router.get('/status', authenticate, async (req, res) => {
   try {
     const result = await pool.query(
       'SELECT telegram_chat_id, telegram_username, telegram_linked_at FROM users WHERE id = $1',
@@ -142,7 +143,7 @@ router.get('/status', async (req, res) => {
 });
 
 // Unlink Telegram
-router.post('/unlink', async (req, res) => {
+router.post('/unlink', authenticate, async (req, res) => {
   try {
     await pool.query(
       'UPDATE users SET telegram_chat_id = NULL, telegram_username = NULL, telegram_linked_at = NULL WHERE id = $1',
