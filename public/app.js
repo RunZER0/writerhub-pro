@@ -201,8 +201,9 @@ function urlBase64ToUint8Array(base64String) {
 async function checkTelegramStatus() {
     try {
         const response = await fetch('/api/telegram/status', {
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
+        if (!response.ok) return { linked: false };
         return await response.json();
     } catch (error) {
         console.error('Telegram status error:', error);
@@ -251,8 +252,17 @@ async function generateTelegramCode() {
     try {
         const response = await fetch('/api/telegram/generate-link-code', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 
+                'Authorization': `Bearer ${localStorage.getItem('token')}`,
+                'Content-Type': 'application/json'
+            }
         });
+        
+        if (!response.ok) {
+            const err = await response.json();
+            throw new Error(err.error || 'Server error');
+        }
+        
         const data = await response.json();
         
         if (data.code) {
@@ -283,7 +293,8 @@ async function generateTelegramCode() {
             document.getElementById('refreshTelegramBtn')?.addEventListener('click', showTelegramModal);
         }
     } catch (error) {
-        body.innerHTML = `<div class="telegram-status" style="color:var(--danger)"><i class="fas fa-exclamation-circle"></i> Failed to generate code</div>`;
+        console.error('Generate code error:', error);
+        body.innerHTML = `<div class="telegram-status" style="color:var(--danger)"><i class="fas fa-exclamation-circle"></i> ${error.message || 'Failed to generate code'}</div>`;
     }
 }
 
@@ -293,15 +304,15 @@ async function unlinkTelegram() {
     try {
         const response = await fetch('/api/telegram/unlink', {
             method: 'POST',
-            headers: { 'Authorization': `Bearer ${token}` }
+            headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });
         
         if (response.ok) {
-            showToast('Telegram unlinked successfully', 'success');
+            showToast('success', 'Unlinked', 'Telegram unlinked successfully');
             showTelegramModal(); // Refresh modal
         }
     } catch (error) {
-        showToast('Failed to unlink Telegram', 'error');
+        showToast('error', 'Error', 'Failed to unlink Telegram');
     }
 }
 
