@@ -4,6 +4,16 @@
 
 const API_URL = '/api';
 
+// Handle messages from service worker (e.g., notification clicks)
+if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'NAVIGATE') {
+            console.log('📍 SW Navigation request:', event.data.url);
+            navigateToNotificationLink(event.data.url);
+        }
+    });
+}
+
 // State
 let currentUser = null;
 let writers = [];
@@ -723,7 +733,17 @@ function navigateTo(page) {
     
     // Load specific content
     if (page === 'job-board' && !isAdmin()) loadJobBoard();
-    if (page === 'chat') loadChatThreads();
+    if (page === 'chat') {
+        loadChatThreads();
+        // Auto-load writers list for admin to start new conversations
+        if (isAdmin()) {
+            loadWritersForChat();
+            const writersList = document.getElementById('writersChatList');
+            if (writersList) writersList.style.display = 'block';
+            const toggleBtn = document.getElementById('toggleWritersListBtn');
+            if (toggleBtn) toggleBtn.classList.add('expanded');
+        }
+    }
     if (page === 'accounting' && isAdmin()) loadAccounting();
     
     // Close sidebar on mobile
@@ -2313,6 +2333,12 @@ document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'visible') {
         api('/messages/status', { method: 'POST', body: { online: true } }).catch(() => {});
         
+        // Refresh chat threads when app becomes visible (to show new messages)
+        if (document.getElementById('chat-page')?.classList.contains('active')) {
+            console.log('📱 App visible - refreshing chat threads');
+            loadChatThreads();
+        }
+        
         // Resume chat polling if we're in a chat
         if (currentChatType && currentChatTarget && !chatPollInterval) {
             console.log('📱 App visible - resuming chat polling');
@@ -2556,7 +2582,7 @@ function renderNotifications() {
     }
 
     container.innerHTML = notifications.slice(0, 20).map(n => `
-        <div class="notification-item ${n.read ? '' : 'unread'}" onclick="markNotificationRead(${n.id})">
+        <div class="notification-item ${n.read ? '' : 'unread'}" onclick="handleNotificationClick(${n.id}, '${escapeHtml(n.link || '')}')" data-link="${escapeHtml(n.link || '')}">
             <div class="notification-icon ${n.type}">
                 <i class="fas fa-${n.type === 'error' ? 'exclamation-circle' : n.type === 'success' ? 'check-circle' : n.type === 'warning' ? 'exclamation-triangle' : 'bell'}"></i>
             </div>
@@ -2589,6 +2615,55 @@ async function markNotificationRead(id) {
         updateNotificationBadge();
     } catch (error) {
         console.error('Mark read error:', error);
+    }
+}
+
+// Handle notification click - mark read and navigate to link
+async function handleNotificationClick(id, link) {
+    await markNotificationRead(id);
+    
+    // Close notification dropdown
+    const dropdown = document.getElementById('notificationDropdown');
+    if (dropdown) dropdown.style.display = 'none';
+    
+    if (link) {
+        navigateToNotificationLink(link);
+    }
+}
+
+// Navigate to notification link (handles internal routes)
+function navigateToNotificationLink(link) {
+    if (!link) return;
+    
+    // Handle chat links like /chat/123 or /chat/direct/123
+    if (link.startsWith('/chat/')) {
+        const parts = link.split('/');
+        if (parts[2] === 'direct' && parts[3]) {
+            // Direct chat: /chat/direct/{userId}
+            const userId = parseInt(parts[3]);
+            navigate('chat');
+            setTimeout(() => {
+                // Find and open direct chat with user
+                api(`/writers/${userId}`).then(user => {
+                    if (user) openDirectChat(userId, user.name);
+                }).catch(() => {
+                    // Try to find user in existing threads
+                    loadChatThreads();
+                });
+            }, 300);
+        } else if (parts[2]) {
+            // Assignment chat: /chat/{assignmentId}
+            const assignmentId = parseInt(parts[2]);
+            navigate('chat');
+            setTimeout(() => openAssignmentChat(assignmentId), 300);
+        }
+    } else if (link.startsWith('/')) {
+        // Other internal routes - extract page name
+        const page = link.replace('/', '').split('/')[0] || 'dashboard';
+        const validPages = ['dashboard', 'job-board', 'writers', 'assignments', 'chat', 'payments', 'reports', 'accounting'];
+        if (validPages.includes(page)) {
+            navigate(page);
+        }
     }
 }
 

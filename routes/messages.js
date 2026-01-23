@@ -407,6 +407,9 @@ router.post('/direct/:userId', authenticate, async (req, res) => {
             `/chat/direct/${req.user.id}`
         ]);
 
+        // Send push notification for direct message
+        sendPushToUser(userId, '💬 New Message', `${req.user.name}: ${message.trim().substring(0, 50)}${message.length > 50 ? '...' : ''}`, `/chat/direct/${req.user.id}`);
+
         // Get full message with sender info
         const fullMessage = await pool.query(`
             SELECT m.*, u.name as sender_name, u.role as sender_role

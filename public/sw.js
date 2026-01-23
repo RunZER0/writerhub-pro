@@ -111,17 +111,23 @@ self.addEventListener('notificationclick', (event) => {
   
   if (event.action === 'close') return;
   
+  // Get the URL from notification data
+  const urlToOpen = event.notification.data?.url || '/';
+  
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Focus existing window if open
+      // Focus existing window and navigate to the URL
       for (const client of clientList) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
+          // Post message to navigate
+          client.postMessage({ type: 'NAVIGATE', url: urlToOpen });
           return client.focus();
         }
       }
-      // Open new window if not
+      // Open new window with the URL if not
       if (clients.openWindow) {
-        return clients.openWindow('/');
+        const fullUrl = new URL(urlToOpen, self.location.origin).href;
+        return clients.openWindow(fullUrl);
       }
     })
   );
