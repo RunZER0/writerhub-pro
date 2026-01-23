@@ -48,7 +48,8 @@ router.post('/submit', upload.array('files', 5), async (req, res) => {
             links,
             client_name,
             client_email,
-            client_phone
+            client_phone,
+            referral_code
         } = req.body;
 
         // Validate required fields
@@ -60,7 +61,7 @@ router.post('/submit', upload.array('files', 5), async (req, res) => {
         const wordCount = Math.round((parseInt(word_count_min) + parseInt(word_count_max)) / 2) || parseInt(word_count_min) || 275;
 
         // Format client info for description (include word count range here)
-        const clientInfo = `\n\n--- CLIENT INFO ---\nName: ${client_name}\nEmail: ${client_email}${client_phone ? `\nPhone: ${client_phone}` : ''}\nWord Count: ${word_count_min}-${word_count_max}`;
+        const clientInfo = `\n\n--- CLIENT INFO ---\nName: ${client_name}\nEmail: ${client_email}${client_phone ? `\nPhone: ${client_phone}` : ''}\nWord Count: ${word_count_min}-${word_count_max}${referral_code ? `\nReferred by: ${referral_code}` : ''}`;
         
         // Format links if provided
         const linksInfo = links ? `\n\n--- REFERENCE LINKS ---\n${links}` : '';
@@ -73,13 +74,33 @@ router.post('/submit', upload.array('files', 5), async (req, res) => {
 
         // Insert assignment into database (rate and amount to be set by admin later)
         const result = await pool.query(
-            `INSERT INTO assignments (title, description, word_count, deadline, domain, files, status, created_at, client_source, rate, amount)
-             VALUES ($1, $2, $3, $4, $5, $6, 'pending', NOW(), 'client_portal', 0, 0)
+            `INSERT INTO assignments (title, description, word_count, deadline, domain, files, status, created_at, client_source, rate, amount, referral_code)
+             VALUES ($1, $2, $3, $4, $5, $6, 'pending', NOW(), 'client_portal', 0, 0, $7)
              RETURNING id`,
-            [title, fullDescription, wordCount, deadline, domain, filePaths]
+            [title, fullDescription, wordCount, deadline, domain, filePaths, referral_code || null]
         );
 
         const assignmentId = result.rows[0].id;
+
+        // Track referral if code provided
+        if (referral_code) {
+            try {
+                const fetch = require('node-fetch');
+                await fetch(`${req.protocol}://${req.get('host')}/api/referrals/track`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        referralCode: referral_code,
+                        referredEmail: client_email,
+                        referredName: client_name,
+                        assignmentId: assignmentId
+                    })
+                });
+            } catch (refError) {
+                console.error('Error tracking referral:', refError);
+                // Don't fail the submission if referral tracking fails
+            }
+        }
 
         // Notify all admins
         await notifyAdminsNewAssignment(assignmentId, title, domain, client_name, client_email);

@@ -109,6 +109,10 @@
                     <i class="fas fa-calculator"></i>
                     <span>Accounting</span>
                 </a>
+                <a class="nav-item admin-only" data-page="referrals">
+                    <i class="fas fa-gift"></i>
+                    <span>Referrals</span>
+                </a>
             </nav>
 
             <div class="user-section">
@@ -674,6 +678,99 @@
                                 </thead>
                                 <tbody id="accountingTableBody">
                                     <tr><td colspan="8" class="empty-state">No finance records found</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Referrals Page -->
+                <section id="referrals-page" class="page admin-only">
+                    <div class="page-header">
+                        <h2>Client Referrals</h2>
+                    </div>
+                    
+                    <!-- Summary Cards -->
+                    <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Total Referral Codes</h3>
+                                <div class="stat-value" id="refTotalCodes">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon success">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Total Referrals</h3>
+                                <div class="stat-value" id="refTotalReferrals">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Converted</h3>
+                                <div class="stat-value" id="refConverted">0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Credits Issued</h3>
+                                <div class="stat-value" id="refCreditsIssued">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Referrers -->
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div class="card-header">
+                            <h3><i class="fas fa-trophy" style="color: #ffd700;"></i> Top Referrers</h3>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Rank</th>
+                                        <th>Client</th>
+                                        <th>Code</th>
+                                        <th>Referrals</th>
+                                        <th>Credits Earned</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topReferrersTable">
+                                    <tr><td colspan="5" class="empty-state">No referrers yet</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recent Referrals -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><i class="fas fa-clock"></i> Recent Referrals</h3>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Referred By</th>
+                                        <th>New Client</th>
+                                        <th>Status</th>
+                                        <th>Credit</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recentReferralsTable">
+                                    <tr><td colspan="5" class="empty-state">No referrals yet</td></tr>
                                 </tbody>
                             </table>
                         </div>

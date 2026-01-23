@@ -720,7 +720,8 @@ function navigateTo(page) {
         'chat': 'Messages',
         'payments': 'Payments',
         'reports': 'Reports',
-        'accounting': 'Accounting'
+        'accounting': 'Accounting',
+        'referrals': 'Client Referrals'
     };
     document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
     
@@ -745,6 +746,7 @@ function navigateTo(page) {
         }
     }
     if (page === 'accounting' && isAdmin()) loadAccounting();
+    if (page === 'referrals' && isAdmin()) loadReferrals();
     
     // Close sidebar on mobile
     document.querySelector('.sidebar').classList.remove('active');
@@ -2918,6 +2920,73 @@ async function showUntrackedModal() {
     } catch (error) {
         console.error('Load untracked error:', error);
         showToast('error', 'Failed to load untracked assignments');
+    }
+}
+
+// ========================================
+// Referrals Functions
+// ========================================
+async function loadReferrals() {
+    if (!isAdmin()) return;
+    
+    try {
+        const data = await api('/referrals/admin/overview');
+        
+        // Update summary cards
+        document.getElementById('refTotalCodes').textContent = data.stats.total_codes || 0;
+        document.getElementById('refTotalReferrals').textContent = data.stats.total_referrals || 0;
+        document.getElementById('refConverted').textContent = data.stats.converted_referrals || 0;
+        document.getElementById('refCreditsIssued').textContent = formatCurrency(data.stats.total_credits_issued || 0);
+        
+        // Render top referrers
+        const topReferrersTable = document.getElementById('topReferrersTable');
+        if (data.topReferrers && data.topReferrers.length > 0) {
+            topReferrersTable.innerHTML = data.topReferrers.map((r, index) => {
+                const medalIcon = index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : `#${index + 1}`;
+                return `
+                    <tr>
+                        <td style="font-size: 1.2rem; text-align: center;">${medalIcon}</td>
+                        <td>
+                            <div style="font-weight: 500;">${escapeHtml(r.client_name)}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(r.client_email)}</div>
+                        </td>
+                        <td><code style="background: rgba(99, 102, 241, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px;">${escapeHtml(r.code)}</code></td>
+                        <td><span class="badge success">${r.total_referrals}</span></td>
+                        <td style="color: #10b981; font-weight: 500;">${formatCurrency(r.total_credits_earned || 0)}</td>
+                    </tr>
+                `;
+            }).join('');
+        } else {
+            topReferrersTable.innerHTML = '<tr><td colspan="5" class="empty-state">No referrers yet</td></tr>';
+        }
+        
+        // Render recent referrals
+        const recentReferralsTable = document.getElementById('recentReferralsTable');
+        if (data.recentReferrals && data.recentReferrals.length > 0) {
+            recentReferralsTable.innerHTML = data.recentReferrals.map(r => {
+                const statusBadge = r.status === 'converted' ? 'success' : r.status === 'pending' ? 'warning' : '';
+                return `
+                    <tr>
+                        <td>${formatDate(r.created_at)}</td>
+                        <td>
+                            <div style="font-weight: 500;">${escapeHtml(r.referrer_name)}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Code: ${escapeHtml(r.referral_code)}</div>
+                        </td>
+                        <td>
+                            <div style="font-weight: 500;">${escapeHtml(r.referred_name || 'Unknown')}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(r.referred_email)}</div>
+                        </td>
+                        <td><span class="badge ${statusBadge}">${r.status}</span></td>
+                        <td>${r.credit_amount ? formatCurrency(r.credit_amount) : '-'}</td>
+                    </tr>
+                `;
+            }).join('');
+        } else {
+            recentReferralsTable.innerHTML = '<tr><td colspan="5" class="empty-state">No referrals yet</td></tr>';
+        }
+    } catch (error) {
+        console.error('Load referrals error:', error);
+        showToast('error', 'Failed to load referral data');
     }
 }
 

@@ -15,6 +15,7 @@ const pushRoutes = require('./routes/push');
 const telegramRoutes = require('./routes/telegram');
 const clientRoutes = require('./routes/client');
 const accountingRoutes = require('./routes/accounting');
+const referralsRoutes = require('./routes/referrals');
 
 const app = express();
 
@@ -29,6 +30,11 @@ app.get('/', (req, res) => {
 
 // Serve client portal
 app.get('/client', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'client.html'));
+});
+
+// Serve client portal with referral code (alias for /client)
+app.get('/order', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'client.html'));
 });
 
@@ -54,6 +60,7 @@ app.use('/api/telegram', telegramRoutes);
 app.use('/api/telegram/webhook', telegramRoutes); // Public webhook endpoint
 app.use('/api/client', clientRoutes);
 app.use('/api/accounting', accountingRoutes);
+app.use('/api/referrals', referralsRoutes);
 
 // Serve frontend for all other routes (SPA fallback)
 app.get('*', (req, res) => {
