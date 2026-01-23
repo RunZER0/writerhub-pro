@@ -2424,8 +2424,8 @@ async function changePassword(e) {
     }
     
     try {
-        await api('/auth/change-password', {
-            method: 'POST',
+        await api('/auth/password', {
+            method: 'PUT',
             body: { currentPassword, newPassword }
         });
         
