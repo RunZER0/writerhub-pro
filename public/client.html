@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Submit Assignment - HomeworkHub</title>
+    <title>Submit Assignment - HomeworkPal</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -700,7 +700,7 @@
     <nav>
         <a href="/" class="logo">
             <i class="fas fa-graduation-cap"></i>
-            HomeworkHub
+            HomeworkPal
         </a>
         <div class="nav-links">
             <a href="/" class="btn btn-ghost"><i class="fas fa-home"></i> Home</a>
@@ -1024,7 +1024,7 @@
                 </div>
                 <h2>Assignment Submitted!</h2>
                 <p>We've received your assignment and will get started right away. You'll receive updates via email.</p>
-                <div class="order-id" id="orderId">HH-000000</div>
+                <div class="order-id" id="orderId">HP-000000</div>
                 <p style="font-size: 0.85rem;">Please save this order ID for reference</p>
                 <div style="margin-top: 2rem; display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
                     <a href="/client" class="btn btn-primary">
@@ -1210,7 +1210,7 @@
                 document.getElementById('loadingState').classList.remove('active');
 
                 if (response.ok) {
-                    document.getElementById('orderId').textContent = `HH-${result.assignment_id.toString().padStart(6, '0')}`;
+                    document.getElementById('orderId').textContent = `HP-${result.assignment_id.toString().padStart(6, '0')}`;
                     document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
                     document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
                     document.getElementById('success-tab').classList.add('active');

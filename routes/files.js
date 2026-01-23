@@ -129,7 +129,7 @@ router.post('/:assignmentId', authenticate, upload.single('file'), async (req, r
                 `📋 Job: ${assignment.rows[0].title}\n` +
                 `👤 Writer: ${req.user.name}\n` +
                 `📎 File: ${req.file.originalname}\n\n` +
-                `Review the submission in HomeworkHub.`
+                `Review the submission in HomeworkPal.`
             );
         } else {
             // Notify writer of new instructions
@@ -294,7 +294,7 @@ router.post('/:assignmentId/submit-links', authenticate, async (req, res) => {
             `👤 Writer: ${req.user.name}\n\n` +
             `📎 Links:\n${links}\n\n` +
             `${notes ? `📝 Notes: ${notes}\n\n` : ''}` +
-            `Review the submission in HomeworkHub.`
+            `Review the submission in HomeworkPal.`
         );
 
         res.json({ message: 'Links submitted successfully' });

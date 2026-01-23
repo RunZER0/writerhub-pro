@@ -466,7 +466,7 @@ router.post('/', authenticate, isAdmin, async (req, res) => {
             // Send push notification to domain writers
             sendPushToDomain(domain, '🆕 New Job Available', `${domain} job: ${title}`, '/job-board');
             // Send Telegram notification to domain writers
-            sendTelegramToDomain(domain, `🆕 <b>New Job Available!</b>\n\n📋 ${title}\n🏷️ Domain: ${domain}\n\nOpen HomeworkHub to pick this job.`);
+            sendTelegramToDomain(domain, `🆕 <b>New Job Available!</b>\n\n📋 ${title}\n🏷️ Domain: ${domain}\n\nOpen HomeworkPal to pick this job.`);
         } else {
             // Notify all active writers
             const allWriters = await db.query(`
@@ -482,7 +482,7 @@ router.post('/', authenticate, isAdmin, async (req, res) => {
             // Send push notification to all writers
             sendPushToDomain(null, '🆕 New Job Available', title, '/job-board');
             // Send Telegram notification to all writers
-            sendTelegramToDomain(null, `🆕 <b>New Job Available!</b>\n\n📋 ${title}\n\nOpen HomeworkHub to pick this job.`);
+            sendTelegramToDomain(null, `🆕 <b>New Job Available!</b>\n\n📋 ${title}\n\nOpen HomeworkPal to pick this job.`);
         }
 
         res.status(201).json(assignment);

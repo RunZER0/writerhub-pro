@@ -24,7 +24,7 @@ const sendEmail = async (to, subject, html) => {
         const transporter = createTransporter();
         
         const mailOptions = {
-            from: `"HomeworkHub" <${process.env.EMAIL_USER}>`,
+            from: `"HomeworkPal" <${process.env.EMAIL_USER}>`,
             to,
             subject,
             html
@@ -46,7 +46,7 @@ const emailTemplates = {
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 30px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">📚 HomeworkHub</h1>
+                    <h1 style="color: white; margin: 0;">📚 HomeworkPal</h1>
                 </div>
                 <div style="padding: 30px; background: #f8fafc;">
                     <h2 style="color: #1e293b;">Hello ${writerName}!</h2>
@@ -77,7 +77,7 @@ const emailTemplates = {
                     </a>
                 </div>
                 <div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 14px;">
-                    <p>HomeworkHub - Assignment Management System</p>
+                    <p>HomeworkPal - Assignment Management System</p>
                 </div>
             </div>
         `
@@ -107,18 +107,18 @@ const emailTemplates = {
                     </a>
                 </div>
                 <div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 14px;">
-                    <p>HomeworkHub - Assignment Management System</p>
+                    <p>HomeworkPal - Assignment Management System</p>
                 </div>
             </div>
         `
     }),
 
     welcomeWriter: (writerName, email, tempPassword) => ({
-        subject: 'Welcome to HomeworkHub!',
+        subject: 'Welcome to HomeworkPal!',
         html: `
             <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                 <div style="background: linear-gradient(135deg, #6366f1, #8b5cf6); padding: 30px; text-align: center;">
-                    <h1 style="color: white; margin: 0;">📚 Welcome to HomeworkHub!</h1>
+                    <h1 style="color: white; margin: 0;">📚 Welcome to HomeworkPal!</h1>
                 </div>
                 <div style="padding: 30px; background: #f8fafc;">
                     <h2 style="color: #1e293b;">Hello ${writerName}!</h2>
@@ -145,7 +145,7 @@ const emailTemplates = {
                     </a>
                 </div>
                 <div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 14px;">
-                    <p>HomeworkHub - Assignment Management System</p>
+                    <p>HomeworkPal - Assignment Management System</p>
                 </div>
             </div>
         `

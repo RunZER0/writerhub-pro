@@ -1,6 +1,6 @@
 {
-  "name": "HomeworkHub",
-  "short_name": "HomeworkHub",
+  "name": "HomeworkPal",
+  "short_name": "HomeworkPal",
   "description": "Professional Writers Management Platform",
   "start_url": "/",
   "display": "standalone",

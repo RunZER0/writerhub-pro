@@ -122,7 +122,7 @@ async function runMigrations() {
 }
 
 app.listen(PORT, async () => {
-    console.log(`🚀 HomeworkHub running on port ${PORT}`);
+    console.log(`🚀 HomeworkPal running on port ${PORT}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
     await runMigrations();
 });

@@ -1,5 +1,5 @@
 // ========================================
-// HomeworkHub - Frontend Application
+// HomeworkPal - Frontend Application
 // ========================================
 
 const API_URL = '/api';

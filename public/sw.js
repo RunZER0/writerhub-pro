@@ -1,4 +1,4 @@
-const CACHE_NAME = 'homeworkhub-v2';
+const CACHE_NAME = 'homeworkpal-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -68,7 +68,7 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
   console.log('[SW] Push received!', event);
   
-  let data = { title: 'HomeworkHub', body: 'New notification', url: '/' };
+  let data = { title: 'HomeworkPal', body: 'New notification', url: '/' };
   
   try {
     if (event.data) {
@@ -85,7 +85,7 @@ self.addEventListener('push', (event) => {
     icon: data.icon || '/icons/icon.svg',
     badge: '/icons/icon.svg',
     vibrate: [200, 100, 200],
-    tag: data.tag || 'homeworkhub-notification-' + Date.now(),
+    tag: data.tag || 'homeworkpal-notification-' + Date.now(),
     renotify: true,
     requireInteraction: true, // Keep notification visible until user interacts
     data: {

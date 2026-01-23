@@ -1,8 +1,8 @@
-# HomeworkHub - Assignment Management System
+# HomeworkPal - Assignment Management System
 
 A professional, modern web application for managing freelance writers, assignments, and payments.
 
-![HomeworkHub](https://img.shields.io/badge/HomeworkHub-blue?style=for-the-badge)
+![HomeworkPal](https://img.shields.io/badge/HomeworkPal-blue?style=for-the-badge)
 
 ## Features
 
