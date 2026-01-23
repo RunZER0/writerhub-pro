@@ -14,6 +14,7 @@ const messagesRoutes = require('./routes/messages');
 const pushRoutes = require('./routes/push');
 const telegramRoutes = require('./routes/telegram');
 const clientRoutes = require('./routes/client');
+const accountingRoutes = require('./routes/accounting');
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.use('/api/push', pushRoutes);
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/telegram/webhook', telegramRoutes); // Public webhook endpoint
 app.use('/api/client', clientRoutes);
+app.use('/api/accounting', accountingRoutes);
 
 // Serve frontend for all other routes (SPA fallback)
 app.get('*', (req, res) => {

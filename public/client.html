@@ -714,6 +714,9 @@
             <div class="tab" data-tab="submit">
                 <i class="fas fa-paper-plane"></i> Submit Assignment
             </div>
+            <div class="tab" data-tab="inquiry">
+                <i class="fas fa-question-circle"></i> Inquiry
+            </div>
         </div>
 
         <!-- Pricing Tab -->
@@ -726,7 +729,7 @@
                         <div class="tier-name">Bronze</div>
                     </div>
                     <div class="pricing-price">
-                        <span class="price-range">$7 - $10</span>
+                        <span class="price-range">$6.99 - $9.99</span>
                         <span class="price-unit">/ page</span>
                     </div>
                     <ul class="pricing-features">
@@ -736,7 +739,7 @@
                         <li><i class="fas fa-check"></i> 1 free revision</li>
                         <li><i class="fas fa-check"></i> Email support</li>
                     </ul>
-                    <button class="btn btn-select" onclick="selectPackage('bronze', 7, 10)">
+                    <button class="btn btn-select" onclick="selectPackage('bronze', 6.99, 9.99)">
                         Select Bronze
                     </button>
                 </div>
@@ -748,7 +751,7 @@
                         <div class="tier-name">Silver</div>
                     </div>
                     <div class="pricing-price">
-                        <span class="price-range">$10 - $15</span>
+                        <span class="price-range">$9.99 - $14.99</span>
                         <span class="price-unit">/ page</span>
                     </div>
                     <ul class="pricing-features">
@@ -759,7 +762,7 @@
                         <li><i class="fas fa-check"></i> Priority support</li>
                         <li><i class="fas fa-check"></i> Detailed research</li>
                     </ul>
-                    <button class="btn btn-select" onclick="selectPackage('silver', 10, 15)">
+                    <button class="btn btn-select" onclick="selectPackage('silver', 9.99, 14.99)">
                         Select Silver
                     </button>
                 </div>
@@ -771,7 +774,7 @@
                         <div class="tier-name">Gold</div>
                     </div>
                     <div class="pricing-price">
-                        <span class="price-range">$14 - $20</span>
+                        <span class="price-range">$15.99 - $19.99</span>
                         <span class="price-unit">/ page</span>
                     </div>
                     <ul class="pricing-features">
@@ -783,7 +786,7 @@
                         <li><i class="fas fa-check"></i> Expert writer assigned</li>
                         <li><i class="fas fa-check"></i> Plagiarism report included</li>
                     </ul>
-                    <button class="btn btn-select" onclick="selectPackage('gold', 14, 20)">
+                    <button class="btn btn-select" onclick="selectPackage('gold', 15.99, 19.99)">
                         Select Gold
                     </button>
                 </div>
@@ -927,6 +930,74 @@
             </div>
         </div>
 
+        <!-- Inquiry Tab -->
+        <div class="tab-content" id="inquiry-tab">
+            <div class="form-container">
+                <div class="form-card">
+                    <div style="text-align: center; margin-bottom: 2rem;">
+                        <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <h2>Have a Question?</h2>
+                        <p style="color: rgba(255,255,255,0.5); margin-top: 0.5rem;">Send us your inquiry and we'll get back to you shortly</p>
+                    </div>
+
+                    <form id="inquiryForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Your Name <span class="required">*</span></label>
+                                <input type="text" id="inquiryName" required placeholder="John Doe">
+                            </div>
+                            <div class="form-group">
+                                <label>Email Address <span class="required">*</span></label>
+                                <input type="email" id="inquiryEmail" required placeholder="john@example.com">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Subject <span class="required">*</span></label>
+                            <select id="inquirySubject" required>
+                                <option value="">Select a subject</option>
+                                <option value="pricing">Pricing Question</option>
+                                <option value="custom">Custom Order</option>
+                                <option value="revision">Revision Request</option>
+                                <option value="deadline">Deadline Extension</option>
+                                <option value="refund">Refund Request</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Your Message <span class="required">*</span></label>
+                            <textarea id="inquiryMessage" required rows="6" placeholder="Type your message here..."></textarea>
+                        </div>
+
+                        <div class="form-submit">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i> Send Inquiry
+                            </button>
+                        </div>
+                    </form>
+
+                    <div class="loading hidden" id="inquiryLoading">
+                        <div class="spinner"></div>
+                        <p>Sending your inquiry...</p>
+                    </div>
+
+                    <div class="success-container hidden" id="inquirySuccess" style="text-align: center;">
+                        <div class="success-icon" style="background: linear-gradient(135deg, #10b981, #059669); width: 50px; height: 50px; margin: 0 auto 1rem;">
+                            <i class="fas fa-check" style="font-size: 1.5rem;"></i>
+                        </div>
+                        <h3>Inquiry Sent!</h3>
+                        <p style="color: rgba(255,255,255,0.5); margin-top: 0.5rem;">We'll respond to your email within 24 hours.</p>
+                        <button class="btn btn-ghost" style="margin-top: 1.5rem; border: 1px solid rgba(255,255,255,0.1);" onclick="resetInquiryForm()">
+                            <i class="fas fa-plus"></i> Send Another Inquiry
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Success State -->
         <div class="tab-content" id="success-tab">
             <div class="success-container">
@@ -952,7 +1023,7 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        let selectedPackageData = { name: 'silver', minPrice: 10, maxPrice: 15 };
+        let selectedPackageData = { name: 'silver', minPrice: 9.99, maxPrice: 14.99 };
         let selectedDomain = '';
         let selectedDeadlineHours = 72;
         let uploadedFiles = [];
@@ -1145,6 +1216,53 @@
             toast.innerHTML = `<i class="fas fa-${type === 'error' ? 'exclamation-circle' : 'check-circle'}"></i> ${message}`;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 4000);
+        }
+
+        // Inquiry form handler
+        document.getElementById('inquiryForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const name = document.getElementById('inquiryName').value.trim();
+            const email = document.getElementById('inquiryEmail').value.trim();
+            const subject = document.getElementById('inquirySubject').value;
+            const message = document.getElementById('inquiryMessage').value.trim();
+
+            if (!name || !email || !subject || !message) {
+                showToast('error', 'Please fill all required fields');
+                return;
+            }
+
+            // Show loading
+            document.getElementById('inquiryForm').classList.add('hidden');
+            document.getElementById('inquiryLoading').classList.remove('hidden');
+
+            try {
+                const response = await fetch('/api/client/inquiry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, subject, message })
+                });
+
+                const result = await response.json();
+                document.getElementById('inquiryLoading').classList.add('hidden');
+
+                if (response.ok) {
+                    document.getElementById('inquirySuccess').classList.remove('hidden');
+                } else {
+                    document.getElementById('inquiryForm').classList.remove('hidden');
+                    showToast('error', result.error || 'Failed to send inquiry');
+                }
+            } catch (error) {
+                document.getElementById('inquiryLoading').classList.add('hidden');
+                document.getElementById('inquiryForm').classList.remove('hidden');
+                showToast('error', 'Network error. Please try again.');
+            }
+        });
+
+        function resetInquiryForm() {
+            document.getElementById('inquiryForm').reset();
+            document.getElementById('inquiryForm').classList.remove('hidden');
+            document.getElementById('inquirySuccess').classList.add('hidden');
         }
 
         // Initialize

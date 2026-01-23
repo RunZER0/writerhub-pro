@@ -105,6 +105,10 @@
                     <i class="fas fa-chart-line"></i>
                     <span>Reports</span>
                 </a>
+                <a class="nav-item admin-only" data-page="accounting">
+                    <i class="fas fa-calculator"></i>
+                    <span>Accounting</span>
+                </a>
             </nav>
 
             <div class="user-section">
@@ -379,6 +383,18 @@
                             <div class="chat-list-header">
                                 <h3>Conversations</h3>
                             </div>
+                            <!-- Admin Writers Section -->
+                            <div class="admin-only" id="adminWritersChatSection">
+                                <div class="chat-writers-header">
+                                    <button id="toggleWritersListBtn" class="toggle-writers-btn">
+                                        <i class="fas fa-users"></i> All Writers
+                                        <i class="fas fa-chevron-down toggle-icon"></i>
+                                    </button>
+                                </div>
+                                <div class="writers-chat-list" id="writersChatList" style="display:none;">
+                                    <!-- Writers will be populated here -->
+                                </div>
+                            </div>
                             <div class="chat-threads" id="chatThreads">
                                 <div class="empty-state"><p>No conversations yet</p></div>
                             </div>
@@ -548,6 +564,116 @@
                                 </thead>
                                 <tbody id="reportTableBody">
                                     <tr><td colspan="5" class="empty-state">Generate a report to see data</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Accounting Page -->
+                <section id="accounting-page" class="page admin-only">
+                    <div class="page-header">
+                        <h2>Accounting & Finances</h2>
+                    </div>
+                    
+                    <!-- Summary Cards -->
+                    <div class="stats-grid" style="margin-bottom: 1.5rem;">
+                        <div class="stat-card">
+                            <div class="stat-icon success">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Total Revenue</h3>
+                                <div class="stat-value" id="accTotalRevenue">$0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon warning">
+                                <i class="fas fa-money-bill-wave"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Writer Costs</h3>
+                                <div class="stat-value" id="accWriterCosts">$0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon danger">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Other Costs</h3>
+                                <div class="stat-value" id="accOtherCosts">$0</div>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #10b981, #059669); color: white;">
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="stat-content">
+                                <h3>Net Profit</h3>
+                                <div class="stat-value" id="accNetProfit">$0</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Date Filter -->
+                    <div class="card" style="margin-bottom: 1.5rem;">
+                        <div class="card-body">
+                            <div class="report-filters">
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label>Start Date</label>
+                                    <input type="date" id="accStartDate">
+                                </div>
+                                <div class="form-group" style="margin-bottom:0">
+                                    <label>End Date</label>
+                                    <input type="date" id="accEndDate">
+                                </div>
+                                <button id="loadAccountingBtn" class="btn btn-primary">
+                                    <i class="fas fa-sync-alt"></i> Load Data
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Untracked Assignments Alert -->
+                    <div class="card" style="margin-bottom: 1.5rem; display: none;" id="untrackedAlert">
+                        <div class="card-body" style="background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), rgba(245, 158, 11, 0.1)); border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; align-items: center; gap: 1rem;">
+                                <i class="fas fa-exclamation-triangle" style="color: #f59e0b; font-size: 1.5rem;"></i>
+                                <div style="flex: 1;">
+                                    <strong>Untracked Assignments</strong>
+                                    <p style="margin: 0.25rem 0 0; color: var(--text-muted); font-size: 0.875rem;">
+                                        <span id="untrackedCount">0</span> completed assignments don't have financial records yet.
+                                    </p>
+                                </div>
+                                <button class="btn btn-sm" style="background: #f59e0b; color: white;" onclick="showUntrackedModal()">
+                                    <i class="fas fa-plus"></i> Add Records
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Finances Table -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Assignment Finances</h3>
+                        </div>
+                        <div class="table-container">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Assignment</th>
+                                        <th>Writer</th>
+                                        <th>Client Paid</th>
+                                        <th>Writer Cost</th>
+                                        <th>Other Costs</th>
+                                        <th>Profit</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="accountingTableBody">
+                                    <tr><td colspan="8" class="empty-state">No finance records found</td></tr>
                                 </tbody>
                             </table>
                         </div>
@@ -1115,6 +1241,99 @@
             </div>
             <button id="installBtn" class="btn btn-primary">Install</button>
             <button id="dismissInstall" class="btn btn-secondary"><i class="fas fa-times"></i></button>
+        </div>
+    </div>
+
+    <!-- Finance Record Modal -->
+    <div id="financeModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3><i class="fas fa-calculator" style="margin-right:0.5rem;color:var(--primary)"></i> <span id="financeModalTitle">Edit Finance Record</span></h3>
+                <button class="modal-close" data-close="financeModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="financeForm">
+                    <input type="hidden" id="financeAssignmentId">
+                    
+                    <div class="finance-assignment-info" style="background:var(--surface-hover);padding:1rem;border-radius:var(--radius);margin-bottom:1.5rem;">
+                        <div style="font-weight:600;margin-bottom:0.25rem;" id="financeAssignmentTitle">Assignment Title</div>
+                        <div style="font-size:0.875rem;color:var(--text-muted);" id="financeAssignmentWriter">Writer: -</div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="financeClientPaid">Client Paid ($)</label>
+                            <input type="number" id="financeClientPaid" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="financeWriterCost">Writer Cost ($)</label>
+                            <input type="number" id="financeWriterCost" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="financeOtherCosts">Other Costs ($)</label>
+                            <input type="number" id="financeOtherCosts" step="0.01" min="0" placeholder="0.00">
+                        </div>
+                        <div class="form-group">
+                            <label for="financeStatus">Payment Status</label>
+                            <select id="financeStatus">
+                                <option value="pending">Pending</option>
+                                <option value="paid">Paid</option>
+                                <option value="partial">Partial</option>
+                                <option value="refunded">Refunded</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="financeNotes">Notes</label>
+                        <textarea id="financeNotes" rows="2" placeholder="Optional notes..."></textarea>
+                    </div>
+                    
+                    <div class="profit-preview" style="background:linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(5, 150, 105, 0.1)); padding:1rem; border-radius:var(--radius); text-align:center; margin-top:1rem;">
+                        <div style="font-size:0.875rem;color:var(--text-muted);">Calculated Profit</div>
+                        <div id="profitPreview" style="font-size:1.5rem;font-weight:700;color:#10b981;">$0.00</div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" data-close="financeModal">Cancel</button>
+                <button type="submit" form="financeForm" class="btn btn-primary">
+                    <i class="fas fa-save"></i> Save Record
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Untracked Assignments Modal -->
+    <div id="untrackedModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3><i class="fas fa-exclamation-triangle" style="margin-right:0.5rem;color:#f59e0b"></i> Untracked Assignments</h3>
+                <button class="modal-close" data-close="untrackedModal"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <p style="margin-bottom:1rem;color:var(--text-secondary)">These completed assignments don't have financial records. Click on each to add pricing information.</p>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Assignment</th>
+                                <th>Writer</th>
+                                <th>Date</th>
+                                <th>Est. Amount</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="untrackedTableBody">
+                            <tr><td colspan="6" class="empty-state">Loading...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 

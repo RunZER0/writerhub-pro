@@ -1873,6 +1873,26 @@ select:focus {
     overflow: hidden;
 }
 
+/* Desktop chat layout fix */
+@media (min-width: 769px) {
+    .chat-window {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+    }
+    
+    .chat-input {
+        flex-shrink: 0;
+    }
+}
+
 .chat-list {
     width: 300px;
     min-width: 300px;
@@ -1892,6 +1912,96 @@ select:focus {
 .chat-list-header h3 {
     font-size: 1rem;
     font-weight: 600;
+}
+
+/* Admin Writers Chat Section */
+.chat-writers-header {
+    border-bottom: 1px solid var(--border-light);
+}
+
+.toggle-writers-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--surface-hover);
+    border: none;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.toggle-writers-btn:hover {
+    background: var(--primary-light);
+    color: var(--primary);
+}
+
+.toggle-writers-btn .toggle-icon {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
+
+.toggle-writers-btn.expanded .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.writers-chat-list {
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.writer-chat-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    border-bottom: 1px solid var(--border-light);
+}
+
+.writer-chat-item:last-child {
+    border-bottom: none;
+}
+
+.writer-chat-item:hover {
+    background: var(--surface-hover);
+}
+
+.writer-chat-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: var(--primary-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--primary);
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.writer-chat-name {
+    flex: 1;
+    font-size: 0.8125rem;
+    color: var(--text-primary);
+}
+
+.writer-chat-item .start-chat-icon {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+.writer-chat-item:hover .start-chat-icon {
+    opacity: 1;
+    color: var(--primary);
 }
 
 .chat-threads {

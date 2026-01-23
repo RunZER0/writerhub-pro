@@ -709,7 +709,8 @@ function navigateTo(page) {
         'assignments': isAdmin() ? 'Assignments' : 'My Jobs',
         'chat': 'Messages',
         'payments': 'Payments',
-        'reports': 'Reports'
+        'reports': 'Reports',
+        'accounting': 'Accounting'
     };
     document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
     
@@ -723,6 +724,7 @@ function navigateTo(page) {
     // Load specific content
     if (page === 'job-board' && !isAdmin()) loadJobBoard();
     if (page === 'chat') loadChatThreads();
+    if (page === 'accounting' && isAdmin()) loadAccounting();
     
     // Close sidebar on mobile
     document.querySelector('.sidebar').classList.remove('active');
@@ -2239,6 +2241,62 @@ function stopChatPolling() {
     lastMessageCount = 0;
 }
 
+// Admin Writers List for Chat
+async function loadWritersForChat() {
+    if (!isAdmin()) return;
+    
+    const container = document.getElementById('writersChatList');
+    if (!container) return;
+    
+    try {
+        // Use existing writers array or fetch them
+        let writersList = writers.length ? writers : await api('/writers');
+        
+        if (!writersList.length) {
+            container.innerHTML = '<div class="empty-state" style="padding: 1rem; font-size: 0.8rem;">No writers found</div>';
+            return;
+        }
+        
+        container.innerHTML = writersList.map(w => `
+            <div class="writer-chat-item" data-user-id="${w.user_id || w.id}" data-user-name="${escapeHtml(w.name)}">
+                <div class="writer-chat-avatar">${getInitials(w.name)}</div>
+                <div class="writer-chat-name">${escapeHtml(w.name)}</div>
+                <i class="fas fa-comment start-chat-icon"></i>
+            </div>
+        `).join('');
+        
+        // Add click handlers
+        container.querySelectorAll('.writer-chat-item').forEach(item => {
+            item.addEventListener('click', function() {
+                const userId = parseInt(this.dataset.userId);
+                const userName = this.dataset.userName;
+                openDirectChat(userId, userName);
+            });
+        });
+    } catch (error) {
+        console.error('Load writers for chat error:', error);
+    }
+}
+
+// Toggle writers list visibility
+function initWritersChatToggle() {
+    const toggleBtn = document.getElementById('toggleWritersListBtn');
+    const writersList = document.getElementById('writersChatList');
+    
+    if (!toggleBtn || !writersList) return;
+    
+    toggleBtn.addEventListener('click', () => {
+        const isExpanded = writersList.style.display !== 'none';
+        writersList.style.display = isExpanded ? 'none' : 'block';
+        toggleBtn.classList.toggle('expanded', !isExpanded);
+        
+        // Load writers on first expand
+        if (!isExpanded && !writersList.querySelector('.writer-chat-item')) {
+            loadWritersForChat();
+        }
+    });
+}
+
 function stopStatusPolling() {
     // Set offline
     api('/messages/status', { method: 'POST', body: { online: false } }).catch(() => {});
@@ -2612,6 +2670,183 @@ function openNewAssignmentModal() {
 }
 
 // ========================================
+// Accounting Functions
+// ========================================
+let accountingData = [];
+
+async function loadAccounting() {
+    if (!isAdmin()) return;
+    
+    try {
+        const startDate = document.getElementById('accStartDate')?.value || '';
+        const endDate = document.getElementById('accEndDate')?.value || '';
+        
+        const params = new URLSearchParams();
+        if (startDate) params.append('startDate', startDate);
+        if (endDate) params.append('endDate', endDate);
+        
+        // Load summary and data in parallel
+        const [summary, finances] = await Promise.all([
+            api(`/accounting/summary?${params}`),
+            api(`/accounting?${params}`)
+        ]);
+        
+        accountingData = finances;
+        
+        // Update summary cards
+        document.getElementById('accTotalRevenue').textContent = formatCurrency(summary.summary.total_revenue || 0);
+        document.getElementById('accWriterCosts').textContent = formatCurrency(summary.summary.total_writer_costs || 0);
+        document.getElementById('accOtherCosts').textContent = formatCurrency(summary.summary.total_other_costs || 0);
+        
+        const profit = parseFloat(summary.summary.total_profit) || 0;
+        const profitEl = document.getElementById('accNetProfit');
+        profitEl.textContent = formatCurrency(profit);
+        profitEl.style.color = profit >= 0 ? '#10b981' : '#ef4444';
+        
+        // Show untracked alert if needed
+        const untrackedAlert = document.getElementById('untrackedAlert');
+        if (summary.untrackedCount > 0) {
+            document.getElementById('untrackedCount').textContent = summary.untrackedCount;
+            untrackedAlert.style.display = 'block';
+        } else {
+            untrackedAlert.style.display = 'none';
+        }
+        
+        renderAccountingTable();
+    } catch (error) {
+        console.error('Load accounting error:', error);
+        showToast('error', 'Failed to load accounting data');
+    }
+}
+
+function renderAccountingTable() {
+    const tbody = document.getElementById('accountingTableBody');
+    
+    if (!accountingData.length) {
+        tbody.innerHTML = '<tr><td colspan="8" class="empty-state">No finance records found. Add records for completed assignments.</td></tr>';
+        return;
+    }
+    
+    tbody.innerHTML = accountingData.map(f => {
+        const profit = parseFloat(f.client_paid || 0) - parseFloat(f.writer_cost || 0) - parseFloat(f.other_costs || 0);
+        const profitClass = profit >= 0 ? 'success' : 'danger';
+        
+        return `
+            <tr>
+                <td>
+                    <div style="font-weight:500;">${escapeHtml(f.title)}</div>
+                    <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(f.domain || '-')}</div>
+                </td>
+                <td>${escapeHtml(f.writer_name || '-')}</td>
+                <td>${formatCurrency(f.client_paid || 0)}</td>
+                <td>${formatCurrency(f.writer_cost || 0)}</td>
+                <td>${formatCurrency(f.other_costs || 0)}</td>
+                <td><span class="badge ${profitClass}">${formatCurrency(profit)}</span></td>
+                <td><span class="badge ${f.payment_status === 'paid' ? 'success' : f.payment_status === 'pending' ? 'warning' : ''}">${f.payment_status}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-secondary" onclick="openFinanceModal(${f.assignment_id})">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+async function openFinanceModal(assignmentId) {
+    try {
+        const data = await api(`/accounting/assignment/${assignmentId}`);
+        
+        document.getElementById('financeAssignmentId').value = assignmentId;
+        document.getElementById('financeAssignmentTitle').textContent = data.title || `Assignment #${assignmentId}`;
+        document.getElementById('financeAssignmentWriter').textContent = `Writer: ${data.writer_name || 'Not assigned'}`;
+        document.getElementById('financeClientPaid').value = data.client_paid || '';
+        document.getElementById('financeWriterCost').value = data.writer_cost || '';
+        document.getElementById('financeOtherCosts').value = data.other_costs || '';
+        document.getElementById('financeStatus').value = data.payment_status || 'pending';
+        document.getElementById('financeNotes').value = data.notes || '';
+        
+        updateProfitPreview();
+        openModal('financeModal');
+    } catch (error) {
+        console.error('Open finance modal error:', error);
+        showToast('error', 'Failed to load finance record');
+    }
+}
+
+function updateProfitPreview() {
+    const clientPaid = parseFloat(document.getElementById('financeClientPaid').value) || 0;
+    const writerCost = parseFloat(document.getElementById('financeWriterCost').value) || 0;
+    const otherCosts = parseFloat(document.getElementById('financeOtherCosts').value) || 0;
+    const profit = clientPaid - writerCost - otherCosts;
+    
+    const profitEl = document.getElementById('profitPreview');
+    profitEl.textContent = formatCurrency(profit);
+    profitEl.style.color = profit >= 0 ? '#10b981' : '#ef4444';
+}
+
+async function saveFinanceRecord(e) {
+    e.preventDefault();
+    
+    const assignmentId = document.getElementById('financeAssignmentId').value;
+    const data = {
+        client_paid: parseFloat(document.getElementById('financeClientPaid').value) || 0,
+        writer_cost: parseFloat(document.getElementById('financeWriterCost').value) || 0,
+        other_costs: parseFloat(document.getElementById('financeOtherCosts').value) || 0,
+        payment_status: document.getElementById('financeStatus').value,
+        notes: document.getElementById('financeNotes').value
+    };
+    
+    try {
+        await api(`/accounting/assignment/${assignmentId}`, {
+            method: 'POST',
+            body: data
+        });
+        
+        closeModal('financeModal');
+        showToast('success', 'Finance record saved');
+        loadAccounting();
+    } catch (error) {
+        console.error('Save finance error:', error);
+        showToast('error', 'Failed to save finance record');
+    }
+}
+
+async function showUntrackedModal() {
+    try {
+        const untracked = await api('/accounting/untracked');
+        const tbody = document.getElementById('untrackedTableBody');
+        
+        if (!untracked.length) {
+            tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No untracked assignments found</td></tr>';
+        } else {
+            tbody.innerHTML = untracked.map(a => `
+                <tr>
+                    <td>#${a.id}</td>
+                    <td>
+                        <div style="font-weight:500;">${escapeHtml(a.title)}</div>
+                        <div style="font-size:0.75rem;color:var(--text-muted);">${escapeHtml(a.domain || '-')}</div>
+                    </td>
+                    <td>${escapeHtml(a.writer_name || '-')}</td>
+                    <td>${formatDate(a.created_at)}</td>
+                    <td>${formatCurrency(a.amount || 0)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-primary" onclick="openFinanceModal(${a.id}); closeModal('untrackedModal');">
+                            <i class="fas fa-plus"></i> Add
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+        
+        openModal('untrackedModal');
+    } catch (error) {
+        console.error('Load untracked error:', error);
+        showToast('error', 'Failed to load untracked assignments');
+    }
+}
+
+// ========================================
 // Event Listeners
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
@@ -2679,6 +2914,15 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('pickJobForm').addEventListener('submit', pickJob);
     document.getElementById('extensionForm').addEventListener('submit', submitExtensionRequest);
     document.getElementById('overrideDeadlineForm').addEventListener('submit', overrideDeadline);
+    document.getElementById('financeForm')?.addEventListener('submit', saveFinanceRecord);
+    
+    // Accounting inputs for profit preview
+    ['financeClientPaid', 'financeWriterCost', 'financeOtherCosts'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', updateProfitPreview);
+    });
+    
+    // Accounting load button
+    document.getElementById('loadAccountingBtn')?.addEventListener('click', loadAccounting);
     
     // Time inputs for pick job modal
     ['neededDays', 'neededHours', 'neededMinutes'].forEach(id => {
@@ -2744,6 +2988,9 @@ document.addEventListener('DOMContentLoaded', () => {
         if (e.key === 'Enter') sendMessage();
     });
     
+    // Admin writers chat toggle
+    initWritersChatToggle();
+    
     // Chat file upload
     document.getElementById('chatFileInput')?.addEventListener('change', async (e) => {
         if (e.target.files[0]) {
@@ -2786,6 +3033,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
     document.getElementById('reportStartDate').value = firstDay.toISOString().split('T')[0];
     document.getElementById('reportEndDate').value = today.toISOString().split('T')[0];
+    
+    // Default accounting dates
+    if (document.getElementById('accStartDate')) {
+        document.getElementById('accStartDate').value = firstDay.toISOString().split('T')[0];
+    }
+    if (document.getElementById('accEndDate')) {
+        document.getElementById('accEndDate').value = today.toISOString().split('T')[0];
+    }
     
     // Poll for new notifications
     setInterval(loadNotifications, 60000);

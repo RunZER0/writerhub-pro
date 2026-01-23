@@ -161,4 +161,91 @@ async function notifyAdminsNewAssignment(assignmentId, title, domain, clientName
     }
 }
 
+// Client inquiry endpoint - sends message to all admins
+router.post('/inquiry', async (req, res) => {
+    try {
+        const { name, email, subject, message } = req.body;
+
+        // Validate required fields
+        if (!name || !email || !subject || !message) {
+            return res.status(400).json({ error: 'Missing required fields' });
+        }
+
+        // Get all admin users
+        const admins = await pool.query(
+            `SELECT id, push_subscription, telegram_chat_id FROM users WHERE role = 'admin'`
+        );
+
+        if (admins.rows.length === 0) {
+            return res.status(500).json({ error: 'No admins available to receive inquiry' });
+        }
+
+        const subjectLabels = {
+            pricing: '💰 Pricing Question',
+            custom: '🎯 Custom Order',
+            revision: '📝 Revision Request',
+            deadline: '⏰ Deadline Extension',
+            refund: '💸 Refund Request',
+            other: '❓ Other'
+        };
+
+        const subjectLabel = subjectLabels[subject] || subject;
+        const telegramMessage = `📩 New Client Inquiry\n\n${subjectLabel}\n\nFrom: ${name}\nEmail: ${email}\n\n${message}`;
+
+        for (const admin of admins.rows) {
+            // Send push notification
+            if (admin.push_subscription) {
+                try {
+                    await webpush.sendNotification(
+                        JSON.parse(admin.push_subscription),
+                        JSON.stringify({
+                            title: `📩 ${subjectLabel}`,
+                            body: `Inquiry from ${name}: ${message.substring(0, 100)}...`,
+                            icon: '/icons/icon-192.png',
+                            tag: `inquiry-${Date.now()}`,
+                            data: { url: '/writers' }
+                        })
+                    );
+                } catch (err) {
+                    console.error('Push notification failed:', err.message);
+                }
+            }
+
+            // Send Telegram notification
+            if (admin.telegram_chat_id) {
+                try {
+                    const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+                    if (telegramToken) {
+                        const fetch = require('node-fetch');
+                        await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                chat_id: admin.telegram_chat_id,
+                                text: telegramMessage,
+                                parse_mode: 'HTML'
+                            })
+                        });
+                    }
+                } catch (err) {
+                    console.error('Telegram notification failed:', err.message);
+                }
+            }
+
+            // Create in-app notification
+            await pool.query(
+                `INSERT INTO notifications (user_id, type, title, message, link, created_at)
+                 VALUES ($1, 'client_inquiry', $2, $3, $4, NOW())`,
+                [admin.id, subjectLabel, `From ${name}: ${message.substring(0, 100)}...`, '/writers']
+            );
+        }
+
+        res.json({ success: true, message: 'Inquiry sent successfully' });
+
+    } catch (error) {
+        console.error('Error processing inquiry:', error);
+        res.status(500).json({ error: 'Failed to send inquiry' });
+    }
+});
+
 module.exports = router;
