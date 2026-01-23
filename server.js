@@ -98,7 +98,21 @@ async function runMigrations() {
             ADD COLUMN IF NOT EXISTS submission_notes TEXT,
             ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP,
             ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP,
-            ADD COLUMN IF NOT EXISTS client_source VARCHAR(50) DEFAULT 'admin'
+            ADD COLUMN IF NOT EXISTS client_source VARCHAR(50) DEFAULT 'admin',
+            ADD COLUMN IF NOT EXISTS files TEXT,
+            ADD COLUMN IF NOT EXISTS domain VARCHAR(100)
+        `);
+
+        // Add link column to notifications table
+        await pool.query(`
+            ALTER TABLE notifications
+            ADD COLUMN IF NOT EXISTS link VARCHAR(255)
+        `);
+
+        // Add push_subscription to users table
+        await pool.query(`
+            ALTER TABLE users
+            ADD COLUMN IF NOT EXISTS push_subscription TEXT
         `);
         
         console.log('✅ Database migrations complete');

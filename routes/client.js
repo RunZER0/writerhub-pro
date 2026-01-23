@@ -56,11 +56,11 @@ router.post('/submit', upload.array('files', 5), async (req, res) => {
             return res.status(400).json({ error: 'Missing required fields' });
         }
 
-        // Build word count string
-        const wordCount = `${word_count_min}-${word_count_max}`;
+        // Use the average word count as integer (table expects integer, not range)
+        const wordCount = Math.round((parseInt(word_count_min) + parseInt(word_count_max)) / 2) || parseInt(word_count_min) || 275;
 
-        // Format client info for description
-        const clientInfo = `\n\n--- CLIENT INFO ---\nName: ${client_name}\nEmail: ${client_email}${client_phone ? `\nPhone: ${client_phone}` : ''}`;
+        // Format client info for description (include word count range here)
+        const clientInfo = `\n\n--- CLIENT INFO ---\nName: ${client_name}\nEmail: ${client_email}${client_phone ? `\nPhone: ${client_phone}` : ''}\nWord Count: ${word_count_min}-${word_count_max}`;
         
         // Format links if provided
         const linksInfo = links ? `\n\n--- REFERENCE LINKS ---\n${links}` : '';
@@ -71,10 +71,10 @@ router.post('/submit', upload.array('files', 5), async (req, res) => {
         // Get uploaded file paths
         const filePaths = req.files ? req.files.map(f => `/uploads/client/${f.filename}`).join(',') : null;
 
-        // Insert assignment into database
+        // Insert assignment into database (rate and amount to be set by admin later)
         const result = await pool.query(
-            `INSERT INTO assignments (title, description, word_count, client_deadline, domain, files, status, created_at, client_source)
-             VALUES ($1, $2, $3, $4, $5, $6, 'pending', NOW(), 'client_portal')
+            `INSERT INTO assignments (title, description, word_count, deadline, domain, files, status, created_at, client_source, rate, amount)
+             VALUES ($1, $2, $3, $4, $5, $6, 'pending', NOW(), 'client_portal', 0, 0)
              RETURNING id`,
             [title, fullDescription, wordCount, deadline, domain, filePaths]
         );
@@ -91,8 +91,9 @@ router.post('/submit', upload.array('files', 5), async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Error submitting client assignment:', error);
-        res.status(500).json({ error: 'Failed to submit assignment' });
+        console.error('Error submitting client assignment:', error.message);
+        console.error('Stack:', error.stack);
+        res.status(500).json({ error: 'Failed to submit assignment', details: error.message });
     }
 });
 
@@ -243,8 +244,9 @@ router.post('/inquiry', async (req, res) => {
         res.json({ success: true, message: 'Inquiry sent successfully' });
 
     } catch (error) {
-        console.error('Error processing inquiry:', error);
-        res.status(500).json({ error: 'Failed to send inquiry' });
+        console.error('Error processing inquiry:', error.message);
+        console.error('Stack:', error.stack);
+        res.status(500).json({ error: 'Failed to send inquiry', details: error.message });
     }
 });
 

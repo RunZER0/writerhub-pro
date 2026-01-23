@@ -255,6 +255,12 @@
             font-weight: 700;
         }
 
+        .price-range sup {
+            font-size: 0.5em;
+            vertical-align: super;
+            font-weight: 600;
+        }
+
         .price-unit {
             color: rgba(255,255,255,0.5);
             font-size: 0.9rem;
@@ -729,7 +735,7 @@
                         <div class="tier-name">Bronze</div>
                     </div>
                     <div class="pricing-price">
-                        <span class="price-range">$6.99 - $9.99</span>
+                        <span class="price-range">$6<sup>.99</sup> - $9<sup>.99</sup></span>
                         <span class="price-unit">/ page</span>
                     </div>
                     <ul class="pricing-features">
@@ -751,7 +757,7 @@
                         <div class="tier-name">Silver</div>
                     </div>
                     <div class="pricing-price">
-                        <span class="price-range">$9.99 - $14.99</span>
+                        <span class="price-range">$9<sup>.99</sup> - $14<sup>.99</sup></span>
                         <span class="price-unit">/ page</span>
                     </div>
                     <ul class="pricing-features">
@@ -774,7 +780,7 @@
                         <div class="tier-name">Gold</div>
                     </div>
                     <div class="pricing-price">
-                        <span class="price-range">$15.99 - $19.99</span>
+                        <span class="price-range">$15<sup>.99</sup> - $19<sup>.99</sup></span>
                         <span class="price-unit">/ page</span>
                     </div>
                     <ul class="pricing-features">
@@ -819,29 +825,41 @@
                         <div class="form-group">
                             <label>Select Domain <span class="required">*</span></label>
                             <div class="domain-grid" id="domainGrid">
-                                <div class="domain-option" data-domain="Academic">
-                                    <i class="fas fa-graduation-cap"></i>
-                                    <span>Academic</span>
+                                <div class="domain-option" data-domain="Maths">
+                                    <i class="fas fa-calculator"></i>
+                                    <span>Maths</span>
+                                </div>
+                                <div class="domain-option" data-domain="Chemistry">
+                                    <i class="fas fa-flask"></i>
+                                    <span>Chemistry</span>
+                                </div>
+                                <div class="domain-option" data-domain="Physics">
+                                    <i class="fas fa-atom"></i>
+                                    <span>Physics</span>
                                 </div>
                                 <div class="domain-option" data-domain="Business">
                                     <i class="fas fa-briefcase"></i>
                                     <span>Business</span>
                                 </div>
-                                <div class="domain-option" data-domain="Technical">
-                                    <i class="fas fa-code"></i>
-                                    <span>Technical</span>
+                                <div class="domain-option" data-domain="Economics">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>Economics</span>
                                 </div>
-                                <div class="domain-option" data-domain="Creative">
-                                    <i class="fas fa-paint-brush"></i>
-                                    <span>Creative</span>
+                                <div class="domain-option" data-domain="Accounting">
+                                    <i class="fas fa-file-invoice-dollar"></i>
+                                    <span>Accounting</span>
                                 </div>
-                                <div class="domain-option" data-domain="Medical">
-                                    <i class="fas fa-heartbeat"></i>
-                                    <span>Medical</span>
+                                <div class="domain-option" data-domain="English">
+                                    <i class="fas fa-book"></i>
+                                    <span>English</span>
                                 </div>
-                                <div class="domain-option" data-domain="Legal">
+                                <div class="domain-option" data-domain="History">
+                                    <i class="fas fa-landmark"></i>
+                                    <span>History</span>
+                                </div>
+                                <div class="domain-option" data-domain="Law">
                                     <i class="fas fa-gavel"></i>
-                                    <span>Legal</span>
+                                    <span>Law</span>
                                 </div>
                             </div>
                         </div>
