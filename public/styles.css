@@ -3250,14 +3250,18 @@ body.role-admin .writer-only-inline {
 
 /* Visual viewport resize handling for keyboard */
 @media (max-width: 768px) {
-    html {
-        height: 100%;
+    /* Only lock overflow when chat page is active */
+    body.chat-active {
         overflow: hidden;
     }
     
-    body {
-        height: 100%;
-        overflow: hidden;
+    body.chat-active #chat-page {
+        position: fixed;
+        top: 60px;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 50;
     }
     
     body.keyboard-open .chat-input,
@@ -3267,6 +3271,19 @@ body.role-admin .writer-only-inline {
         left: 0;
         right: 0;
         z-index: 1000;
+    }
+    
+    /* Ensure non-chat pages scroll normally */
+    #payments-page,
+    #reports-page,
+    #accounting-page,
+    #referrals-page,
+    #assignments-page,
+    #writers-page,
+    #dashboard-page,
+    #job-board-page {
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 }
 

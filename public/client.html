@@ -63,6 +63,7 @@
         .logo i {
             background: linear-gradient(135deg, #6366f1, #8b5cf6);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
@@ -786,6 +787,218 @@
             border: 1px solid rgba(255,255,255,0.2) !important;
         }
 
+        /* Membership Styles */
+        .membership-container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .membership-hero {
+            text-align: center;
+            padding: 2rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            margin-bottom: 2rem;
+        }
+
+        .membership-hero h2 {
+            font-size: 1.75rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .membership-hero p {
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 1.5rem;
+        }
+
+        .membership-benefits {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .benefit-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #10b981;
+        }
+
+        .benefit-item i {
+            font-size: 1.25rem;
+        }
+
+        .membership-tiers {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .tier-card {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.3s;
+        }
+
+        .tier-card:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+        }
+
+        .tier-card.current {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .tier-card .tier-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            text-transform: capitalize;
+        }
+
+        .tier-card .tier-discount {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #6366f1;
+        }
+
+        .tier-card .tier-discount span {
+            font-size: 1rem;
+        }
+
+        .tier-card .tier-requirement {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 0.5rem;
+        }
+
+        .auth-tabs {
+            display: flex;
+            margin-bottom: 1.5rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 10px;
+            padding: 0.25rem;
+        }
+
+        .auth-tab {
+            flex: 1;
+            padding: 0.75rem;
+            text-align: center;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s;
+            color: rgba(255,255,255,0.6);
+        }
+
+        .auth-tab.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .member-dashboard {
+            display: none;
+        }
+
+        .member-dashboard.active {
+            display: block;
+        }
+
+        .member-card {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .member-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .member-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .member-info h3 {
+            margin-bottom: 0.25rem;
+        }
+
+        .member-tier-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .member-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(0,0,0,0.2);
+            border-radius: 10px;
+        }
+
+        .stat-box .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #6366f1;
+        }
+
+        .stat-box .label {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .perks-list {
+            list-style: none;
+        }
+
+        .perks-list li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0;
+            color: rgba(255,255,255,0.8);
+        }
+
+        .perks-list li i {
+            color: #10b981;
+        }
+
         /* Mobile */
         @media (max-width: 768px) {
             nav {
@@ -845,6 +1058,9 @@
             </div>
             <div class="tab" data-tab="submit">
                 <i class="fas fa-paper-plane"></i> Submit Assignment
+            </div>
+            <div class="tab" data-tab="membership">
+                <i class="fas fa-crown"></i> Membership
             </div>
             <div class="tab" data-tab="inquiry">
                 <i class="fas fa-question-circle"></i> Inquiry
@@ -1069,6 +1285,153 @@
                     <div class="loading" id="loadingState">
                         <div class="spinner"></div>
                         <p>Submitting your assignment...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Membership Tab -->
+        <div class="tab-content" id="membership-tab">
+            <div class="membership-container">
+                <!-- Hero Section -->
+                <div class="membership-hero">
+                    <h2>🎓 Join HomeworkPal Membership</h2>
+                    <p>Become a long-term member and unlock exclusive discounts on every order!</p>
+                    <div class="membership-benefits">
+                        <div class="benefit-item">
+                            <i class="fas fa-percentage"></i>
+                            <span>Up to 20% off</span>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-star"></i>
+                            <span>Priority support</span>
+                        </div>
+                        <div class="benefit-item">
+                            <i class="fas fa-gift"></i>
+                            <span>Exclusive perks</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Membership Tiers -->
+                <div class="membership-tiers" id="membershipTiers">
+                    <div class="tier-card">
+                        <div class="tier-name">Basic</div>
+                        <div class="tier-discount">5<span>% OFF</span></div>
+                        <div class="tier-requirement">Join to get started</div>
+                    </div>
+                    <div class="tier-card">
+                        <div class="tier-name">Silver</div>
+                        <div class="tier-discount">10<span>% OFF</span></div>
+                        <div class="tier-requirement">5+ orders or $100+ spent</div>
+                    </div>
+                    <div class="tier-card">
+                        <div class="tier-name">Gold</div>
+                        <div class="tier-discount">15<span>% OFF</span></div>
+                        <div class="tier-requirement">15+ orders or $500+ spent</div>
+                    </div>
+                    <div class="tier-card">
+                        <div class="tier-name">Platinum</div>
+                        <div class="tier-discount">20<span>% OFF</span></div>
+                        <div class="tier-requirement">30+ orders or $1500+ spent</div>
+                    </div>
+                </div>
+
+                <div class="form-card">
+                    <!-- Auth Section (shown when not logged in) -->
+                    <div id="memberAuthSection">
+                        <div class="auth-tabs">
+                            <div class="auth-tab active" data-auth="register">Create Account</div>
+                            <div class="auth-tab" data-auth="login">Sign In</div>
+                        </div>
+
+                        <!-- Register Form -->
+                        <form id="memberRegisterForm" class="auth-form active">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Full Name <span class="required">*</span></label>
+                                    <input type="text" id="memberRegName" required placeholder="John Doe">
+                                </div>
+                                <div class="form-group">
+                                    <label>Email <span class="required">*</span></label>
+                                    <input type="email" id="memberRegEmail" required placeholder="john@example.com">
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Phone (optional)</label>
+                                    <input type="tel" id="memberRegPhone" placeholder="+1 234 567 8900">
+                                </div>
+                                <div class="form-group">
+                                    <label>Password <span class="required">*</span></label>
+                                    <input type="password" id="memberRegPassword" required placeholder="Min 6 characters" minlength="6">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                <i class="fas fa-user-plus"></i> Create Membership Account
+                            </button>
+                        </form>
+
+                        <!-- Login Form -->
+                        <form id="memberLoginForm" class="auth-form">
+                            <div class="form-group">
+                                <label>Email <span class="required">*</span></label>
+                                <input type="email" id="memberLoginEmail" required placeholder="john@example.com">
+                            </div>
+                            <div class="form-group">
+                                <label>Password <span class="required">*</span></label>
+                                <input type="password" id="memberLoginPassword" required placeholder="Your password">
+                            </div>
+                            <button type="submit" class="btn btn-primary" style="width: 100%;">
+                                <i class="fas fa-sign-in-alt"></i> Sign In
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Member Dashboard (shown when logged in) -->
+                    <div id="memberDashboard" class="member-dashboard">
+                        <div class="member-card">
+                            <div class="member-header">
+                                <div class="member-avatar" id="memberAvatar">JD</div>
+                                <div class="member-info">
+                                    <h3 id="memberName">John Doe</h3>
+                                    <span class="member-tier-badge" id="memberTierBadge">Basic Member</span>
+                                </div>
+                            </div>
+                            <div class="member-stats">
+                                <div class="stat-box">
+                                    <div class="value" id="memberDiscount">5%</div>
+                                    <div class="label">Your Discount</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="value" id="memberOrders">0</div>
+                                    <div class="label">Total Orders</div>
+                                </div>
+                                <div class="stat-box">
+                                    <div class="value" id="memberSpent">$0</div>
+                                    <div class="label">Total Spent</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-card" style="margin-top: 1rem;">
+                            <h4 style="margin-bottom: 1rem;"><i class="fas fa-gift" style="color: #10b981;"></i> Your Perks</h4>
+                            <ul class="perks-list" id="memberPerks">
+                                <li><i class="fas fa-check-circle"></i> Early access to new services</li>
+                                <li><i class="fas fa-check-circle"></i> Priority email support</li>
+                            </ul>
+                        </div>
+
+                        <div id="nextTierInfo" style="margin-top: 1rem; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 10px;">
+                            <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
+                                <i class="fas fa-arrow-up" style="color: #6366f1;"></i>
+                                <span id="nextTierText">Complete 5 more orders to reach Silver tier!</span>
+                            </p>
+                        </div>
+
+                        <button onclick="logoutMember()" class="btn btn-ghost" style="width: 100%; margin-top: 1rem; border: 1px solid rgba(255,255,255,0.1);">
+                            <i class="fas fa-sign-out-alt"></i> Sign Out
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1498,6 +1861,234 @@
         function shareWhatsApp() {
             const message = encodeURIComponent(`Hey! I just used HomeworkPal for my assignment and it was great! 🎓\n\nUse my referral link to get 10% off your first order:\n${clientReferralLink}`);
             window.open(`https://wa.me/?text=${message}`, '_blank');
+        }
+
+        // ========== MEMBERSHIP FUNCTIONS ==========
+        
+        // Check membership status on page load
+        const memberToken = localStorage.getItem('memberToken');
+        if (memberToken) {
+            loadMemberProfile();
+        }
+
+        // Auth tab switching
+        document.querySelectorAll('.auth-tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+                
+                const authType = tab.dataset.auth;
+                document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
+                document.getElementById(authType === 'login' ? 'memberLoginForm' : 'memberRegisterForm').classList.add('active');
+            });
+        });
+
+        // Member Registration
+        document.getElementById('memberRegisterForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById('memberRegName').value;
+            const email = document.getElementById('memberRegEmail').value;
+            const phone = document.getElementById('memberRegPhone').value;
+            const password = document.getElementById('memberRegPassword').value;
+            
+            try {
+                const response = await fetch('/api/membership/register', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, phone, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('memberToken', data.token);
+                    localStorage.setItem('memberEmail', data.member.email);
+                    showToast('success', `Welcome to HomeworkPal, ${data.member.name}! You're now a ${data.member.membership_tier} member.`);
+                    loadMemberProfile();
+                } else {
+                    showToast('error', data.error || 'Registration failed');
+                }
+            } catch (error) {
+                console.error('Registration error:', error);
+                showToast('error', 'Failed to register. Please try again.');
+            }
+        });
+
+        // Member Login
+        document.getElementById('memberLoginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('memberLoginEmail').value;
+            const password = document.getElementById('memberLoginPassword').value;
+            
+            try {
+                const response = await fetch('/api/membership/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('memberToken', data.token);
+                    localStorage.setItem('memberEmail', data.member.email);
+                    showToast('success', `Welcome back, ${data.member.name}!`);
+                    loadMemberProfile();
+                } else {
+                    showToast('error', data.error || 'Login failed');
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showToast('error', 'Failed to login. Please try again.');
+            }
+        });
+
+        // Load Member Profile
+        async function loadMemberProfile() {
+            const token = localStorage.getItem('memberToken');
+            if (!token) return;
+            
+            try {
+                const response = await fetch('/api/membership/profile', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    if (response.status === 401) {
+                        logoutMember();
+                    }
+                    return;
+                }
+                
+                const data = await response.json();
+                const member = data.member;
+                
+                // Update dashboard
+                document.getElementById('memberName').textContent = member.name;
+                document.getElementById('memberAvatar').textContent = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('memberTierBadge').textContent = `${capitalizeFirst(member.membership_tier)} Member`;
+                document.getElementById('memberTierBadge').className = `member-tier-badge tier-${member.membership_tier}`;
+                document.getElementById('memberDiscount').textContent = `${member.discount_percent}%`;
+                document.getElementById('memberOrders').textContent = member.total_orders || 0;
+                document.getElementById('memberSpent').textContent = `$${parseFloat(member.total_spent || 0).toFixed(2)}`;
+                
+                // Update perks
+                updatePerks(member.membership_tier);
+                
+                // Calculate next tier progress
+                updateNextTierInfo(member);
+                
+                // Show dashboard, hide auth
+                document.getElementById('memberAuthSection').style.display = 'none';
+                document.getElementById('memberDashboard').style.display = 'block';
+                
+            } catch (error) {
+                console.error('Error loading profile:', error);
+            }
+        }
+
+        function updatePerks(tier) {
+            const perks = {
+                basic: [
+                    'Early access to new services',
+                    'Priority email support'
+                ],
+                silver: [
+                    '10% discount on all orders',
+                    'Priority email support',
+                    'Free revision requests'
+                ],
+                gold: [
+                    '15% discount on all orders',
+                    'Priority support (24/7)',
+                    'Free revisions',
+                    'Dedicated writer option'
+                ],
+                platinum: [
+                    '20% discount on all orders',
+                    'VIP support (24/7)',
+                    'Unlimited revisions',
+                    'Dedicated account manager',
+                    'Early access to promotions'
+                ]
+            };
+            
+            const perksList = document.getElementById('memberPerks');
+            perksList.innerHTML = (perks[tier] || perks.basic).map(perk => 
+                `<li><i class="fas fa-check-circle"></i> ${perk}</li>`
+            ).join('');
+        }
+
+        function updateNextTierInfo(member) {
+            const tiers = ['basic', 'silver', 'gold', 'platinum'];
+            const requirements = {
+                silver: { orders: 5, spent: 100 },
+                gold: { orders: 15, spent: 500 },
+                platinum: { orders: 30, spent: 1500 }
+            };
+            
+            const currentIndex = tiers.indexOf(member.membership_tier);
+            const nextTierEl = document.getElementById('nextTierInfo');
+            const nextTierText = document.getElementById('nextTierText');
+            
+            if (currentIndex >= tiers.length - 1) {
+                nextTierEl.innerHTML = `
+                    <p style="color: #ffd700; font-size: 0.9rem;">
+                        <i class="fas fa-crown"></i>
+                        You've reached the highest tier! Enjoy maximum benefits.
+                    </p>
+                `;
+                return;
+            }
+            
+            const nextTier = tiers[currentIndex + 1];
+            const req = requirements[nextTier];
+            const ordersNeeded = Math.max(0, req.orders - (member.total_orders || 0));
+            const spentNeeded = Math.max(0, req.spent - (member.total_spent || 0));
+            
+            if (ordersNeeded <= 0 || spentNeeded <= 0) {
+                nextTierText.textContent = `You're almost at ${capitalizeFirst(nextTier)}! Contact support to upgrade.`;
+            } else {
+                nextTierText.textContent = `Complete ${ordersNeeded} more order${ordersNeeded !== 1 ? 's' : ''} or spend $${spentNeeded.toFixed(2)} more to reach ${capitalizeFirst(nextTier)} tier!`;
+            }
+        }
+
+        function logoutMember() {
+            localStorage.removeItem('memberToken');
+            localStorage.removeItem('memberEmail');
+            
+            // Reset forms
+            document.getElementById('memberRegisterForm')?.reset();
+            document.getElementById('memberLoginForm')?.reset();
+            
+            // Show auth, hide dashboard
+            document.getElementById('memberAuthSection').style.display = 'block';
+            document.getElementById('memberDashboard').style.display = 'none';
+            
+            showToast('success', 'You have been signed out.');
+        }
+
+        function capitalizeFirst(str) {
+            return str.charAt(0).toUpperCase() + str.slice(1);
+        }
+
+        // Apply member discount to order if logged in
+        async function applyMemberDiscount() {
+            const memberEmail = localStorage.getItem('memberEmail');
+            if (!memberEmail) return null;
+            
+            try {
+                const response = await fetch(`/api/membership/discount/${encodeURIComponent(memberEmail)}`);
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.discount_percent || 0;
+                }
+            } catch (error) {
+                console.error('Error checking member discount:', error);
+            }
+            return 0;
         }
 
         // Initialize

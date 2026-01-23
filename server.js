@@ -16,6 +16,7 @@ const telegramRoutes = require('./routes/telegram');
 const clientRoutes = require('./routes/client');
 const accountingRoutes = require('./routes/accounting');
 const referralsRoutes = require('./routes/referrals');
+const membershipRoutes = require('./routes/membership');
 
 const app = express();
 
@@ -61,6 +62,7 @@ app.use('/api/telegram/webhook', telegramRoutes); // Public webhook endpoint
 app.use('/api/client', clientRoutes);
 app.use('/api/accounting', accountingRoutes);
 app.use('/api/referrals', referralsRoutes);
+app.use('/api/membership', membershipRoutes);
 
 // Serve frontend for all other routes (SPA fallback)
 app.get('*', (req, res) => {

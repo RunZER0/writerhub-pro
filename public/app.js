@@ -725,16 +725,35 @@ function navigateTo(page) {
     };
     document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
     
-    // Stop chat polling when leaving chat page
+    // Stop chat polling and reset chat state when leaving chat page
     if (page !== 'chat') {
         stopChatPolling();
         currentChatType = null;
         currentChatTarget = null;
+        
+        // Reset chat UI to prevent sticking on mobile
+        const chatInputArea = document.getElementById('chatInputArea');
+        if (chatInputArea) chatInputArea.style.display = 'none';
+        
+        const chatMessages = document.getElementById('chatMessages');
+        if (chatMessages) {
+            chatMessages.innerHTML = '<div class="empty-state"><p>Select a conversation to start messaging</p></div>';
+        }
+        
+        const chatWindowHeader = document.getElementById('chatWindowHeader');
+        if (chatWindowHeader) {
+            chatWindowHeader.innerHTML = `
+                <div class="chat-user-info">
+                    <span class="chat-user-name">Select a conversation</span>
+                </div>
+            `;
+        }
     }
     
     // Load specific content
     if (page === 'job-board' && !isAdmin()) loadJobBoard();
     if (page === 'chat') {
+        document.body.classList.add('chat-active');
         loadChatThreads();
         // Auto-load writers list for admin to start new conversations
         if (isAdmin()) {
@@ -744,6 +763,8 @@ function navigateTo(page) {
             const toggleBtn = document.getElementById('toggleWritersListBtn');
             if (toggleBtn) toggleBtn.classList.add('expanded');
         }
+    } else {
+        document.body.classList.remove('chat-active');
     }
     if (page === 'accounting' && isAdmin()) loadAccounting();
     if (page === 'referrals' && isAdmin()) loadReferrals();
@@ -751,6 +772,9 @@ function navigateTo(page) {
     // Close sidebar on mobile
     document.querySelector('.sidebar').classList.remove('active');
     document.getElementById('sidebarOverlay').classList.remove('active');
+    
+    // Scroll to top on mobile when changing pages
+    window.scrollTo(0, 0);
 }
 
 // ========================================
@@ -2271,15 +2295,20 @@ async function loadWritersForChat() {
     if (!container) return;
     
     try {
-        // Use existing writers array or fetch them
-        let writersList = writers.length ? writers : await api('/writers');
+        // Always fetch fresh from API to ensure all writers are loaded
+        const writersList = await api('/writers');
         
-        if (!writersList.length) {
+        if (!writersList || !writersList.length) {
             container.innerHTML = '<div class="empty-state" style="padding: 1rem; font-size: 0.8rem;">No writers found</div>';
             return;
         }
         
-        container.innerHTML = writersList.map(w => `
+        // Sort by name and filter active writers
+        const sortedWriters = writersList
+            .filter(w => w.status === 'active')
+            .sort((a, b) => a.name.localeCompare(b.name));
+        
+        container.innerHTML = sortedWriters.map(w => `
             <div class="writer-chat-item" data-user-id="${w.user_id || w.id}" data-user-name="${escapeHtml(w.name)}">
                 <div class="writer-chat-avatar">${getInitials(w.name)}</div>
                 <div class="writer-chat-name">${escapeHtml(w.name)}</div>
@@ -2297,6 +2326,7 @@ async function loadWritersForChat() {
         });
     } catch (error) {
         console.error('Load writers for chat error:', error);
+        container.innerHTML = '<div class="empty-state" style="padding: 1rem; font-size: 0.8rem; color: var(--danger);">Failed to load writers</div>';
     }
 }
 
