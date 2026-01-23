@@ -293,9 +293,10 @@ async function showTelegramModal() {
                 </div>
             `;
             footer.innerHTML = `
-                <button class="btn btn-secondary" data-close="telegramModal">Close</button>
+                <button class="btn btn-secondary" id="closeTelegramModal">Close</button>
                 <button class="btn btn-danger" id="unlinkTelegramBtn">Unlink</button>
             `;
+            document.getElementById('closeTelegramModal')?.addEventListener('click', () => closeModal('telegramModal'));
             document.getElementById('unlinkTelegramBtn')?.addEventListener('click', unlinkTelegram);
         } else {
             await generateTelegramCode();
@@ -347,9 +348,10 @@ async function generateTelegramCode() {
                 </div>
             `;
             footer.innerHTML = `
-                <button class="btn btn-secondary" data-close="telegramModal">Cancel</button>
+                <button class="btn btn-secondary" id="cancelTelegramBtn">Cancel</button>
                 <button class="btn btn-primary" id="refreshTelegramBtn"><i class="fas fa-sync-alt"></i> Refresh</button>
             `;
+            document.getElementById('cancelTelegramBtn')?.addEventListener('click', () => closeModal('telegramModal'));
             document.getElementById('refreshTelegramBtn')?.addEventListener('click', showTelegramModal);
         }
     } catch (error) {
@@ -637,6 +639,47 @@ function showApp() {
     } else {
         loadJobBoard();
     }
+    
+    // Start data polling for real-time updates
+    startDataPolling();
+}
+
+let dataPollingInterval = null;
+
+function startDataPolling() {
+    if (dataPollingInterval) clearInterval(dataPollingInterval);
+    
+    // Poll for data updates every 15 seconds
+    dataPollingInterval = setInterval(async () => {
+        try {
+            // Only update if user is active
+            if (document.visibilityState !== 'visible') return;
+            
+            // Refresh assignments (includes time remaining updates)
+            await loadAssignments();
+            
+            // Refresh dashboard stats
+            await loadDashboard();
+            
+            // Refresh notifications
+            await loadNotifications();
+            loadUnreadCount();
+            
+            // Refresh job board for writers
+            if (!isAdmin()) {
+                await loadJobBoard();
+            } else {
+                await loadExtensionRequests();
+            }
+        } catch (e) { /* silent fail */ }
+    }, 15000);
+    
+    // Also re-render time remaining every 30 seconds (local only, no API call)
+    setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            renderAssignmentsTable();
+        }
+    }, 30000);
 }
 
 async function updateOnlineStatus(online) {
@@ -848,46 +891,130 @@ function viewJobDetails(id) {
     viewAssignment(id);
 }
 
+let currentPickJob = null; // Store current job being picked
+
 function openPickJobModal(id) {
     const job = jobBoard.find(j => j.id === id);
     if (!job) return;
     
+    currentPickJob = job;
     document.getElementById('pickJobId').value = id;
     
     const deadline = new Date(job.deadline);
     const maxWriterDeadline = new Date(deadline.getTime() - 30 * 60 * 1000);
+    const now = new Date();
+    
+    // Calculate time remaining
+    const timeRemaining = maxWriterDeadline - now;
+    const timeRemainingText = formatTimeRemaining(timeRemaining);
     
     document.getElementById('pickJobSummary').innerHTML = `
         <div class="job-summary-title">${job.title}</div>
         <div class="job-summary-details">
-            <span>Word Count:</span> <strong>${job.word_count.toLocaleString()}</strong>
+            <span>Word Count:</span> <strong>${job.word_count_min === job.word_count_max ? job.word_count.toLocaleString() : `${job.word_count_min.toLocaleString()} - ${job.word_count_max.toLocaleString()}`}</strong>
             <span>Amount:</span> <strong>${formatCurrency(job.amount)}</strong>
             <span>Client Deadline:</span> <strong>${formatDateTime(job.deadline)}</strong>
-            <span>Your Max Deadline:</span> <strong>${formatDateTime(maxWriterDeadline)}</strong>
         </div>
     `;
     
-    // Set default writer deadline to 1 hour before max
-    const defaultDeadline = new Date(maxWriterDeadline.getTime() - 60 * 60 * 1000);
-    document.getElementById('writerDeadline').value = defaultDeadline.toISOString().slice(0, 16);
-    document.getElementById('writerDeadline').max = maxWriterDeadline.toISOString().slice(0, 16);
+    document.getElementById('timeRemainingValue').textContent = timeRemainingText;
+    document.getElementById('timeRemainingValue').className = 'time-remaining-value' + (timeRemaining < 2 * 60 * 60 * 1000 ? ' urgent' : '');
+    
+    // Reset inputs
+    document.getElementById('neededDays').value = 0;
+    document.getElementById('neededHours').value = 0;
+    document.getElementById('neededMinutes').value = 30;
+    
+    updateCalculatedDeadline();
     
     openModal('pickJobModal');
+}
+
+function formatTimeRemaining(ms) {
+    if (ms <= 0) return 'Expired';
+    
+    const days = Math.floor(ms / (24 * 60 * 60 * 1000));
+    const hours = Math.floor((ms % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+    const minutes = Math.floor((ms % (60 * 60 * 1000)) / (60 * 1000));
+    
+    let parts = [];
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
+    if (minutes > 0) parts.push(`${minutes}m`);
+    
+    return parts.join(' ') || '< 1m';
+}
+
+function updateCalculatedDeadline() {
+    if (!currentPickJob) return;
+    
+    const days = parseInt(document.getElementById('neededDays').value) || 0;
+    const hours = parseInt(document.getElementById('neededHours').value) || 0;
+    const minutes = parseInt(document.getElementById('neededMinutes').value) || 0;
+    
+    const totalMs = (days * 24 * 60 * 60 * 1000) + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
+    
+    if (totalMs <= 0) {
+        document.getElementById('calculatedDeadlineValue').textContent = 'Enter time needed';
+        document.getElementById('deadlineWarning').style.display = 'none';
+        return;
+    }
+    
+    const calculatedDeadline = new Date(Date.now() + totalMs);
+    const clientDeadline = new Date(currentPickJob.deadline);
+    const maxWriterDeadline = new Date(clientDeadline.getTime() - 30 * 60 * 1000);
+    
+    document.getElementById('calculatedDeadlineValue').textContent = formatDateTime(calculatedDeadline);
+    
+    // Check if deadline is valid
+    const warning = document.getElementById('deadlineWarning');
+    if (calculatedDeadline > maxWriterDeadline) {
+        warning.textContent = `⚠️ This exceeds the maximum deadline! You only have ${formatTimeRemaining(maxWriterDeadline - Date.now())} available.`;
+        warning.style.display = 'block';
+        warning.className = 'warning-text danger';
+    } else if (calculatedDeadline > new Date(maxWriterDeadline.getTime() - 60 * 60 * 1000)) {
+        warning.textContent = '⚠️ Cutting it close! Consider leaving more buffer time.';
+        warning.style.display = 'block';
+        warning.className = 'warning-text';
+    } else {
+        warning.style.display = 'none';
+    }
 }
 
 async function pickJob(e) {
     e.preventDefault();
     
     const id = document.getElementById('pickJobId').value;
-    const writerDeadline = document.getElementById('writerDeadline').value;
+    const days = parseInt(document.getElementById('neededDays').value) || 0;
+    const hours = parseInt(document.getElementById('neededHours').value) || 0;
+    const minutes = parseInt(document.getElementById('neededMinutes').value) || 0;
+    
+    const totalMs = (days * 24 * 60 * 60 * 1000) + (hours * 60 * 60 * 1000) + (minutes * 60 * 1000);
+    
+    if (totalMs <= 0) {
+        showToast('error', 'Error', 'Please enter how much time you need');
+        return;
+    }
+    
+    const writerDeadline = new Date(Date.now() + totalMs);
+    
+    // Validate against max deadline
+    const clientDeadline = new Date(currentPickJob.deadline);
+    const maxWriterDeadline = new Date(clientDeadline.getTime() - 30 * 60 * 1000);
+    
+    if (writerDeadline > maxWriterDeadline) {
+        showToast('error', 'Error', 'Your requested time exceeds the available time');
+        return;
+    }
     
     try {
         await api(`/assignments/${id}/pick`, {
             method: 'POST',
-            body: { writer_deadline: writerDeadline }
+            body: { writer_deadline: writerDeadline.toISOString() }
         });
         
         closeModal('pickJobModal');
+        currentPickJob = null;
         showToast('success', 'Job Picked!', 'You have successfully picked this job');
         loadJobBoard();
         loadAssignments();
@@ -1094,6 +1221,16 @@ function renderAssignmentsTable() {
         const hasExtensionRequest = a.extension_requested;
         const needsRevision = a.revision_requested;
         
+        // Calculate time remaining for writers
+        let timeRemainingHtml = '-';
+        if (!isAdmin() && a.writer_deadline && a.status !== 'completed') {
+            const timeLeft = new Date(a.writer_deadline) - new Date();
+            const timeRemainingText = formatTimeRemaining(timeLeft);
+            const isUrgent = timeLeft < 2 * 60 * 60 * 1000; // Less than 2 hours
+            const isExpired = timeLeft <= 0;
+            timeRemainingHtml = `<span class="time-remaining-badge ${isExpired ? 'expired' : isUrgent ? 'urgent' : ''}">${timeRemainingText}</span>`;
+        }
+        
         let amountHtml = `<strong>${formatCurrency(a.amount)}</strong>`;
         if (hasSubmittedAmount && isAdmin()) {
             amountHtml = `
@@ -1130,7 +1267,7 @@ function renderAssignmentsTable() {
                 <td>${a.domain ? `<span class="domain-badge">${a.domain}</span>` : '-'}</td>
                 <td>${a.word_count.toLocaleString()}</td>
                 <td class="${isOverdue ? 'deadline-urgent' : ''}">${formatDateTime(a.deadline)}</td>
-                ${!isAdmin() ? `<td class="${writerDeadlineOverdue ? 'deadline-urgent' : ''}">${a.writer_deadline ? formatDateTime(a.writer_deadline) : '-'}</td>` : ''}
+                ${!isAdmin() ? `<td>${timeRemainingHtml}</td>` : ''}
                 <td>${amountHtml}</td>
                 <td>${statusBadge}</td>
                 <td>
@@ -2542,6 +2679,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('pickJobForm').addEventListener('submit', pickJob);
     document.getElementById('extensionForm').addEventListener('submit', submitExtensionRequest);
     document.getElementById('overrideDeadlineForm').addEventListener('submit', overrideDeadline);
+    
+    // Time inputs for pick job modal
+    ['neededDays', 'neededHours', 'neededMinutes'].forEach(id => {
+        document.getElementById(id)?.addEventListener('input', updateCalculatedDeadline);
+    });
     
     // Buttons
     document.getElementById('addWriterBtn')?.addEventListener('click', openNewWriterModal);

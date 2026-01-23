@@ -357,7 +357,7 @@
                                         <th>Domain</th>
                                         <th>Words</th>
                                         <th>Deadline</th>
-                                        <th class="writer-only">My Deadline</th>
+                                        <th class="writer-only">Time Left</th>
                                         <th>Amount</th>
                                         <th>Status</th>
                                         <th>Actions</th>
@@ -687,12 +687,35 @@
             </div>
             <div class="modal-body">
                 <div class="job-summary" id="pickJobSummary"></div>
+                
+                <div class="time-remaining-box" id="timeRemainingBox">
+                    <div class="time-remaining-label">Time Available</div>
+                    <div class="time-remaining-value" id="timeRemainingValue">--</div>
+                </div>
+                
                 <form id="pickJobForm">
                     <input type="hidden" id="pickJobId">
                     <div class="form-group">
-                        <label for="writerDeadline">Your Delivery Deadline *</label>
-                        <input type="datetime-local" id="writerDeadline" required>
-                        <span class="form-helper">Must be at least 30 minutes before client deadline</span>
+                        <label>How much time do you need?</label>
+                        <div class="time-input-row">
+                            <div class="time-input-group">
+                                <input type="number" id="neededDays" min="0" value="0" placeholder="0">
+                                <span>Days</span>
+                            </div>
+                            <div class="time-input-group">
+                                <input type="number" id="neededHours" min="0" max="23" value="0" placeholder="0">
+                                <span>Hours</span>
+                            </div>
+                            <div class="time-input-group">
+                                <input type="number" id="neededMinutes" min="0" max="59" value="30" placeholder="30">
+                                <span>Minutes</span>
+                            </div>
+                        </div>
+                        <span class="form-helper">Your delivery time will be calculated from now</span>
+                    </div>
+                    <div class="calculated-deadline-box" id="calculatedDeadlineBox">
+                        <div class="calculated-label">Your Delivery Deadline:</div>
+                        <div class="calculated-value" id="calculatedDeadlineValue">--</div>
                     </div>
                     <div id="deadlineWarning" class="warning-text" style="display:none;"></div>
                 </form>

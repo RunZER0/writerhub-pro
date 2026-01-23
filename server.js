@@ -13,12 +13,30 @@ const filesRoutes = require('./routes/files');
 const messagesRoutes = require('./routes/messages');
 const pushRoutes = require('./routes/push');
 const telegramRoutes = require('./routes/telegram');
+const clientRoutes = require('./routes/client');
 
 const app = express();
 
 // Middleware
 app.use(cors());
 app.use(express.json());
+
+// Serve landing page at root (BEFORE static middleware)
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'landing.html'));
+});
+
+// Serve client portal
+app.get('/client', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'client.html'));
+});
+
+// Serve writers app
+app.get('/writers', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// Static files (after explicit routes)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
@@ -33,8 +51,9 @@ app.use('/api/messages', messagesRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/telegram', telegramRoutes);
 app.use('/api/telegram/webhook', telegramRoutes); // Public webhook endpoint
+app.use('/api/client', clientRoutes);
 
-// Serve frontend for all other routes
+// Serve frontend for all other routes (SPA fallback)
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -76,7 +95,8 @@ async function runMigrations() {
             ADD COLUMN IF NOT EXISTS submission_links TEXT,
             ADD COLUMN IF NOT EXISTS submission_notes TEXT,
             ADD COLUMN IF NOT EXISTS completed_at TIMESTAMP,
-            ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP
+            ADD COLUMN IF NOT EXISTS submitted_at TIMESTAMP,
+            ADD COLUMN IF NOT EXISTS client_source VARCHAR(50) DEFAULT 'admin'
         `);
         
         console.log('✅ Database migrations complete');

@@ -2371,10 +2371,131 @@ body.role-admin .writer-only-inline {
     color: var(--text-primary);
 }
 
+/* Time Remaining Box */
+.time-remaining-box {
+    background: linear-gradient(135deg, var(--primary-light) 0%, var(--accent-blue-bg) 100%);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.time-remaining-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.25rem;
+}
+
+.time-remaining-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--primary);
+}
+
+.time-remaining-value.urgent {
+    color: var(--danger);
+}
+
+/* Time Input Row */
+.time-input-row {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.time-input-group {
+    flex: 1;
+    text-align: center;
+}
+
+.time-input-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1.25rem;
+    font-weight: 600;
+    text-align: center;
+    background: var(--background);
+    color: var(--text-primary);
+    transition: var(--transition);
+}
+
+.time-input-group input:focus {
+    border-color: var(--primary);
+    outline: none;
+}
+
+.time-input-group span {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    margin-top: 0.25rem;
+}
+
+/* Calculated Deadline Box */
+.calculated-deadline-box {
+    background: var(--surface-hover);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+    margin-top: 1rem;
+    border: 1px solid var(--border);
+}
+
+.calculated-label {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.25rem;
+}
+
+.calculated-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
 .warning-text {
-    color: var(--accent-red);
+    color: var(--accent-orange);
     font-size: 0.8125rem;
-    margin-top: 0.5rem;
+    margin-top: 0.75rem;
+    padding: 0.5rem;
+    background: var(--accent-orange-bg);
+    border-radius: var(--radius);
+}
+
+.warning-text.danger {
+    color: var(--danger);
+    background: var(--accent-red-bg);
+}
+
+/* Time Remaining Badge */
+.time-remaining-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--radius);
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--accent-green-bg);
+    color: var(--accent-green);
+}
+
+.time-remaining-badge.urgent {
+    background: var(--accent-orange-bg);
+    color: var(--accent-orange);
+    animation: pulse 2s infinite;
+}
+
+.time-remaining-badge.expired {
+    background: var(--accent-red-bg);
+    color: var(--danger);
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
 }
 
 /* ========================================
