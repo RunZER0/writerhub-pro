@@ -448,7 +448,7 @@ async function sendThankYouReceipt(order, email) {
             body: JSON.stringify({
                 sender: {
                     name: 'HomeworkPal',
-                    email: 'noreply@homeworkpal.online'
+                    email: process.env.SENDER_EMAIL || 'admin@homeworkpal.online'
                 },
                 to: [{ email }],
                 subject: `🎉 Thank You! Receipt for Order #${order.order_number}`,
