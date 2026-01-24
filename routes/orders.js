@@ -22,14 +22,7 @@ const PRICING = {
     }
 };
 
-// Urgency multipliers based on deadline
-const URGENCY_FEES = {
-    24: 0.30,   // 30% extra for 24 hours
-    48: 0.20,   // 20% extra for 48 hours (2 days)
-    72: 0.10,   // 10% extra for 3 days
-    120: 0.05,  // 5% extra for 5 days
-    168: 0      // No extra for 7 days
-};
+// Note: Urgency fees removed - covered by tier pricing
 
 // Complexity multipliers
 const COMPLEXITY = {
@@ -84,23 +77,13 @@ router.post('/calculate', authenticateMember, async (req, res) => {
             return res.status(400).json({ error: 'Invalid package type' });
         }
 
-        // Calculate base price
+        // Calculate base price (urgency included in tier pricing)
         const complexityMultiplier = COMPLEXITY[complexity] || 1.0;
         const basePerPage = pricing.basePrice * complexityMultiplier;
         const basePrice = basePerPage * pages;
 
-        // Calculate urgency fee
-        let urgencyMultiplier = 0;
-        for (const [hours, fee] of Object.entries(URGENCY_FEES).sort((a, b) => a[0] - b[0])) {
-            if (deadlineHours <= parseInt(hours)) {
-                urgencyMultiplier = fee;
-                break;
-            }
-        }
-        const urgencyFee = basePrice * urgencyMultiplier;
-
-        // Subtotal before discount
-        const subtotal = basePrice + urgencyFee;
+        // Subtotal (no separate urgency fee - covered by tier pricing)
+        const subtotal = basePrice;
 
         // Get member discount if authenticated and verified
         let discountPercent = 0;
@@ -131,14 +114,13 @@ router.post('/calculate', authenticateMember, async (req, res) => {
                 pricePerPage: basePerPage.toFixed(2),
                 basePrice: basePrice.toFixed(2),
                 deadlineHours,
-                urgencyPercent: urgencyMultiplier * 100,
-                urgencyFee: urgencyFee.toFixed(2),
                 subtotal: subtotal.toFixed(2),
                 memberTier,
                 discountPercent,
                 discountAmount: discountAmount.toFixed(2),
                 finalPrice: finalPrice.toFixed(2),
-                complexity
+                complexity,
+                memberSavingsNote: discountPercent > 0 ? `You're saving ${discountPercent}% with your membership!` : 'Join membership to save up to 20% on every order!'
             }
         });
 
@@ -164,21 +146,14 @@ router.post('/create', authenticateMember, async (req, res) => {
             description
         } = req.body;
 
-        // Recalculate price to ensure accuracy
+        // Recalculate price to ensure accuracy (urgency included in tier pricing)
         const pricing = PRICING[packageType];
         const complexityMultiplier = COMPLEXITY[complexity] || 1.0;
         const basePerPage = pricing.basePrice * complexityMultiplier;
         const basePrice = basePerPage * pages;
 
-        let urgencyMultiplier = 0;
-        for (const [hours, fee] of Object.entries(URGENCY_FEES).sort((a, b) => a[0] - b[0])) {
-            if (deadlineHours <= parseInt(hours)) {
-                urgencyMultiplier = fee;
-                break;
-            }
-        }
-        const urgencyFee = basePrice * urgencyMultiplier;
-        const subtotal = basePrice + urgencyFee;
+        // No separate urgency fee - covered by tier pricing
+        const subtotal = basePrice;
 
         let discountPercent = 0;
         let discountAmount = 0;
@@ -204,9 +179,9 @@ router.post('/create', authenticateMember, async (req, res) => {
             INSERT INTO client_orders (
                 order_number, member_id, guest_email, guest_name,
                 package_type, base_price, discount_percent, discount_amount,
-                final_price, pages, deadline_hours, urgency_fee,
+                final_price, pages, deadline_hours,
                 payment_status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, 'pending')
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, 'pending')
             RETURNING *
         `, [
             orderNumber,
@@ -219,8 +194,7 @@ router.post('/create', authenticateMember, async (req, res) => {
             discountAmount,
             finalPrice,
             pages,
-            deadlineHours,
-            urgencyFee
+            deadlineHours
         ]);
 
         res.json({
@@ -232,7 +206,6 @@ router.post('/create', authenticateMember, async (req, res) => {
                     packageType,
                     pages,
                     basePrice: subtotal.toFixed(2),
-                    urgencyFee: urgencyFee.toFixed(2),
                     discountPercent,
                     discountAmount: discountAmount.toFixed(2),
                     finalPrice: finalPrice.toFixed(2)
@@ -327,16 +300,6 @@ function generateReceiptHTML(order, isThankYou = false) {
                 <h3>💰 Price Breakdown</h3>
                 <div class="breakdown-row">
                     <span>Base Price (${order.pages} pages)</span>
-                    <span>$${(parseFloat(order.base_price) - parseFloat(order.urgency_fee || 0)).toFixed(2)}</span>
-                </div>
-                ${parseFloat(order.urgency_fee) > 0 ? `
-                <div class="breakdown-row">
-                    <span>Express Delivery Fee</span>
-                    <span>$${parseFloat(order.urgency_fee).toFixed(2)}</span>
-                </div>
-                ` : ''}
-                <div class="breakdown-row">
-                    <span>Subtotal</span>
                     <span>$${parseFloat(order.base_price).toFixed(2)}</span>
                 </div>
                 ${parseFloat(order.discount_amount) > 0 ? `
@@ -344,7 +307,16 @@ function generateReceiptHTML(order, isThankYou = false) {
                     <span>Member Discount (${order.discount_percent}%)</span>
                     <span>-$${parseFloat(order.discount_amount).toFixed(2)}</span>
                 </div>
-                ` : ''}
+                <div class="breakdown-row" style="color: #94a3b8; font-size: 12px;">
+                    <span>💡 Members save up to 20% on every order!</span>
+                    <span></span>
+                </div>
+                ` : `
+                <div class="breakdown-row" style="color: #94a3b8; font-size: 12px;">
+                    <span>💡 Join membership to save up to 20% on every order!</span>
+                    <span></span>
+                </div>
+                `}
                 <div class="breakdown-row total">
                     <span>Total</span>
                     <span class="amount">$${parseFloat(order.final_price).toFixed(2)}</span>

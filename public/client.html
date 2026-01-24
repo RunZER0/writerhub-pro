@@ -452,6 +452,107 @@
             font-weight: 500;
         }
 
+        /* Assignment Type Selection */
+        .assignment-type-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 0.75rem;
+        }
+
+        .type-option {
+            padding: 1rem;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: rgba(255,255,255,0.02);
+        }
+
+        .type-option:hover {
+            border-color: rgba(99, 102, 241, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .type-option.selected {
+            border-color: #6366f1;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.1));
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.2);
+        }
+
+        .type-option i {
+            display: block;
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            color: #6366f1;
+        }
+
+        .type-option span {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .type-option small {
+            display: block;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.5);
+            margin-top: 0.25rem;
+        }
+
+        .type-specific-fields {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .info-banner {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .info-banner i {
+            color: #6366f1;
+            font-size: 1.1rem;
+        }
+
+        .info-banner.ai-pricing {
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .info-banner.ai-pricing i {
+            color: #10b981;
+        }
+
+        .ai-pricing-note {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            font-size: 0.8rem;
+            color: #10b981;
+        }
+
+        .ai-pricing-note i {
+            color: #10b981;
+        }
+
         /* Deadline Options */
         .deadline-grid {
             display: grid;
@@ -2194,6 +2295,43 @@
                     </div>
 
                     <form id="assignmentForm">
+                        <!-- Assignment Type Selection -->
+                        <div class="form-group">
+                            <label>Assignment Type <span class="required">*</span></label>
+                            <div class="assignment-type-grid" id="assignmentTypeGrid">
+                                <div class="type-option selected" data-type="standard">
+                                    <i class="fas fa-file-alt"></i>
+                                    <span>Written Work</span>
+                                    <small>Essays, papers, reports</small>
+                                </div>
+                                <div class="type-option" data-type="excel">
+                                    <i class="fas fa-file-excel"></i>
+                                    <span>Excel/Spreadsheet</span>
+                                    <small>Data, formulas, analysis</small>
+                                </div>
+                                <div class="type-option" data-type="programming">
+                                    <i class="fas fa-code"></i>
+                                    <span>Programming</span>
+                                    <small>Code, scripts, software</small>
+                                </div>
+                                <div class="type-option" data-type="presentation">
+                                    <i class="fas fa-presentation"></i>
+                                    <span>Presentation</span>
+                                    <small>PowerPoint, slides</small>
+                                </div>
+                                <div class="type-option" data-type="course">
+                                    <i class="fas fa-graduation-cap"></i>
+                                    <span>Full Course</span>
+                                    <small>Entire class assistance</small>
+                                </div>
+                                <div class="type-option" data-type="custom">
+                                    <i class="fas fa-puzzle-piece"></i>
+                                    <span>Other/Custom</span>
+                                    <small>Anything else</small>
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label>Assignment Title <span class="required">*</span></label>
                             <input type="text" id="title" required placeholder="e.g., Research Paper on Climate Change">
@@ -2234,6 +2372,10 @@
                                     <i class="fas fa-landmark"></i>
                                     <span>History</span>
                                 </div>
+                                <div class="domain-option" data-domain="Computer Science">
+                                    <i class="fas fa-laptop-code"></i>
+                                    <span>Computer Science</span>
+                                </div>
                                 <div class="domain-option" data-domain="Law">
                                     <i class="fas fa-gavel"></i>
                                     <span>Law</span>
@@ -2241,14 +2383,109 @@
                             </div>
                         </div>
 
-                        <div class="form-row">
-                            <div class="form-group">
-                                <label>Number of Pages <span class="required">*</span></label>
-                                <input type="number" id="pages" min="1" value="1" required onchange="calculatePrice()">
+                        <!-- Dynamic Fields Based on Assignment Type -->
+                        <!-- Standard Written Work -->
+                        <div id="standardFields" class="type-specific-fields">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Number of Pages <span class="required">*</span></label>
+                                    <input type="number" id="pages" min="1" value="1" onchange="calculatePrice()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Word Count (approx)</label>
+                                    <input type="text" id="wordCount" readonly value="~275 words">
+                                </div>
                             </div>
+                        </div>
+
+                        <!-- Excel/Spreadsheet Fields -->
+                        <div id="excelFields" class="type-specific-fields" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Complexity Level <span class="required">*</span></label>
+                                    <select id="excelComplexity" onchange="calculatePrice()">
+                                        <option value="simple">Simple ($25) - Basic formulas, data entry</option>
+                                        <option value="moderate" selected>Moderate ($50) - Pivot tables, VLOOKUP, charts</option>
+                                        <option value="complex">Complex ($100) - Macros, VBA, complex analysis</option>
+                                        <option value="advanced">Advanced ($175) - Full dashboard, automation</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Number of Tasks/Sheets</label>
+                                    <input type="number" id="excelTasks" min="1" value="1" onchange="calculatePrice()">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Programming Fields -->
+                        <div id="programmingFields" class="type-specific-fields" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Project Complexity <span class="required">*</span></label>
+                                    <select id="programmingComplexity" onchange="calculatePrice()">
+                                        <option value="simple">Simple ($30) - Basic script, single file</option>
+                                        <option value="moderate" selected>Moderate ($75) - Multi-file, some complexity</option>
+                                        <option value="complex">Complex ($150) - Full application, algorithms</option>
+                                        <option value="advanced">Advanced ($300) - System design, architecture</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Programming Language</label>
+                                    <input type="text" id="programmingLanguage" placeholder="e.g., Python, Java, JavaScript">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Presentation Fields -->
+                        <div id="presentationFields" class="type-specific-fields" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Number of Slides <span class="required">*</span></label>
+                                    <input type="number" id="slides" min="1" value="10" onchange="calculatePrice()">
+                                </div>
+                                <div class="form-group">
+                                    <label>Include</label>
+                                    <select id="presentationType" onchange="calculatePrice()">
+                                        <option value="basic">Basic ($3/slide) - Design only</option>
+                                        <option value="withNotes" selected>With Notes ($5/slide) - Speaker notes included</option>
+                                        <option value="withResearch">With Research ($8/slide) - Full content creation</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Full Course Fields -->
+                        <div id="courseFields" class="type-specific-fields" style="display: none;">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Course Duration <span class="required">*</span></label>
+                                    <select id="courseDuration" onchange="calculatePrice()">
+                                        <option value="mini">Mini (2-4 weeks) - From $150</option>
+                                        <option value="standard" selected>Standard (6-8 weeks) - From $350</option>
+                                        <option value="intensive">Intensive (10-12 weeks) - From $600</option>
+                                        <option value="comprehensive">Full Semester - From $1000</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>Platform (optional)</label>
+                                    <input type="text" id="coursePlatform" placeholder="e.g., Canvas, Blackboard, Coursera">
+                                </div>
+                            </div>
+                            <div class="info-banner">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Course pricing will be finalized after reviewing requirements. Price shown is starting estimate.</span>
+                            </div>
+                        </div>
+
+                        <!-- Custom/Other Fields -->
+                        <div id="customFields" class="type-specific-fields" style="display: none;">
                             <div class="form-group">
-                                <label>Word Count (approx)</label>
-                                <input type="text" id="wordCount" readonly value="~275 words">
+                                <label>Describe Your Assignment <span class="required">*</span></label>
+                                <textarea id="customDescription" placeholder="Please describe what you need help with in detail. Include any relevant information about scope, requirements, and expectations."></textarea>
+                            </div>
+                            <div class="info-banner ai-pricing">
+                                <i class="fas fa-robot"></i>
+                                <span>Our AI will analyze your requirements and provide a fair price estimate. Final price may be adjusted after review.</span>
                             </div>
                         </div>
 
@@ -2271,6 +2508,10 @@
                                     <div class="time">7 days</div>
                                     <div class="label">Extended</div>
                                 </div>
+                                <div class="deadline-option" data-hours="336">
+                                    <div class="time">2 weeks</div>
+                                    <div class="label">Long-term</div>
+                                </div>
                             </div>
                         </div>
 
@@ -2283,8 +2524,8 @@
                             <label>Attach Files (optional)</label>
                             <div class="file-upload" id="fileUpload">
                                 <i class="fas fa-cloud-upload-alt"></i>
-                                <p>Click to upload or drag and drop<br><small>PDF, DOC, DOCX, TXT (Max 10MB)</small></p>
-                                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt">
+                                <p>Click to upload or drag and drop<br><small>PDF, DOC, DOCX, TXT, XLS, XLSX, PPT, ZIP (Max 10MB)</small></p>
+                                <input type="file" id="fileInput" multiple accept=".pdf,.doc,.docx,.txt,.xls,.xlsx,.ppt,.pptx,.zip">
                             </div>
                             <div class="uploaded-files" id="uploadedFiles"></div>
                         </div>
@@ -2309,20 +2550,12 @@
                         <div class="price-breakdown" id="priceBreakdown">
                             <div class="price-breakdown-header">
                                 <span class="label">Your Price</span>
-                                <span class="final-price" id="finalPriceDisplay">$8.49</span>
+                                <span class="final-price" id="finalPriceDisplay">$12.49</span>
                             </div>
                             <div class="price-breakdown-items">
-                                <div class="price-item">
-                                    <span>Base Price (<span id="pagesCount">1</span> page)</span>
-                                    <span id="basePriceDisplay">$8.49</span>
-                                </div>
-                                <div class="price-item" id="urgencyFeeRow" style="display: none;">
-                                    <span>Express Fee (<span id="urgencyPercent">0</span>%)</span>
-                                    <span id="urgencyFeeDisplay">$0.00</span>
-                                </div>
-                                <div class="price-item subtotal">
-                                    <span>Subtotal</span>
-                                    <span id="subtotalDisplay">$8.49</span>
+                                <div class="price-item" id="priceItemDescription">
+                                    <span id="priceDescription">Base Price (1 page)</span>
+                                    <span id="basePriceDisplay">$12.49</span>
                                 </div>
                                 <div class="price-item discount" id="discountRow" style="display: none;">
                                     <span>Member Discount (<span id="discountPercent">0</span>%)</span>
@@ -2330,8 +2563,12 @@
                                 </div>
                                 <div class="price-item total">
                                     <span>Total</span>
-                                    <span id="totalDisplay">$8.49</span>
+                                    <span id="totalDisplay">$12.49</span>
                                 </div>
+                            </div>
+                            <div id="aiPricingNote" class="ai-pricing-note" style="display: none;">
+                                <i class="fas fa-magic"></i>
+                                <span id="aiPricingReason">AI-powered pricing based on complexity analysis</span>
                             </div>
                             <div class="member-discount-banner" id="memberDiscountBanner" style="display: none;">
                                 <i class="fas fa-crown"></i>
@@ -2339,7 +2576,7 @@
                             </div>
                             <div class="member-discount-banner" id="loginForDiscountBanner" style="display: none;">
                                 <i class="fas fa-user-plus"></i>
-                                <span>Join our membership program to get up to 15% off! <a href="#" onclick="showTab('membership'); return false;" style="color: #6366f1;">Sign up</a></span>
+                                <span>Join membership to save up to 20%! <a href="#" onclick="showTab('membership'); return false;" style="color: #6366f1;">Sign up</a></span>
                             </div>
                         </div>
 
@@ -2873,13 +3110,13 @@
                         <span>Base Price</span>
                         <span id="receiptBasePrice">$12.49</span>
                     </div>
-                    <div class="receipt-row" id="receiptUrgencyRow" style="display: none;">
-                        <span>Express Fee</span>
-                        <span id="receiptUrgencyFee">$0.00</span>
-                    </div>
                     <div class="receipt-row" id="receiptDiscountRow" style="display: none; color: #22c55e;">
                         <span>Member Discount</span>
                         <span id="receiptDiscount">-$0.00</span>
+                    </div>
+                    <div class="receipt-row" style="font-size: 0.8rem; color: #94a3b8;">
+                        <span>💡 Members save up to 20%!</span>
+                        <span></span>
                     </div>
                     <div class="receipt-row total">
                         <span>Total</span>
@@ -2904,6 +3141,7 @@
         let selectedPackageData = { name: 'silver', minPrice: 9.99, maxPrice: 14.99 };
         let selectedDomain = '';
         let selectedDeadlineHours = 72;
+        let selectedAssignmentType = 'standard';
         let uploadedFiles = [];
         let referralCode = null;
         let clientReferralLink = '';
@@ -2930,7 +3168,42 @@
                     console.error('Error validating referral code:', error);
                 }
             }
+            
+            // Initialize assignment type selection
+            setupAssignmentTypeSelection();
         });
+
+        // Assignment Type Selection
+        function setupAssignmentTypeSelection() {
+            document.querySelectorAll('.type-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    document.querySelectorAll('.type-option').forEach(o => o.classList.remove('selected'));
+                    option.classList.add('selected');
+                    selectedAssignmentType = option.dataset.type;
+                    
+                    // Show/hide type-specific fields
+                    document.querySelectorAll('.type-specific-fields').forEach(field => {
+                        field.style.display = 'none';
+                    });
+                    
+                    const fieldMap = {
+                        'standard': 'standardFields',
+                        'excel': 'excelFields',
+                        'programming': 'programmingFields',
+                        'presentation': 'presentationFields',
+                        'course': 'courseFields',
+                        'custom': 'customFields'
+                    };
+                    
+                    const targetField = document.getElementById(fieldMap[selectedAssignmentType]);
+                    if (targetField) {
+                        targetField.style.display = 'block';
+                    }
+                    
+                    calculatePrice();
+                });
+            });
+        }
 
         // Tab switching
         document.querySelectorAll('.tab').forEach(tab => {
@@ -2985,41 +3258,72 @@
             });
         });
 
-        // Pages input
-        document.getElementById('pages').addEventListener('input', function() {
-            const pages = parseInt(this.value) || 1;
-            document.getElementById('wordCount').value = `~${pages * 275} words`;
-            calculatePrice();
-        });
+        // Pages input (for standard assignments)
+        const pagesInput = document.getElementById('pages');
+        if (pagesInput) {
+            pagesInput.addEventListener('input', function() {
+                const pages = parseInt(this.value) || 1;
+                const wordCountEl = document.getElementById('wordCount');
+                if (wordCountEl) {
+                    wordCountEl.value = `~${pages * 275} words`;
+                }
+                calculatePrice();
+            });
+        }
 
-        // Calculate exact price from backend
+        // Calculate price based on assignment type
         async function calculatePrice() {
-            const pagesEl = document.getElementById('pages');
-            if (!pagesEl) return; // Element not ready yet
-            
-            const pages = parseInt(pagesEl.value) || 1;
             const memberToken = localStorage.getItem('memberToken');
             
-            // First show a quick estimate while loading
-            const quickEstimate = pages * ((selectedPackageData.minPrice + selectedPackageData.maxPrice) / 2);
+            // Get values based on assignment type
+            let requestData = {
+                type: selectedAssignmentType,
+                packageType: selectedPackageData.name,
+                deadlineHours: selectedDeadlineHours,
+                domain: selectedDomain,
+                title: document.getElementById('title')?.value || ''
+            };
+            
+            // Add type-specific fields
+            switch (selectedAssignmentType) {
+                case 'standard':
+                    requestData.pages = parseInt(document.getElementById('pages')?.value) || 1;
+                    break;
+                case 'excel':
+                    requestData.complexity = document.getElementById('excelComplexity')?.value || 'moderate';
+                    requestData.tasks = parseInt(document.getElementById('excelTasks')?.value) || 1;
+                    break;
+                case 'programming':
+                    requestData.complexity = document.getElementById('programmingComplexity')?.value || 'moderate';
+                    break;
+                case 'presentation':
+                    requestData.slides = parseInt(document.getElementById('slides')?.value) || 10;
+                    requestData.presentationType = document.getElementById('presentationType')?.value || 'withNotes';
+                    break;
+                case 'course':
+                    requestData.courseDuration = document.getElementById('courseDuration')?.value || 'standard';
+                    requestData.useAI = true; // Use AI for course pricing
+                    break;
+                case 'custom':
+                    requestData.description = document.getElementById('customDescription')?.value || '';
+                    requestData.useAI = true; // Use AI for custom pricing
+                    break;
+            }
+            
+            // Show loading state
             const finalPriceEl = document.getElementById('finalPriceDisplay');
             if (finalPriceEl) {
-                finalPriceEl.textContent = `$${quickEstimate.toFixed(2)}`;
+                finalPriceEl.textContent = 'Calculating...';
             }
             
             try {
-                const response = await fetch('/api/orders/calculate', {
+                const response = await fetch('/api/pricing/calculate', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         ...(memberToken && { 'Authorization': `Bearer ${memberToken}` })
                     },
-                    body: JSON.stringify({
-                        packageType: selectedPackageData.name,
-                        pages: pages,
-                        deadlineHours: selectedDeadlineHours,
-                        complexity: 'standard'
-                    })
+                    body: JSON.stringify(requestData)
                 });
                 
                 if (!response.ok) throw new Error('API error');
@@ -3033,20 +3337,40 @@
             } catch (error) {
                 console.error('Price calculation error:', error);
                 // Use fallback calculation
-                const basePrice = pages * ((selectedPackageData.minPrice + selectedPackageData.maxPrice) / 2);
+                const fallbackPrice = getFallbackPrice();
                 currentPriceBreakdown = {
+                    assignmentType: selectedAssignmentType,
                     packageType: selectedPackageData.name,
-                    packageName: selectedPackageData.name.charAt(0).toUpperCase() + selectedPackageData.name.slice(1),
-                    pages: pages,
-                    basePrice: basePrice.toFixed(2),
-                    urgencyFee: '0.00',
-                    subtotal: basePrice.toFixed(2),
+                    basePrice: fallbackPrice.toFixed(2),
+                    subtotal: fallbackPrice.toFixed(2),
                     discountAmount: '0.00',
                     discountPercent: 0,
-                    finalPrice: basePrice.toFixed(2),
-                    deadlineHours: selectedDeadlineHours
+                    finalPrice: fallbackPrice.toFixed(2)
                 };
                 updatePriceDisplay(currentPriceBreakdown);
+            }
+        }
+        
+        function getFallbackPrice() {
+            // Fallback pricing when API fails
+            switch (selectedAssignmentType) {
+                case 'standard':
+                    const pages = parseInt(document.getElementById('pages')?.value) || 1;
+                    return pages * 12.49;
+                case 'excel':
+                    const excelPrices = { simple: 25, moderate: 50, complex: 100, advanced: 175 };
+                    return excelPrices[document.getElementById('excelComplexity')?.value || 'moderate'];
+                case 'programming':
+                    const progPrices = { simple: 30, moderate: 75, complex: 150, advanced: 300 };
+                    return progPrices[document.getElementById('programmingComplexity')?.value || 'moderate'];
+                case 'presentation':
+                    const slides = parseInt(document.getElementById('slides')?.value) || 10;
+                    return slides * 5;
+                case 'course':
+                    const coursePrices = { mini: 150, standard: 350, intensive: 600, comprehensive: 1000 };
+                    return coursePrices[document.getElementById('courseDuration')?.value || 'standard'];
+                default:
+                    return 50; // Default minimum for custom
             }
         }
         
@@ -3063,18 +3387,29 @@
             
             // Update main display
             setElement('finalPriceDisplay', `$${breakdown.finalPrice}`);
-            setElement('pagesCount', breakdown.pages);
             setElement('basePriceDisplay', `$${breakdown.basePrice}`);
-            setElement('subtotalDisplay', `$${breakdown.subtotal}`);
             setElement('totalDisplay', `$${breakdown.finalPrice}`);
             
-            // Urgency fee
-            if (parseFloat(breakdown.urgencyFee) > 0) {
-                setDisplay('urgencyFeeRow', 'flex');
-                setElement('urgencyPercent', breakdown.urgencyPercent || '0');
-                setElement('urgencyFeeDisplay', `$${breakdown.urgencyFee}`);
+            // Update price description based on type
+            const descEl = document.getElementById('priceDescription');
+            if (descEl) {
+                if (breakdown.assignmentType === 'standard' && breakdown.pages) {
+                    descEl.textContent = `Base Price (${breakdown.pages} page${breakdown.pages > 1 ? 's' : ''})`;
+                } else if (breakdown.assignmentType === 'presentation' && breakdown.slides) {
+                    descEl.textContent = `Presentation (${breakdown.slides} slides)`;
+                } else if (breakdown.itemizedBreakdown && breakdown.itemizedBreakdown.length > 0) {
+                    descEl.textContent = breakdown.itemizedBreakdown[0].item || 'Base Price';
+                } else {
+                    descEl.textContent = `${breakdown.assignmentType.charAt(0).toUpperCase() + breakdown.assignmentType.slice(1)} Assignment`;
+                }
+            }
+            
+            // AI pricing note
+            if (breakdown.aiReasoning) {
+                setDisplay('aiPricingNote', 'flex');
+                setElement('aiPricingReason', breakdown.aiReasoning);
             } else {
-                setDisplay('urgencyFeeRow', 'none');
+                setDisplay('aiPricingNote', 'none');
             }
             
             // Discount
@@ -3108,9 +3443,18 @@
             }
             
             const b = currentPriceBreakdown;
-            document.getElementById('receiptPackage').textContent = b.packageName;
-            document.getElementById('receiptPages').textContent = `${b.pages} page${b.pages > 1 ? 's' : ''} (~${b.pages * 275} words)`;
-            document.getElementById('receiptDeadline').textContent = getDeadlineLabel(b.deadlineHours);
+            document.getElementById('receiptPackage').textContent = b.packageName || selectedPackageData.name.charAt(0).toUpperCase() + selectedPackageData.name.slice(1);
+            
+            // Update pages display based on assignment type
+            if (b.assignmentType === 'standard' && b.pages) {
+                document.getElementById('receiptPages').textContent = `${b.pages} page${b.pages > 1 ? 's' : ''} (~${b.pages * 275} words)`;
+            } else if (b.assignmentType === 'presentation' && b.slides) {
+                document.getElementById('receiptPages').textContent = `${b.slides} slides`;
+            } else {
+                document.getElementById('receiptPages').textContent = `${b.assignmentType.charAt(0).toUpperCase() + b.assignmentType.slice(1)} work`;
+            }
+            
+            document.getElementById('receiptDeadline').textContent = getDeadlineLabel(b.deadlineHours || selectedDeadlineHours);
             document.getElementById('receiptDomain').textContent = selectedDomain || '-';
             document.getElementById('receiptBasePrice').textContent = `$${b.basePrice}`;
             document.getElementById('receiptTotal').textContent = `$${b.finalPrice}`;
