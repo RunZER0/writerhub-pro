@@ -669,15 +669,108 @@
             margin-bottom: 1.5rem;
         }
 
+        /* PWA Install Banner */
+        .pwa-install-banner {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 9999;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-top: 1px solid rgba(99, 102, 241, 0.3);
+            padding: 1rem 2rem;
+            animation: slideUp 0.5s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .pwa-install-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .pwa-install-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .pwa-install-text {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .pwa-install-text strong {
+            color: #fff;
+            font-size: 1rem;
+        }
+
+        .pwa-install-text span {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+        }
+
+        .pwa-install-btn {
+            padding: 0.7rem 1.5rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .pwa-install-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .pwa-install-close {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .pwa-install-close:hover {
+            background: rgba(255,255,255,0.2);
+            color: #fff;
+        }
+
         /* Footer */
         footer {
             padding: 2rem 5%;
             border-top: 1px solid rgba(255,255,255,0.05);
             display: flex;
-            justify-content: space-between;
+            flex-direction: column;
             align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
+            gap: 1.5rem;
             position: relative;
             z-index: 1;
         }
@@ -685,6 +778,8 @@
         .footer-links {
             display: flex;
             gap: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         .footer-links a {
@@ -696,9 +791,133 @@
 
         .footer-links a:hover { color: #fff; }
 
+        .footer-legal-links {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .footer-legal-links a {
+            color: rgba(255,255,255,0.4);
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: color 0.3s;
+        }
+
+        .footer-legal-links a:hover {
+            color: #6366f1;
+            text-decoration: underline;
+        }
+
+        .footer-disclaimer {
+            max-width: 800px;
+            text-align: center;
+            padding: 1rem 1.5rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 10px;
+        }
+
+        .footer-disclaimer p {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.75rem;
+            line-height: 1.6;
+        }
+
+        .footer-disclaimer strong {
+            color: rgba(255,255,255,0.6);
+        }
+
         .footer-copy {
             color: rgba(255,255,255,0.3);
             font-size: 0.8rem;
+        }
+
+        /* Policy Modal */
+        .policy-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 10000;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .policy-modal-content {
+            background: #1a1a2e;
+            border-radius: 16px;
+            max-width: 700px;
+            width: 100%;
+            max-height: 80vh;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .policy-modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .policy-modal-header h2 {
+            font-size: 1.3rem;
+            color: #fff;
+        }
+
+        .policy-close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            color: rgba(255,255,255,0.6);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .policy-close-btn:hover {
+            background: rgba(255,0,0,0.2);
+            color: #ff6b6b;
+        }
+
+        .policy-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            max-height: calc(80vh - 80px);
+            color: rgba(255,255,255,0.8);
+            font-size: 0.9rem;
+            line-height: 1.8;
+        }
+
+        .policy-body h3 {
+            color: #fff;
+            margin: 1.5rem 0 0.8rem 0;
+            font-size: 1.1rem;
+        }
+
+        .policy-body h3:first-child {
+            margin-top: 0;
+        }
+
+        .policy-body p {
+            margin-bottom: 1rem;
+        }
+
+        .policy-body ul {
+            margin: 0.5rem 0 1rem 1.5rem;
+        }
+
+        .policy-body ul li {
+            margin-bottom: 0.5rem;
         }
 
         /* Mobile */
@@ -734,6 +953,37 @@
         @media (max-width: 480px) {
             .stat-value { font-size: 1.8rem; }
             .section-header h2 { font-size: 1.8rem; }
+
+            .pwa-install-content {
+                flex-wrap: wrap;
+            }
+
+            .pwa-install-text {
+                flex: 1 1 100%;
+                order: -1;
+                text-align: center;
+                margin-bottom: 0.5rem;
+            }
+
+            .pwa-install-icon {
+                display: none;
+            }
+
+            .pwa-install-btn {
+                flex: 1;
+            }
+
+            .footer-legal-links {
+                gap: 1rem;
+            }
+
+            .policy-modal {
+                padding: 1rem;
+            }
+
+            .policy-modal-content {
+                max-height: 90vh;
+            }
         }
     </style>
 </head>
@@ -938,6 +1188,25 @@
         </a>
     </section>
 
+    <!-- PWA Install Banner -->
+    <div id="pwaInstallBanner" class="pwa-install-banner" style="display: none;">
+        <div class="pwa-install-content">
+            <div class="pwa-install-icon">
+                <i class="fas fa-download"></i>
+            </div>
+            <div class="pwa-install-text">
+                <strong>Install HomeworkPal</strong>
+                <span>Get quick access from your home screen</span>
+            </div>
+            <button id="pwaInstallBtn" class="pwa-install-btn">
+                <i class="fas fa-plus"></i> Install
+            </button>
+            <button id="pwaInstallClose" class="pwa-install-close">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
     <!-- Footer -->
     <footer>
         <a href="/" class="logo">
@@ -950,8 +1219,38 @@
             <a href="#how">How It Works</a>
             <a href="/writers">Writer Login</a>
         </div>
+        
+        <!-- Legal Links -->
+        <div class="footer-legal-links">
+            <a href="#" onclick="showPolicy('terms'); return false;">Terms of Service</a>
+            <a href="#" onclick="showPolicy('privacy'); return false;">Privacy Policy</a>
+            <a href="#" onclick="showPolicy('refund'); return false;">Refund Policy</a>
+            <a href="#" onclick="showPolicy('academic'); return false;">Academic Integrity</a>
+        </div>
+        
+        <!-- Disclaimer -->
+        <div class="footer-disclaimer">
+            <p><strong>Disclaimer:</strong> HomeworkPal provides academic assistance and tutoring services only. 
+            All materials are intended for research, reference, and learning purposes. 
+            Clients are responsible for ensuring their use of our services complies with their institution's academic integrity policies. 
+            We do not encourage or condone academic dishonesty. By using our services, you agree to use delivered materials ethically and responsibly.</p>
+        </div>
+        
         <div class="footer-copy">© 2026 HomeworkPal. All rights reserved.</div>
     </footer>
+
+    <!-- Policy Modal -->
+    <div id="policyModal" class="policy-modal" style="display: none;">
+        <div class="policy-modal-content">
+            <div class="policy-modal-header">
+                <h2 id="policyTitle">Policy</h2>
+                <button onclick="closePolicyModal()" class="policy-close-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div id="policyContent" class="policy-body"></div>
+        </div>
+    </div>
 
     <script>
         // Consistent seed based on current date (changes daily but same for all users)
@@ -1074,6 +1373,258 @@
                 document.getElementById('statPapers').textContent = currentPapers.toLocaleString();
             }
         }, 8000);
+
+        // ============ PWA Install Prompt ============
+        let deferredPrompt;
+        const pwaInstallBanner = document.getElementById('pwaInstallBanner');
+        const pwaInstallBtn = document.getElementById('pwaInstallBtn');
+        const pwaInstallClose = document.getElementById('pwaInstallClose');
+
+        // Check if already dismissed
+        const pwaDismissed = localStorage.getItem('pwaInstallDismissed');
+        const pwaDismissedTime = pwaDismissed ? parseInt(pwaDismissed) : 0;
+        const daysSinceDismiss = (Date.now() - pwaDismissedTime) / (1000 * 60 * 60 * 24);
+
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            
+            // Show banner if not dismissed in last 7 days
+            if (daysSinceDismiss > 7 || !pwaDismissed) {
+                setTimeout(() => {
+                    pwaInstallBanner.style.display = 'block';
+                }, 3000); // Show after 3 seconds
+            }
+        });
+
+        pwaInstallBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    console.log('PWA installed');
+                }
+                deferredPrompt = null;
+                pwaInstallBanner.style.display = 'none';
+            }
+        });
+
+        pwaInstallClose.addEventListener('click', () => {
+            pwaInstallBanner.style.display = 'none';
+            localStorage.setItem('pwaInstallDismissed', Date.now().toString());
+        });
+
+        // Hide banner if app is installed
+        window.addEventListener('appinstalled', () => {
+            pwaInstallBanner.style.display = 'none';
+            localStorage.setItem('pwaInstalled', 'true');
+        });
+
+        // ============ Policy Modal ============
+        const policies = {
+            terms: {
+                title: 'Terms of Service',
+                content: `
+                    <h3>1. Acceptance of Terms</h3>
+                    <p>By accessing and using HomeworkPal services, you agree to be bound by these Terms of Service. If you do not agree, please do not use our services.</p>
+                    
+                    <h3>2. Description of Services</h3>
+                    <p>HomeworkPal provides academic tutoring, guidance, and reference materials. Our services are designed to help students understand concepts and improve their academic skills.</p>
+                    
+                    <h3>3. Proper Use of Materials</h3>
+                    <p>All materials provided by HomeworkPal are intended for:</p>
+                    <ul>
+                        <li>Research and reference purposes</li>
+                        <li>Learning and understanding concepts</li>
+                        <li>Guidance for creating your own original work</li>
+                        <li>Study aids and educational support</li>
+                    </ul>
+                    <p>You agree NOT to submit our materials as your own work in violation of your institution's academic policies.</p>
+                    
+                    <h3>4. User Responsibilities</h3>
+                    <p>You are responsible for:</p>
+                    <ul>
+                        <li>Using our services ethically and responsibly</li>
+                        <li>Complying with your educational institution's policies</li>
+                        <li>Providing accurate information when placing orders</li>
+                        <li>Maintaining confidentiality of your account</li>
+                    </ul>
+                    
+                    <h3>5. Intellectual Property</h3>
+                    <p>Upon full payment, you receive a license to use the delivered materials for personal educational purposes. HomeworkPal retains certain rights to protect our business interests.</p>
+                    
+                    <h3>6. Limitation of Liability</h3>
+                    <p>HomeworkPal is not liable for any academic consequences resulting from improper use of our materials. Users assume full responsibility for how they use our services.</p>
+                    
+                    <h3>7. Changes to Terms</h3>
+                    <p>We reserve the right to modify these terms at any time. Continued use of our services constitutes acceptance of updated terms.</p>
+                `
+            },
+            privacy: {
+                title: 'Privacy Policy',
+                content: `
+                    <h3>1. Information We Collect</h3>
+                    <p>We collect information you provide directly:</p>
+                    <ul>
+                        <li>Contact information (email, name)</li>
+                        <li>Account credentials</li>
+                        <li>Order details and requirements</li>
+                        <li>Communication records</li>
+                    </ul>
+                    
+                    <h3>2. How We Use Your Information</h3>
+                    <p>Your information is used to:</p>
+                    <ul>
+                        <li>Process and fulfill your orders</li>
+                        <li>Communicate about your services</li>
+                        <li>Improve our platform and services</li>
+                        <li>Send important updates and notifications</li>
+                    </ul>
+                    
+                    <h3>3. Data Protection</h3>
+                    <p>We implement industry-standard security measures to protect your personal information. Your data is encrypted in transit and at rest.</p>
+                    
+                    <h3>4. Information Sharing</h3>
+                    <p>We do NOT sell your personal information. We may share data only with:</p>
+                    <ul>
+                        <li>Writers assigned to your orders (limited info)</li>
+                        <li>Payment processors for transactions</li>
+                        <li>Legal authorities if required by law</li>
+                    </ul>
+                    
+                    <h3>5. Cookies</h3>
+                    <p>We use cookies to enhance your experience, remember preferences, and analyze site usage. You can manage cookie settings in your browser.</p>
+                    
+                    <h3>6. Your Rights</h3>
+                    <p>You have the right to access, correct, or delete your personal data. Contact us to exercise these rights.</p>
+                    
+                    <h3>7. Data Retention</h3>
+                    <p>We retain your data for as long as necessary to provide services and comply with legal obligations.</p>
+                `
+            },
+            refund: {
+                title: 'Refund Policy',
+                content: `
+                    <h3>1. Satisfaction Guarantee</h3>
+                    <p>We are committed to delivering quality work. If you're not satisfied, we offer free revisions and refunds under certain conditions.</p>
+                    
+                    <h3>2. Free Revisions</h3>
+                    <p>You may request unlimited revisions within 14 days of delivery, provided:</p>
+                    <ul>
+                        <li>Revision requests align with original instructions</li>
+                        <li>No major changes to requirements</li>
+                        <li>Requests are submitted through proper channels</li>
+                    </ul>
+                    
+                    <h3>3. Full Refund Eligibility</h3>
+                    <p>Full refunds are available when:</p>
+                    <ul>
+                        <li>Order is cancelled before writer assignment</li>
+                        <li>We fail to deliver by the deadline</li>
+                        <li>Delivered work significantly deviates from requirements</li>
+                        <li>Duplicate payment is made</li>
+                    </ul>
+                    
+                    <h3>4. Partial Refund Eligibility</h3>
+                    <p>Partial refunds may be issued when:</p>
+                    <ul>
+                        <li>Minor quality issues are present</li>
+                        <li>Order is cancelled after work has begun</li>
+                        <li>Deadline is missed but work is delivered</li>
+                    </ul>
+                    
+                    <h3>5. Non-Refundable Situations</h3>
+                    <p>Refunds are NOT available when:</p>
+                    <ul>
+                        <li>Work meets all original requirements</li>
+                        <li>Customer provides incorrect/incomplete instructions</li>
+                        <li>Refund requested after 30 days of delivery</li>
+                        <li>Customer violates Terms of Service</li>
+                    </ul>
+                    
+                    <h3>6. Refund Process</h3>
+                    <p>To request a refund, contact our support team with your order details. Refunds are processed within 5-10 business days.</p>
+                `
+            },
+            academic: {
+                title: 'Academic Integrity Policy',
+                content: `
+                    <h3>Important Notice</h3>
+                    <p><strong>Please read this policy carefully before using our services.</strong></p>
+                    
+                    <h3>1. Purpose of Our Services</h3>
+                    <p>HomeworkPal is an academic ASSISTANCE service. We provide:</p>
+                    <ul>
+                        <li>Tutoring and educational guidance</li>
+                        <li>Research and reference materials</li>
+                        <li>Model answers and examples</li>
+                        <li>Study aids and learning resources</li>
+                    </ul>
+                    
+                    <h3>2. Intended Use</h3>
+                    <p>Our materials are designed to HELP you learn and understand. They should be used as:</p>
+                    <ul>
+                        <li>A reference for your own research</li>
+                        <li>A guide for structuring your work</li>
+                        <li>A learning tool to understand concepts</li>
+                        <li>Inspiration for developing your own ideas</li>
+                    </ul>
+                    
+                    <h3>3. User Responsibility</h3>
+                    <p><strong>YOU are solely responsible for ensuring your use of our services complies with your institution's academic integrity policies.</strong></p>
+                    <p>Most educational institutions have specific policies regarding:</p>
+                    <ul>
+                        <li>Plagiarism</li>
+                        <li>Unauthorized collaboration</li>
+                        <li>Submitting work that is not your own</li>
+                    </ul>
+                    
+                    <h3>4. Our Position</h3>
+                    <p>HomeworkPal:</p>
+                    <ul>
+                        <li>Does NOT encourage academic dishonesty</li>
+                        <li>Does NOT condone plagiarism</li>
+                        <li>Does NOT guarantee grades or outcomes</li>
+                        <li>Is NOT responsible for how you use our materials</li>
+                    </ul>
+                    
+                    <h3>5. Consequences</h3>
+                    <p>Misuse of our services may result in serious academic consequences including but not limited to failing grades, academic probation, or expulsion. HomeworkPal bears no liability for such outcomes.</p>
+                    
+                    <h3>6. Agreement</h3>
+                    <p>By using HomeworkPal, you acknowledge that you have read this policy and agree to use our services ethically and responsibly.</p>
+                `
+            }
+        };
+
+        function showPolicy(policyType) {
+            const policy = policies[policyType];
+            if (!policy) return;
+            
+            document.getElementById('policyTitle').textContent = policy.title;
+            document.getElementById('policyContent').innerHTML = policy.content;
+            document.getElementById('policyModal').style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePolicyModal() {
+            document.getElementById('policyModal').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        // Close modal on outside click
+        document.getElementById('policyModal').addEventListener('click', (e) => {
+            if (e.target.id === 'policyModal') {
+                closePolicyModal();
+            }
+        });
+
+        // Close modal on Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closePolicyModal();
+            }
+        });
     </script>
 </body>
 </html>
