@@ -734,7 +734,7 @@ function navigateTo(page) {
         
         // Reset chat UI to prevent sticking on mobile
         const chatInputArea = document.getElementById('chatInputArea');
-        if (chatInputArea) chatInputArea.style.display = 'none';
+        if (chatInputArea) chatInputArea.classList.remove('active');
         
         const chatMessages = document.getElementById('chatMessages');
         if (chatMessages) {
@@ -1982,9 +1982,9 @@ async function openDirectChat(userId, userName) {
     currentChatTarget = userId;
     currentChatAssignment = null;
     
-    // Show input area immediately
+    // Show input area immediately using class
     const inputArea = document.getElementById('chatInputArea');
-    if (inputArea) inputArea.style.display = 'flex';
+    if (inputArea) inputArea.classList.add('active');
     
     // Re-render threads to show active state (don't await - let it run in background)
     loadChatThreads();
@@ -2010,7 +2010,7 @@ async function openDirectChat(userId, userName) {
         } catch (e) {}
         
         renderChatMessages(messages);
-        document.getElementById('chatInputArea').style.display = 'flex';
+        document.getElementById('chatInputArea').classList.add('active');
         
         // Auto-scroll
         const messagesContainer = document.getElementById('chatMessages');
@@ -2029,9 +2029,9 @@ async function openAssignmentChat(assignmentId) {
     currentChatTarget = assignmentId;
     currentChatAssignment = assignmentId;
     
-    // Show input area immediately
+    // Show input area immediately using class
     const inputArea = document.getElementById('chatInputArea');
-    if (inputArea) inputArea.style.display = 'flex';
+    if (inputArea) inputArea.classList.add('active');
     
     // Re-render threads (don't await)
     loadChatThreads();
@@ -2050,7 +2050,7 @@ async function openAssignmentChat(assignmentId) {
         `;
         
         renderChatMessages(messages);
-        document.getElementById('chatInputArea').style.display = 'flex';
+        document.getElementById('chatInputArea').classList.add('active');
         
         // Auto-scroll
         const messagesContainer = document.getElementById('chatMessages');
