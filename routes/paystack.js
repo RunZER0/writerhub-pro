@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
 const crypto = require('crypto');
-const fetch = require('node-fetch');
+// Note: Using native fetch (Node.js 18+)
 
 // Paystack Secret Key from environment
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;

@@ -120,7 +120,6 @@ Additional details:
 Provide a fair price estimate based on the complexity and work involved.`;
 
     try {
-        const fetch = require('node-fetch');
         const response = await fetch('https://api.openai.com/v1/chat/completions', {
             method: 'POST',
             headers: {

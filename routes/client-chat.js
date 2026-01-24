@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const { pool } = require('../db');
 const jwt = require('jsonwebtoken');
-const fetch = require('node-fetch');
+// Note: Using native fetch (Node.js 18+)
 
 // ============ PRIVACY PROTECTION ============
 // Writers see: "Client" (no name, no email, no phone)

@@ -437,7 +437,6 @@ async function sendThankYouReceipt(order, email) {
 
         const receiptHTML = generateReceiptHTML(order, true);
 
-        const fetch = require('node-fetch');
         const response = await fetch('https://api.brevo.com/v3/smtp/email', {
             method: 'POST',
             headers: {

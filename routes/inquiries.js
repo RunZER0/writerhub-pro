@@ -534,7 +534,6 @@ async function notifyAdminsNewInquiry(inquiryId, ticketNumber, subject, memberNa
                 try {
                     const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
                     if (telegramToken) {
-                        const fetch = require('node-fetch');
                         await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -597,7 +596,6 @@ async function notifyAdminNewMessage(adminId, inquiryId, ticketNumber, memberNam
             try {
                 const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
                 if (telegramToken) {
-                    const fetch = require('node-fetch');
                     await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },

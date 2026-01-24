@@ -85,7 +85,6 @@ router.post('/submit', upload.array('files', 5), async (req, res) => {
         // Track referral if code provided
         if (referral_code) {
             try {
-                const fetch = require('node-fetch');
                 await fetch(`${req.protocol}://${req.get('host')}/api/referrals/track`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -152,7 +151,6 @@ async function notifyAdminsNewAssignment(assignmentId, title, domain, clientName
                 try {
                     const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
                     if (telegramToken) {
-                        const fetch = require('node-fetch');
                         await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
@@ -238,7 +236,6 @@ router.post('/inquiry', async (req, res) => {
                 try {
                     const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
                     if (telegramToken) {
-                        const fetch = require('node-fetch');
                         await fetch(`https://api.telegram.org/bot${telegramToken}/sendMessage`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
