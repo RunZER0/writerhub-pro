@@ -1464,6 +1464,49 @@ async function viewAssignment(id) {
             `;
         }
         
+        // Add client chat section
+        if (assignment.writer_id) {
+            const chatEnabled = assignment.client_chat_enabled;
+            if (isAdmin()) {
+                // Admin sees toggle and link copy buttons
+                infoHtml += `
+                    <div class="client-chat-section" style="margin-top:1rem;padding:1rem;background:rgba(99,102,241,0.1);border-radius:8px;border:1px solid rgba(99,102,241,0.2);">
+                        <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.75rem;">
+                            <i class="fas fa-user-friends"></i> Client-Writer Chat
+                        </div>
+                        <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
+                            <button class="btn btn-sm ${chatEnabled ? 'btn-danger' : 'btn-primary'}" onclick="toggleClientChat(${assignment.id}, ${!chatEnabled})">
+                                <i class="fas ${chatEnabled ? 'fa-toggle-on' : 'fa-toggle-off'}"></i> ${chatEnabled ? 'Disable Chat' : 'Enable Chat'}
+                            </button>
+                            ${chatEnabled ? `
+                                <button class="btn btn-sm btn-secondary" onclick="copyClientChatLink(${assignment.id})">
+                                    <i class="fas fa-link"></i> Copy Link
+                                </button>
+                            ` : ''}
+                        </div>
+                        ${chatEnabled ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;">Client can message the writer directly. Copy the link above to share with the client.</div>` : ''}
+                    </div>
+                `;
+            } else {
+                // Writer sees chat button if enabled
+                if (chatEnabled) {
+                    infoHtml += `
+                        <div class="client-chat-section" style="margin-top:1rem;padding:1rem;background:rgba(99,102,241,0.1);border-radius:8px;border:1px solid rgba(99,102,241,0.2);">
+                            <div style="font-size:0.75rem;color:var(--text-muted);text-transform:uppercase;margin-bottom:0.75rem;">
+                                <i class="fas fa-user-friends"></i> Client Communication
+                            </div>
+                            <button class="btn btn-primary" onclick="openClientChat(${assignment.id})">
+                                <i class="fas fa-comments"></i> Chat with Client
+                            </button>
+                            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:0.5rem;">
+                                Communicate directly with the client. No personal details are shared.
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }
+        
         document.getElementById('assignmentDetailsTitle').textContent = assignment.title;
         document.getElementById('assignmentDetailsInfo').innerHTML = infoHtml;
         
@@ -3373,4 +3416,162 @@ function initMobileKeyboardHandling() {
             }, 300);
         });
     });
+}
+
+// ========================================
+// Client Chat (Writer-Client Communication)
+// ========================================
+let clientChatAssignmentId = null;
+let clientChatPollInterval = null;
+
+async function openClientChat(assignmentId) {
+    clientChatAssignmentId = assignmentId;
+    
+    try {
+        const response = await api(`/client-chat/writer/${assignmentId}`);
+        
+        if (!response.enabled) {
+            showToast('warning', 'Chat Disabled', 'Client chat is not enabled for this assignment');
+            return;
+        }
+        
+        renderClientChatMessages(response.messages);
+        openModal('clientChatModal');
+        startClientChatPolling();
+        
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+function renderClientChatMessages(messages) {
+    const container = document.getElementById('clientChatMessages');
+    
+    if (!messages || messages.length === 0) {
+        container.innerHTML = `
+            <div class="empty-state" style="padding:2rem;text-align:center;">
+                <i class="fas fa-comments" style="font-size:2rem;opacity:0.5;margin-bottom:0.5rem;"></i>
+                <p>No messages yet. Send a message to start the conversation with the client.</p>
+            </div>
+        `;
+        return;
+    }
+    
+    container.innerHTML = messages.map(msg => {
+        const isSent = msg.sender_type === 'writer';
+        const isSystem = msg.sender_type === 'system';
+        const time = new Date(msg.created_at).toLocaleString('en-US', {
+            hour: 'numeric',
+            minute: '2-digit',
+            month: 'short',
+            day: 'numeric'
+        });
+        
+        if (isSystem) {
+            return `<div class="chat-message system" style="text-align:center;color:var(--text-muted);font-size:0.8rem;padding:0.5rem;">${escapeHtml(msg.message)}</div>`;
+        }
+        
+        return `
+            <div class="chat-message ${isSent ? 'sent' : 'received'}">
+                <div style="font-size:0.7rem;opacity:0.7;margin-bottom:0.25rem;">${msg.senderLabel}</div>
+                <div>${escapeHtml(msg.message)}</div>
+                <div style="font-size:0.65rem;opacity:0.5;margin-top:0.25rem;">${time}</div>
+            </div>
+        `;
+    }).join('');
+    
+    container.scrollTop = container.scrollHeight;
+}
+
+async function sendClientChatMessage() {
+    const input = document.getElementById('clientChatInput');
+    const message = input.value.trim();
+    
+    if (!message || !clientChatAssignmentId) return;
+    
+    try {
+        const response = await api(`/client-chat/writer/${clientChatAssignmentId}/send`, {
+            method: 'POST',
+            body: { message }
+        });
+        
+        input.value = '';
+        
+        // Reload messages
+        const chatData = await api(`/client-chat/writer/${clientChatAssignmentId}`);
+        renderClientChatMessages(chatData.messages);
+        
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+function startClientChatPolling() {
+    stopClientChatPolling();
+    
+    clientChatPollInterval = setInterval(async () => {
+        if (!clientChatAssignmentId) return;
+        
+        try {
+            const response = await api(`/client-chat/writer/${clientChatAssignmentId}`);
+            renderClientChatMessages(response.messages);
+        } catch (error) {
+            console.error('Client chat poll error:', error);
+        }
+    }, 5000);
+}
+
+function stopClientChatPolling() {
+    if (clientChatPollInterval) {
+        clearInterval(clientChatPollInterval);
+        clientChatPollInterval = null;
+    }
+}
+
+// Admin: Toggle client chat for assignment
+async function toggleClientChat(assignmentId, enable) {
+    try {
+        await api(`/client-chat/admin/toggle/${assignmentId}`, {
+            method: 'POST',
+            body: { enabled: enable }
+        });
+        showToast('success', enable ? 'Chat Enabled' : 'Chat Disabled', 
+            enable ? 'Client can now message the writer' : 'Client chat has been disabled');
+        
+        // Refresh assignment details
+        viewAssignment(assignmentId);
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+// Admin: Copy client chat link
+async function copyClientChatLink(assignmentId) {
+    try {
+        // Get assignment email
+        const assignment = assignments.find(a => a.id === assignmentId);
+        if (!assignment || !assignment.client_email) {
+            showToast('error', 'Error', 'No client email found for this assignment');
+            return;
+        }
+        
+        const response = await api('/client-chat/client/access', {
+            method: 'POST',
+            body: { assignmentId, clientEmail: assignment.client_email }
+        });
+        
+        const chatUrl = `${window.location.origin}/client-chat.html?token=${response.token}`;
+        
+        await navigator.clipboard.writeText(chatUrl);
+        showToast('success', 'Copied', 'Chat link copied to clipboard. You can share this with the client.');
+        
+    } catch (error) {
+        showToast('error', 'Error', error.message);
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
 }

@@ -21,6 +21,7 @@ const inquiriesRoutes = require('./routes/inquiries');
 const ordersRoutes = require('./routes/orders');
 const reportsRoutes = require('./routes/reports');
 const aiPricingRoutes = require('./routes/ai-pricing');
+const clientChatRoutes = require('./routes/client-chat');
 
 const app = express();
 
@@ -71,6 +72,7 @@ app.use('/api/inquiries', inquiriesRoutes);
 app.use('/api/orders', ordersRoutes);
 app.use('/api/reports', reportsRoutes);
 app.use('/api/pricing', aiPricingRoutes);
+app.use('/api/client-chat', clientChatRoutes);
 
 // Serve frontend for all other routes (SPA fallback)
 app.get('*', (req, res) => {
