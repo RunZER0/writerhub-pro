@@ -2534,7 +2534,16 @@
                     localStorage.setItem('memberEmail', data.member.email);
                     localStorage.setItem('memberName', data.member.name);
                     showToast('success', `Welcome back, ${data.member.name}!`);
-                    loadMemberProfile();
+                    await loadMemberProfile();
+                    
+                    // Ensure membership tab is active and scroll to portal
+                    setTimeout(() => {
+                        showTab('membership');
+                        document.getElementById('memberPortal').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }, 100);
                 } else {
                     showToast('error', data.error || 'Login failed');
                 }
