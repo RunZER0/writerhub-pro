@@ -42,6 +42,13 @@ async function migrate() {
     `);
     console.log('✅ Added token_expiry column');
     
+    // Add google_id column for Google OAuth
+    await client.query(`
+      ALTER TABLE client_members 
+      ADD COLUMN IF NOT EXISTS google_id VARCHAR(255)
+    `);
+    console.log('✅ Added google_id column');
+    
     // Create membership_tiers for reference
     await client.query(`
       CREATE TABLE IF NOT EXISTS membership_tiers (

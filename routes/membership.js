@@ -170,7 +170,7 @@ function isDisposableEmail(email) {
 
 // Send verification email via Brevo
 async function sendVerificationEmail(email, name, token) {
-    const verifyUrl = `${process.env.BASE_URL || 'https://writerhub-pro.onrender.com'}/api/membership/verify?token=${token}`;
+    const verifyUrl = `${process.env.BASE_URL || 'https://www.homeworkpal.online'}/api/membership/verify?token=${token}`;
     
     const sendSmtpEmail = new Brevo.SendSmtpEmail();
     sendSmtpEmail.sender = { name: 'HomeworkPal', email: process.env.SENDER_EMAIL || 'noreply@homeworkpal.com' };
@@ -237,6 +237,86 @@ async function sendVerificationEmail(email, name, token) {
 }
 
 // ============ PUBLIC ENDPOINTS ============
+
+// Google Auth endpoint
+router.post('/google-auth', async (req, res) => {
+    try {
+        const { email, name, googleId, photoURL } = req.body;
+        
+        if (!email || !googleId) {
+            return res.status(400).json({ error: 'Invalid Google authentication data' });
+        }
+        
+        const emailLower = email.toLowerCase().trim();
+        
+        // Check for disposable email
+        if (isDisposableEmail(emailLower)) {
+            return res.status(400).json({ 
+                error: 'Temporary or disposable email addresses are not allowed.' 
+            });
+        }
+        
+        // Check if user exists
+        let member;
+        const existing = await pool.query(
+            'SELECT * FROM client_members WHERE email = $1',
+            [emailLower]
+        );
+        
+        if (existing.rows.length > 0) {
+            // Existing user - update google_id if not set
+            member = existing.rows[0];
+            if (!member.google_id) {
+                await pool.query(
+                    'UPDATE client_members SET google_id = $1, is_verified = TRUE WHERE id = $2',
+                    [googleId, member.id]
+                );
+            }
+            // Google users are auto-verified
+            if (!member.is_verified) {
+                await pool.query('UPDATE client_members SET is_verified = TRUE WHERE id = $1', [member.id]);
+            }
+            member.is_verified = true;
+        } else {
+            // Create new user - auto-verified since Google verifies email
+            const result = await pool.query(`
+                INSERT INTO client_members (email, name, google_id, is_verified, password_hash)
+                VALUES ($1, $2, $3, TRUE, $4)
+                RETURNING *
+            `, [emailLower, name || email.split('@')[0], googleId, 'google-auth-no-password']);
+            
+            member = result.rows[0];
+        }
+        
+        // Update last login
+        await pool.query('UPDATE client_members SET last_login = NOW() WHERE id = $1', [member.id]);
+        
+        // Generate token
+        const token = jwt.sign(
+            { memberId: member.id, email: member.email, type: 'client_member' },
+            process.env.JWT_SECRET || 'homework-pal-secret',
+            { expiresIn: '30d' }
+        );
+        
+        res.json({
+            success: true,
+            token,
+            member: {
+                id: member.id,
+                email: member.email,
+                name: member.name,
+                tier: member.membership_tier,
+                discount: parseFloat(member.discount_percent),
+                isVerified: true,
+                totalOrders: member.total_orders || 0,
+                totalSpent: parseFloat(member.total_spent || 0)
+            }
+        });
+    } catch (error) {
+        console.error('Google auth error:', error);
+        res.status(500).json({ error: 'Authentication failed. Please try again.' });
+    }
+});
 
 // Register as a member
 router.post('/register', async (req, res) => {
@@ -572,7 +652,7 @@ function getVerificationPage(status, message) {
                 <div class="icon">${config.icon}</div>
                 <h1>${status === 'success' ? 'Email Verified!' : status === 'expired' ? 'Link Expired' : 'Verification Failed'}</h1>
                 <p>${message}</p>
-                <a href="${process.env.BASE_URL || 'https://writerhub-pro.onrender.com'}/client.html#membership" class="btn">
+                <a href="${process.env.BASE_URL || 'https://www.homeworkpal.online'}/client.html#membership" class="btn">
                     ${status === 'success' ? 'Login to Your Account' : 'Back to Homepage'}
                 </a>
             </div>
@@ -649,22 +729,25 @@ router.get('/profile', authenticateMember, async (req, res) => {
         `, [member.total_orders, member.total_spent || 0]);
         
         res.json({
-            id: member.id,
-            email: member.email,
-            name: member.name,
-            phone: member.phone,
-            tier: member.membership_tier,
-            discount: parseFloat(member.discount_percent),
-            totalOrders: member.total_orders,
-            totalSpent: parseFloat(member.total_spent || 0),
-            perks: member.perks ? member.perks.split(', ') : [],
-            memberSince: member.created_at,
-            nextTier: nextTier.rows[0] ? {
-                name: nextTier.rows[0].name,
-                ordersNeeded: nextTier.rows[0].min_orders - member.total_orders,
-                spentNeeded: parseFloat(nextTier.rows[0].min_spent) - parseFloat(member.total_spent || 0),
-                discount: parseFloat(nextTier.rows[0].discount_percent)
-            } : null
+            member: {
+                id: member.id,
+                email: member.email,
+                name: member.name,
+                phone: member.phone,
+                membership_tier: member.membership_tier,
+                discount_percent: parseFloat(member.discount_percent),
+                total_orders: member.total_orders,
+                total_spent: parseFloat(member.total_spent || 0),
+                is_verified: member.is_verified,
+                perks: member.perks ? member.perks.split(', ') : [],
+                memberSince: member.created_at,
+                nextTier: nextTier.rows[0] ? {
+                    name: nextTier.rows[0].name,
+                    ordersNeeded: nextTier.rows[0].min_orders - member.total_orders,
+                    spentNeeded: parseFloat(nextTier.rows[0].min_spent) - parseFloat(member.total_spent || 0),
+                    discount: parseFloat(nextTier.rows[0].discount_percent)
+                } : null
+            }
         });
     } catch (error) {
         console.error('Get profile error:', error);
@@ -708,12 +791,16 @@ router.post('/update-stats', async (req, res) => {
         const tierName = newTier.rows[0]?.name || 'basic';
         const discount = newTier.rows[0]?.discount_percent || 5;
         
-        // Update member
+        // Auto-verify members who have completed orders (they've proven they're real customers)
+        const shouldAutoVerify = newOrderCount >= 1;
+        
+        // Update member (auto-verify if they have orders)
         await pool.query(`
             UPDATE client_members
-            SET total_orders = $1, total_spent = $2, membership_tier = $3, discount_percent = $4
+            SET total_orders = $1, total_spent = $2, membership_tier = $3, discount_percent = $4,
+                is_verified = CASE WHEN $6 THEN TRUE ELSE is_verified END
             WHERE id = $5
-        `, [newOrderCount, newTotalSpent, tierName, discount, m.id]);
+        `, [newOrderCount, newTotalSpent, tierName, discount, m.id, shouldAutoVerify]);
         
         const upgraded = tierName !== m.membership_tier;
         
@@ -723,7 +810,8 @@ router.post('/update-stats', async (req, res) => {
             newDiscount: parseFloat(discount),
             upgraded,
             totalOrders: newOrderCount,
-            totalSpent: newTotalSpent
+            totalSpent: newTotalSpent,
+            autoVerified: shouldAutoVerify && !m.is_verified
         });
     } catch (error) {
         console.error('Update member stats error:', error);
@@ -731,13 +819,13 @@ router.post('/update-stats', async (req, res) => {
     }
 });
 
-// Get member discount for an email (used during checkout)
+// Get member discount for an email (used during checkout) - only returns discount if verified
 router.get('/discount/:email', async (req, res) => {
     try {
         const emailLower = req.params.email.toLowerCase().trim();
         
         const result = await pool.query(
-            'SELECT discount_percent, membership_tier FROM client_members WHERE email = $1 AND status = $2',
+            'SELECT discount_percent, membership_tier, is_verified FROM client_members WHERE email = $1 AND status = $2',
             [emailLower, 'active']
         );
         
@@ -745,10 +833,22 @@ router.get('/discount/:email', async (req, res) => {
             return res.json({ isMember: false, discount: 0 });
         }
         
+        const member = result.rows[0];
+        
+        // Only return discount if member is verified
+        if (!member.is_verified) {
+            return res.json({ 
+                isMember: true, 
+                discount: 0, 
+                tier: member.membership_tier,
+                message: 'Please verify your email to unlock your discount'
+            });
+        }
+        
         res.json({
             isMember: true,
-            tier: result.rows[0].membership_tier,
-            discount: parseFloat(result.rows[0].discount_percent)
+            tier: member.membership_tier,
+            discount: parseFloat(member.discount_percent)
         });
     } catch (error) {
         console.error('Get discount error:', error);

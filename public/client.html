@@ -9,6 +9,9 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
     <style>
         * {
             margin: 0;
@@ -1029,6 +1032,246 @@
             transform: translateY(-2px);
         }
 
+        /* Google Sign In Button */
+        .google-signin-btn {
+            width: 100%;
+            padding: 12px 20px;
+            background: #fff;
+            color: #333;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .google-signin-btn:hover {
+            background: #f8f9fa;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        .google-signin-btn img {
+            width: 20px;
+            height: 20px;
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.85rem;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255,255,255,0.1);
+        }
+
+        .auth-divider span {
+            padding: 0 15px;
+        }
+
+        /* Verified Badge */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #3b82f6;
+            font-size: 0.85rem;
+            margin-left: 6px;
+        }
+
+        .verified-badge i {
+            font-size: 14px;
+        }
+
+        .unverified-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #f59e0b;
+            font-size: 0.75rem;
+            background: rgba(245, 158, 11, 0.1);
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-left: 8px;
+        }
+
+        /* Unverified Warning Banner */
+        .unverified-banner {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(239, 68, 68, 0.1));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 12px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .unverified-banner-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .unverified-banner-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(245, 158, 11, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #f59e0b;
+            font-size: 18px;
+        }
+
+        .unverified-banner-text h4 {
+            color: #f59e0b;
+            font-size: 0.95rem;
+            margin-bottom: 2px;
+        }
+
+        .unverified-banner-text p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.85rem;
+        }
+
+        .unverified-banner-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .verify-now-btn {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .verify-now-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .banner-close-btn {
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.4);
+            cursor: pointer;
+            padding: 5px;
+            font-size: 16px;
+        }
+
+        .banner-close-btn:hover {
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* Priority Support Button */
+        .priority-support-btn {
+            background: linear-gradient(135deg, #25d366, #128c7e);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            width: 100%;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+        }
+
+        .priority-support-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(37, 211, 102, 0.3);
+        }
+
+        /* Invite Friends Section */
+        .invite-section {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .invite-section h4 {
+            color: #a5b4fc;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .invite-section p {
+            color: rgba(255,255,255,0.6);
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+
+        .invite-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .invite-btn {
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .invite-btn.whatsapp {
+            background: #25d366;
+            color: white;
+        }
+
+        .invite-btn.email {
+            background: #6366f1;
+            color: white;
+        }
+
+        .invite-btn.copy {
+            background: rgba(255,255,255,0.1);
+            color: white;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .invite-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
         /* Member Portal - Full Page Dashboard */
         .member-portal {
             display: none;
@@ -1887,6 +2130,14 @@
 
                             <!-- Login Form -->
                             <form id="memberLoginForm" class="seamless-form active">
+                                <!-- Google Sign In -->
+                                <button type="button" class="google-signin-btn" onclick="signInWithGoogle()">
+                                    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google">
+                                    Continue with Google
+                                </button>
+                                
+                                <div class="auth-divider"><span>or sign in with email</span></div>
+                                
                                 <div class="seamless-input-group">
                                     <label>Email Address</label>
                                     <input type="email" class="seamless-input" id="memberLoginEmail" required placeholder="john@example.com">
@@ -1905,12 +2156,41 @@
 
                 <!-- Member Portal (shown when logged in) -->
                 <div id="memberPortal" class="member-portal">
+                    <!-- Unverified Warning Banner (hidden by default) -->
+                    <div id="unverifiedBanner" class="unverified-banner" style="display: none;">
+                        <div class="unverified-banner-content">
+                            <div class="unverified-banner-icon">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div class="unverified-banner-text">
+                                <h4>Email Not Verified</h4>
+                                <p>Verify your email to unlock your membership discount and all features.</p>
+                            </div>
+                        </div>
+                        <div class="unverified-banner-actions">
+                            <button class="verify-now-btn" onclick="resendVerificationFromPortal()">
+                                <i class="fas fa-envelope"></i> Verify Now
+                            </button>
+                            <button class="banner-close-btn" onclick="closeUnverifiedBanner()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
                     <!-- Portal Header -->
                     <div class="portal-header">
                         <div class="portal-user">
                             <div class="portal-avatar" id="portalAvatar">JD</div>
                             <div class="portal-user-info">
-                                <h3 id="portalName">John Doe</h3>
+                                <h3>
+                                    <span id="portalName">John Doe</span>
+                                    <span id="verifiedBadge" class="verified-badge" style="display: none;">
+                                        <i class="fas fa-check-circle"></i> Verified
+                                    </span>
+                                    <span id="unverifiedTag" class="unverified-tag" style="display: none;">
+                                        <i class="fas fa-exclamation-circle"></i> Unverified
+                                    </span>
+                                </h3>
                                 <span class="tier-badge basic" id="portalTierBadge">
                                     <i class="fas fa-medal"></i> Basic Member
                                 </span>
@@ -2006,6 +2286,28 @@
                                     <i class="fas fa-link"></i> Copy Link
                                 </button>
                             </div>
+                            
+                            <!-- Invite Friends Section -->
+                            <div class="invite-section">
+                                <h4><i class="fas fa-user-plus"></i> Invite Friends</h4>
+                                <p>Send pre-crafted invites to your friends with one click!</p>
+                                <div class="invite-buttons">
+                                    <button class="invite-btn whatsapp" onclick="sendInviteWhatsApp()">
+                                        <i class="fab fa-whatsapp"></i> WhatsApp
+                                    </button>
+                                    <button class="invite-btn email" onclick="sendInviteEmail()">
+                                        <i class="fas fa-envelope"></i> Email
+                                    </button>
+                                    <button class="invite-btn copy" onclick="copyInviteMessage()">
+                                        <i class="fas fa-copy"></i> Copy
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <!-- Priority Support -->
+                            <button class="priority-support-btn" onclick="openPrioritySupport()">
+                                <i class="fab fa-whatsapp"></i> Priority WhatsApp Support
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -2438,9 +2740,78 @@
             window.open(`https://wa.me/?text=${message}`, '_blank');
         }
 
+        // ========== FIREBASE CONFIGURATION ==========
+        const firebaseConfig = {
+            apiKey: "AIzaSyC-YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+        
+        // Initialize Firebase
+        if (typeof firebase !== 'undefined') {
+            firebase.initializeApp(firebaseConfig);
+        }
+        
+        // Google Sign In
+        async function signInWithGoogle() {
+            try {
+                const provider = new firebase.auth.GoogleAuthProvider();
+                provider.addScope('email');
+                provider.addScope('profile');
+                
+                const result = await firebase.auth().signInWithPopup(provider);
+                const user = result.user;
+                
+                // Send to backend for member registration/login
+                const response = await fetch('/api/membership/google-auth', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: user.email,
+                        name: user.displayName,
+                        googleId: user.uid,
+                        photoURL: user.photoURL
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    localStorage.setItem('memberToken', data.token);
+                    localStorage.setItem('memberEmail', data.member.email);
+                    localStorage.setItem('memberName', data.member.name);
+                    localStorage.setItem('memberVerified', data.member.isVerified);
+                    
+                    showToast('success', `Welcome, ${data.member.name}!`);
+                    await loadMemberProfile();
+                    
+                    setTimeout(() => {
+                        showTab('membership');
+                        document.getElementById('memberPortal').scrollIntoView({ 
+                            behavior: 'smooth', 
+                            block: 'start' 
+                        });
+                    }, 100);
+                } else {
+                    showToast('error', data.error || 'Google sign-in failed');
+                }
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                if (error.code === 'auth/popup-closed-by-user') {
+                    showToast('info', 'Sign-in cancelled');
+                } else {
+                    showToast('error', 'Google sign-in failed. Please try again.');
+                }
+            }
+        }
+
         // ========== MEMBERSHIP FUNCTIONS ==========
         
         let memberReferralLink = '';
+        let currentMemberData = null;
         
         // Check membership status on page load
         const memberToken = localStorage.getItem('memberToken');
@@ -2647,21 +3018,46 @@
                 
                 const data = await response.json();
                 const member = data.member;
+                currentMemberData = member;
                 
                 // Store member data
-                localStorage.setItem('memberDiscount', member.discount_percent);
+                localStorage.setItem('memberDiscount', member.is_verified ? member.discount_percent : 0);
+                localStorage.setItem('memberVerified', member.is_verified);
+                localStorage.setItem('memberEmail', member.email);
                 
                 // Update portal header
                 const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
                 document.getElementById('portalAvatar').textContent = initials;
                 document.getElementById('portalName').textContent = member.name;
                 
+                // Update verified/unverified badge
+                const verifiedBadge = document.getElementById('verifiedBadge');
+                const unverifiedTag = document.getElementById('unverifiedTag');
+                
+                if (member.is_verified) {
+                    verifiedBadge.style.display = 'inline-flex';
+                    unverifiedTag.style.display = 'none';
+                    document.getElementById('unverifiedBanner').style.display = 'none';
+                } else {
+                    verifiedBadge.style.display = 'none';
+                    unverifiedTag.style.display = 'inline-flex';
+                    // Show unverified warning banner
+                    document.getElementById('unverifiedBanner').style.display = 'flex';
+                }
+                
                 const tierBadge = document.getElementById('portalTierBadge');
                 tierBadge.textContent = `${capitalizeFirst(member.membership_tier)} Member`;
                 tierBadge.className = `tier-badge ${member.membership_tier}`;
                 
-                // Update stats
-                document.getElementById('portalDiscount').textContent = `${member.discount_percent}%`;
+                // Update stats - Show 0% discount if unverified
+                const displayDiscount = member.is_verified ? member.discount_percent : 0;
+                document.getElementById('portalDiscount').textContent = member.is_verified 
+                    ? `${member.discount_percent}%` 
+                    : `<span style="text-decoration: line-through; opacity: 0.5;">${member.discount_percent}%</span> 0%`;
+                document.getElementById('portalDiscount').innerHTML = member.is_verified 
+                    ? `${member.discount_percent}%` 
+                    : `<span style="text-decoration: line-through; opacity: 0.5;">${member.discount_percent}%</span> <span style="color: #f59e0b;">0%</span>`;
+                    
                 document.getElementById('portalOrders').textContent = member.total_orders || 0;
                 document.getElementById('portalSpent').textContent = `$${parseFloat(member.total_spent || 0).toFixed(0)}`;
                 
@@ -2673,7 +3069,7 @@
                 updateTierProgress(member);
                 
                 // Update perks
-                updatePortalPerks(member.membership_tier);
+                updatePortalPerks(member.membership_tier, member.is_verified);
                 
                 // Load member referral link
                 loadMemberReferralLink(member.name, member.email);
@@ -2685,6 +3081,69 @@
             } catch (error) {
                 console.error('Error loading profile:', error);
             }
+        }
+        
+        // Close unverified banner
+        function closeUnverifiedBanner() {
+            document.getElementById('unverifiedBanner').style.display = 'none';
+        }
+        
+        // Resend verification from portal
+        async function resendVerificationFromPortal() {
+            const email = localStorage.getItem('memberEmail');
+            if (!email) return;
+            
+            try {
+                const response = await fetch('/api/membership/resend-verification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast('success', 'Verification email sent! Check your inbox.');
+                } else {
+                    showToast('error', data.error || 'Failed to send verification email');
+                }
+            } catch (error) {
+                showToast('error', 'Failed to send verification email');
+            }
+        }
+        
+        // Priority WhatsApp Support
+        function openPrioritySupport() {
+            const memberName = localStorage.getItem('memberName') || 'Member';
+            const message = encodeURIComponent(`Hi HomeworkPal! I'm ${memberName}, a premium member. I need priority support regarding:`);
+            window.open(`https://wa.me/+19514487786?text=${message}`, '_blank');
+        }
+        
+        // Invite Friends Functions
+        function getInviteMessage() {
+            const memberName = localStorage.getItem('memberName') || 'A friend';
+            const referralLink = memberReferralLink || 'https://www.homeworkpal.online/client.html';
+            return `Hey! 👋 ${memberName} here!\n\nI've been using HomeworkPal for my assignments and it's been amazing! They deliver quality work on time.\n\n🎓 Get expert help with essays, research papers, and more\n💰 Use my referral link for special perks:\n${referralLink}\n\nTrust me, you won't regret it! 📚✨`;
+        }
+        
+        function sendInviteWhatsApp() {
+            const message = encodeURIComponent(getInviteMessage());
+            window.open(`https://wa.me/?text=${message}`, '_blank');
+        }
+        
+        function sendInviteEmail() {
+            const subject = encodeURIComponent('Check out HomeworkPal - Amazing academic help!');
+            const body = encodeURIComponent(getInviteMessage());
+            window.open(`mailto:?subject=${subject}&body=${body}`, '_blank');
+        }
+        
+        function copyInviteMessage() {
+            const message = getInviteMessage();
+            navigator.clipboard.writeText(message).then(() => {
+                showToast('success', 'Invite message copied! Share it with your friends.');
+            }).catch(() => {
+                showToast('error', 'Failed to copy message');
+            });
         }
 
         function calculateOrdersToNextTier(member) {
@@ -2741,7 +3200,7 @@
             document.getElementById('spentProgress').textContent = `$${currentSpent.toFixed(0)}/$${req.spent}`;
         }
 
-        function updatePortalPerks(tier) {
+        function updatePortalPerks(tier, isVerified = true) {
             const perks = {
                 basic: [
                     '5% discount on all orders',
@@ -2772,9 +3231,23 @@
             };
             
             const perksList = document.getElementById('portalPerksList');
-            perksList.innerHTML = (perks[tier] || perks.basic).map(perk => 
-                `<div class="perk-item"><i class="fas fa-check-circle"></i> ${perk}</div>`
-            ).join('');
+            const tierPerks = perks[tier] || perks.basic;
+            
+            if (!isVerified) {
+                // Show perks as locked for unverified users
+                perksList.innerHTML = `
+                    <div class="perk-item" style="color: #f59e0b; opacity: 0.7;">
+                        <i class="fas fa-lock"></i> Verify your email to unlock your ${tier} perks:
+                    </div>
+                    ${tierPerks.map(perk => 
+                        `<div class="perk-item" style="opacity: 0.5; text-decoration: line-through;"><i class="fas fa-times-circle" style="color: #666;"></i> ${perk}</div>`
+                    ).join('')}
+                `;
+            } else {
+                perksList.innerHTML = tierPerks.map(perk => 
+                    `<div class="perk-item"><i class="fas fa-check-circle"></i> ${perk}</div>`
+                ).join('');
+            }
         }
 
         async function loadMemberReferralLink(name, email) {
