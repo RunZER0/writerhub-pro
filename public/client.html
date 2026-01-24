@@ -707,7 +707,20 @@
         }
         .inquiry-chat-container.active {
             display: flex;
-            flex-direction: column;
+            flex-direction: row;
+        }
+        @media (max-width: 768px) {
+            .inquiry-chat-container.active {
+                flex-direction: column;
+                height: auto;
+                min-height: 500px;
+            }
+            .inquiry-list {
+                max-width: 100% !important;
+                max-height: 200px;
+                border-right: none !important;
+                border-bottom: 1px solid rgba(255,255,255,0.08);
+            }
         }
         .inquiry-list {
             width: 100%;
@@ -2981,8 +2994,18 @@
 
         // Calculate exact price from backend
         async function calculatePrice() {
-            const pages = parseInt(document.getElementById('pages').value) || 1;
+            const pagesEl = document.getElementById('pages');
+            if (!pagesEl) return; // Element not ready yet
+            
+            const pages = parseInt(pagesEl.value) || 1;
             const memberToken = localStorage.getItem('memberToken');
+            
+            // First show a quick estimate while loading
+            const quickEstimate = pages * ((selectedPackageData.minPrice + selectedPackageData.maxPrice) / 2);
+            const finalPriceEl = document.getElementById('finalPriceDisplay');
+            if (finalPriceEl) {
+                finalPriceEl.textContent = `$${quickEstimate.toFixed(2)}`;
+            }
             
             try {
                 const response = await fetch('/api/orders/calculate', {
@@ -2999,6 +3022,8 @@
                     })
                 });
                 
+                if (!response.ok) throw new Error('API error');
+                
                 const data = await response.json();
                 
                 if (data.success) {
@@ -3007,53 +3032,70 @@
                 }
             } catch (error) {
                 console.error('Price calculation error:', error);
-                // Fallback to simple calculation
+                // Use fallback calculation
                 const basePrice = pages * ((selectedPackageData.minPrice + selectedPackageData.maxPrice) / 2);
-                document.getElementById('finalPriceDisplay').textContent = `$${basePrice.toFixed(2)}`;
+                currentPriceBreakdown = {
+                    packageType: selectedPackageData.name,
+                    packageName: selectedPackageData.name.charAt(0).toUpperCase() + selectedPackageData.name.slice(1),
+                    pages: pages,
+                    basePrice: basePrice.toFixed(2),
+                    urgencyFee: '0.00',
+                    subtotal: basePrice.toFixed(2),
+                    discountAmount: '0.00',
+                    discountPercent: 0,
+                    finalPrice: basePrice.toFixed(2),
+                    deadlineHours: selectedDeadlineHours
+                };
+                updatePriceDisplay(currentPriceBreakdown);
             }
         }
         
         function updatePriceDisplay(breakdown) {
+            // Safely update elements with null checks
+            const setElement = (id, value) => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = value;
+            };
+            const setDisplay = (id, display) => {
+                const el = document.getElementById(id);
+                if (el) el.style.display = display;
+            };
+            
             // Update main display
-            document.getElementById('finalPriceDisplay').textContent = `$${breakdown.finalPrice}`;
-            document.getElementById('pagesCount').textContent = breakdown.pages;
-            document.getElementById('basePriceDisplay').textContent = `$${breakdown.basePrice}`;
-            document.getElementById('subtotalDisplay').textContent = `$${breakdown.subtotal}`;
-            document.getElementById('totalDisplay').textContent = `$${breakdown.finalPrice}`;
+            setElement('finalPriceDisplay', `$${breakdown.finalPrice}`);
+            setElement('pagesCount', breakdown.pages);
+            setElement('basePriceDisplay', `$${breakdown.basePrice}`);
+            setElement('subtotalDisplay', `$${breakdown.subtotal}`);
+            setElement('totalDisplay', `$${breakdown.finalPrice}`);
             
             // Urgency fee
-            const urgencyRow = document.getElementById('urgencyFeeRow');
             if (parseFloat(breakdown.urgencyFee) > 0) {
-                urgencyRow.style.display = 'flex';
-                document.getElementById('urgencyPercent').textContent = breakdown.urgencyPercent;
-                document.getElementById('urgencyFeeDisplay').textContent = `$${breakdown.urgencyFee}`;
+                setDisplay('urgencyFeeRow', 'flex');
+                setElement('urgencyPercent', breakdown.urgencyPercent || '0');
+                setElement('urgencyFeeDisplay', `$${breakdown.urgencyFee}`);
             } else {
-                urgencyRow.style.display = 'none';
+                setDisplay('urgencyFeeRow', 'none');
             }
             
             // Discount
-            const discountRow = document.getElementById('discountRow');
-            const memberBanner = document.getElementById('memberDiscountBanner');
-            const loginBanner = document.getElementById('loginForDiscountBanner');
-            
             if (parseFloat(breakdown.discountAmount) > 0) {
-                discountRow.style.display = 'flex';
-                document.getElementById('discountPercent').textContent = breakdown.discountPercent;
-                document.getElementById('discountDisplay').textContent = `-$${breakdown.discountAmount}`;
+                setDisplay('discountRow', 'flex');
+                setElement('discountPercent', breakdown.discountPercent);
+                setElement('discountDisplay', `-$${breakdown.discountAmount}`);
                 
-                memberBanner.style.display = 'flex';
-                document.getElementById('savingsAmount').textContent = `$${breakdown.discountAmount}`;
-                document.getElementById('memberTierDisplay').textContent = breakdown.memberTier || 'Basic';
-                loginBanner.style.display = 'none';
+                setDisplay('memberDiscountBanner', 'flex');
+                setElement('savingsAmount', `$${breakdown.discountAmount}`);
+                setElement('memberTierDisplay', breakdown.memberTier || 'Basic');
+                setDisplay('loginForDiscountBanner', 'none');
             } else {
-                discountRow.style.display = 'none';
-                memberBanner.style.display = 'none';
+                setDisplay('discountRow', 'none');
+                setDisplay('memberDiscountBanner', 'none');
                 
                 // Show login prompt if not logged in
                 if (!localStorage.getItem('memberToken')) {
-                    loginBanner.style.display = 'flex';
+                    setDisplay('loginForDiscountBanner', 'flex');
                 } else {
-                    loginBanner.style.display = 'none';
+                    setDisplay('loginForDiscountBanner', 'none');
                 }
             }
         }
@@ -3447,18 +3489,26 @@
         if (memberToken) {
             loadMemberProfile();
             setupInquiryChat();
+        } else {
+            // Setup for non-logged in users
+            setupInquiryChat();
         }
         
         // Setup inquiry chat for logged-in members
         function setupInquiryChat() {
             const token = localStorage.getItem('memberToken');
+            const memberChat = document.getElementById('memberInquiryChat');
+            const guestForm = document.getElementById('guestInquiryForm');
+            
+            if (!memberChat || !guestForm) return; // Elements not ready
+            
             if (token) {
-                document.getElementById('memberInquiryChat').style.display = 'block';
-                document.getElementById('guestInquiryForm').style.display = 'none';
+                memberChat.style.display = 'block';
+                guestForm.style.display = 'none';
                 loadMemberInquiries();
             } else {
-                document.getElementById('memberInquiryChat').style.display = 'none';
-                document.getElementById('guestInquiryForm').style.display = 'block';
+                memberChat.style.display = 'none';
+                guestForm.style.display = 'block';
             }
         }
 
@@ -4210,4 +4260,10 @@
             return date.toLocaleDateString();
         }
 
+        // Initialize price calculation when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            calculatePrice();
+        });
+    </script>
+</body>
 </html>
