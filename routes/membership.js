@@ -312,4 +312,48 @@ router.get('/discount/:email', async (req, res) => {
     }
 });
 
+// ============ ADMIN ENDPOINTS ============
+
+// Get all members (admin view)
+router.get('/admin/list', async (req, res) => {
+    try {
+        const result = await pool.query(`
+            SELECT 
+                id, email, name, phone, membership_tier, discount_percent,
+                total_orders, total_spent, is_verified, status, created_at
+            FROM client_members
+            ORDER BY created_at DESC
+        `);
+        
+        // Calculate stats
+        const members = result.rows;
+        const stats = {
+            total: members.length,
+            basic: members.filter(m => m.membership_tier === 'basic').length,
+            silver: members.filter(m => m.membership_tier === 'silver').length,
+            goldPlus: members.filter(m => ['gold', 'platinum'].includes(m.membership_tier)).length
+        };
+        
+        res.json({
+            members: members.map(m => ({
+                id: m.id,
+                email: m.email,
+                name: m.name,
+                phone: m.phone,
+                tier: m.membership_tier,
+                discount: parseFloat(m.discount_percent),
+                orders: m.total_orders || 0,
+                totalSpent: parseFloat(m.total_spent || 0),
+                verified: m.is_verified,
+                status: m.status,
+                joinedAt: m.created_at
+            })),
+            stats
+        });
+    } catch (error) {
+        console.error('Get members list error:', error);
+        res.status(500).json({ error: 'Failed to fetch members' });
+    }
+});
+
 module.exports = router;

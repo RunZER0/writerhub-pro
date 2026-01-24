@@ -721,7 +721,8 @@ function navigateTo(page) {
         'payments': 'Payments',
         'reports': 'Reports',
         'accounting': 'Accounting',
-        'referrals': 'Client Referrals'
+        'referrals': 'Client Referrals',
+        'members': 'Client Members'
     };
     document.getElementById('pageTitle').textContent = titles[page] || 'Dashboard';
     
@@ -768,6 +769,7 @@ function navigateTo(page) {
     }
     if (page === 'accounting' && isAdmin()) loadAccounting();
     if (page === 'referrals' && isAdmin()) loadReferrals();
+    if (page === 'members' && isAdmin()) loadMembers();
     
     // Close sidebar on mobile
     document.querySelector('.sidebar').classList.remove('active');
@@ -3018,6 +3020,111 @@ async function loadReferrals() {
         console.error('Load referrals error:', error);
         showToast('error', 'Failed to load referral data');
     }
+}
+
+// ========================================
+// Members Management
+// ========================================
+let allMembers = [];
+
+async function loadMembers() {
+    if (!isAdmin()) return;
+    
+    try {
+        const data = await api('/membership/admin/list');
+        allMembers = data.members || [];
+        
+        // Update summary cards
+        document.getElementById('totalMembers').textContent = data.stats?.total || 0;
+        document.getElementById('basicMembers').textContent = data.stats?.basic || 0;
+        document.getElementById('silverMembers').textContent = data.stats?.silver || 0;
+        document.getElementById('goldPlusMembers').textContent = data.stats?.goldPlus || 0;
+        
+        // Render members table
+        renderMembersTable(allMembers);
+        
+        // Add search and filter listeners
+        const searchInput = document.getElementById('memberSearchInput');
+        const tierFilter = document.getElementById('memberTierFilter');
+        
+        if (searchInput && !searchInput.dataset.listenerAdded) {
+            searchInput.addEventListener('input', filterMembers);
+            searchInput.dataset.listenerAdded = 'true';
+        }
+        
+        if (tierFilter && !tierFilter.dataset.listenerAdded) {
+            tierFilter.addEventListener('change', filterMembers);
+            tierFilter.dataset.listenerAdded = 'true';
+        }
+    } catch (error) {
+        console.error('Load members error:', error);
+        document.getElementById('membersTable').innerHTML = '<tr><td colspan="8" class="empty-state">Failed to load members</td></tr>';
+    }
+}
+
+function filterMembers() {
+    const searchTerm = document.getElementById('memberSearchInput')?.value?.toLowerCase() || '';
+    const tierFilter = document.getElementById('memberTierFilter')?.value || '';
+    
+    let filtered = allMembers;
+    
+    if (searchTerm) {
+        filtered = filtered.filter(m => 
+            m.name?.toLowerCase().includes(searchTerm) ||
+            m.email?.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    if (tierFilter) {
+        filtered = filtered.filter(m => m.tier === tierFilter);
+    }
+    
+    renderMembersTable(filtered);
+}
+
+function renderMembersTable(members) {
+    const table = document.getElementById('membersTable');
+    
+    if (!members || members.length === 0) {
+        table.innerHTML = '<tr><td colspan="8" class="empty-state">No members found</td></tr>';
+        return;
+    }
+    
+    const tierBadges = {
+        basic: 'success',
+        silver: '',
+        gold: 'warning',
+        platinum: 'primary'
+    };
+    
+    const tierIcons = {
+        basic: '🌱',
+        silver: '🥈',
+        gold: '🥇',
+        platinum: '💎'
+    };
+    
+    table.innerHTML = members.map(m => `
+        <tr>
+            <td>
+                <div style="font-weight: 500;">${escapeHtml(m.name)}</div>
+                ${m.phone ? `<div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(m.phone)}</div>` : ''}
+            </td>
+            <td style="font-size: 0.85rem;">${escapeHtml(m.email)}</td>
+            <td>
+                <span class="badge ${tierBadges[m.tier] || ''}">
+                    ${tierIcons[m.tier] || ''} ${m.tier?.charAt(0).toUpperCase() + m.tier?.slice(1)}
+                </span>
+            </td>
+            <td style="color: #10b981; font-weight: 600;">${m.discount}%</td>
+            <td>${m.orders}</td>
+            <td>${formatCurrency(m.totalSpent)}</td>
+            <td style="font-size: 0.8rem; color: var(--text-muted);">${formatDate(m.joinedAt)}</td>
+            <td>
+                <span class="badge ${m.status === 'active' ? 'success' : 'danger'}">${m.status}</span>
+            </td>
+        </tr>
+    `).join('');
 }
 
 // ========================================

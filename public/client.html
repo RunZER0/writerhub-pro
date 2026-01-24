@@ -787,118 +787,616 @@
             border: 1px solid rgba(255,255,255,0.2) !important;
         }
 
-        /* Membership Styles */
-        .membership-container {
-            max-width: 900px;
+        /* Membership Styles - Blended Design */
+        .membership-section {
+            max-width: 1100px;
             margin: 0 auto;
+            position: relative;
         }
 
-        .membership-hero {
-            text-align: center;
-            padding: 2rem;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 20px;
-            margin-bottom: 2rem;
-        }
-
-        .membership-hero h2 {
-            font-size: 1.75rem;
-            margin-bottom: 0.5rem;
-        }
-
-        .membership-hero p {
-            color: rgba(255,255,255,0.6);
-            margin-bottom: 1.5rem;
-        }
-
-        .membership-benefits {
+        /* Floating Tier Indicators */
+        .tier-indicators {
             display: flex;
             justify-content: center;
-            gap: 2rem;
+            gap: 1.5rem;
+            margin-bottom: 3rem;
             flex-wrap: wrap;
         }
 
-        .benefit-item {
+        .tier-pill {
             display: flex;
             align-items: center;
             gap: 0.5rem;
-            color: #10b981;
+            padding: 0.5rem 1rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 50px;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+            transition: all 0.3s;
         }
 
-        .benefit-item i {
-            font-size: 1.25rem;
+        .tier-pill:hover {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: rgba(99, 102, 241, 0.3);
         }
 
-        .membership-tiers {
+        .tier-pill .tier-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .tier-pill.basic .tier-dot { background: linear-gradient(135deg, #10b981, #059669); }
+        .tier-pill.silver .tier-dot { background: linear-gradient(135deg, #c0c0c0, #808080); }
+        .tier-pill.gold .tier-dot { background: linear-gradient(135deg, #ffd700, #b8860b); }
+        .tier-pill.platinum .tier-dot { background: linear-gradient(135deg, #e5e4e2, #8b8b8b); }
+
+        /* Auth Container - Seamless Design */
+        .membership-auth-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            align-items: start;
+            position: relative;
+        }
+
+        @media (max-width: 900px) {
+            .membership-auth-container {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+        }
+
+        /* Benefits Side */
+        .membership-benefits-side {
+            padding: 2rem 0;
+        }
+
+        .membership-benefits-side h2 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #fff, rgba(255,255,255,0.7));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .membership-benefits-side .subtitle {
+            color: rgba(255,255,255,0.5);
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .benefit-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .benefit-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+            transition: all 0.3s;
+        }
+
+        .benefit-row:hover {
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .benefit-row .icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .benefit-row:nth-child(1) .icon { background: rgba(99, 102, 241, 0.15); color: #818cf8; }
+        .benefit-row:nth-child(2) .icon { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .benefit-row:nth-child(3) .icon { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .benefit-row:nth-child(4) .icon { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
+
+        .benefit-row .content h4 {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .benefit-row .content p {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            line-height: 1.4;
+        }
+
+        /* Auth Forms Side */
+        .membership-auth-side {
+            position: relative;
+        }
+
+        .auth-mode-toggle {
+            display: flex;
+            margin-bottom: 1.5rem;
+            background: rgba(255,255,255,0.03);
+            border-radius: 12px;
+            padding: 0.25rem;
+        }
+
+        .auth-mode-btn {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            background: transparent;
+            border: none;
+            color: rgba(255,255,255,0.5);
+            font-weight: 500;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+
+        .auth-mode-btn.active {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+        }
+
+        .auth-mode-btn:hover:not(.active) {
+            color: #fff;
+        }
+
+        /* Seamless Form Fields */
+        .seamless-form {
+            display: none;
+        }
+
+        .seamless-form.active {
+            display: block;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .seamless-input-group {
+            margin-bottom: 1rem;
+        }
+
+        .seamless-input-group label {
+            display: block;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 0.5rem;
+        }
+
+        .seamless-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 10px;
+            color: #fff;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+
+        .seamless-input:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.5);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .seamless-input::placeholder {
+            color: rgba(255,255,255,0.3);
+        }
+
+        .input-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 500px) {
+            .input-row {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .auth-submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 0.5rem;
+        }
+
+        .auth-submit-btn:hover {
+            box-shadow: 0 10px 40px rgba(99, 102, 241, 0.3);
+            transform: translateY(-2px);
+        }
+
+        /* Member Portal - Full Page Dashboard */
+        .member-portal {
+            display: none;
+        }
+
+        .member-portal.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .portal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .portal-user {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .portal-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .portal-user-info h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .tier-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .tier-badge.basic { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .tier-badge.silver { background: rgba(192, 192, 192, 0.2); color: #e0e0e0; }
+        .tier-badge.gold { background: rgba(255, 215, 0, 0.15); color: #ffd700; }
+        .tier-badge.platinum { background: rgba(229, 228, 226, 0.15); color: #e5e4e2; }
+
+        .portal-logout-btn {
+            padding: 0.6rem 1.2rem;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .portal-logout-btn:hover {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        /* Stats Grid */
+        .portal-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
             gap: 1rem;
             margin-bottom: 2rem;
         }
 
-        .tier-card {
+        @media (max-width: 768px) {
+            .portal-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .stat-card {
             background: rgba(255,255,255,0.02);
             border: 1px solid rgba(255,255,255,0.08);
             border-radius: 12px;
-            padding: 1.5rem;
+            padding: 1.25rem;
             text-align: center;
             transition: all 0.3s;
         }
 
-        .tier-card:hover {
-            border-color: rgba(99, 102, 241, 0.5);
+        .stat-card:hover {
+            border-color: rgba(99, 102, 241, 0.3);
         }
 
-        .tier-card.current {
-            border-color: #10b981;
-            background: rgba(16, 185, 129, 0.05);
-        }
-
-        .tier-card .tier-name {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            text-transform: capitalize;
-        }
-
-        .tier-card .tier-discount {
-            font-size: 2rem;
+        .stat-card .stat-value {
+            font-size: 1.75rem;
             font-weight: 700;
-            color: #6366f1;
+            margin-bottom: 0.25rem;
         }
 
-        .tier-card .tier-discount span {
+        .stat-card:nth-child(1) .stat-value { color: #6366f1; }
+        .stat-card:nth-child(2) .stat-value { color: #10b981; }
+        .stat-card:nth-child(3) .stat-value { color: #f59e0b; }
+        .stat-card:nth-child(4) .stat-value { color: #ec4899; }
+
+        .stat-card .stat-label {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Portal Grid */
+        .portal-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .portal-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Progress Section */
+        .progress-section {
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .progress-section h4 {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 1.25rem;
             font-size: 1rem;
         }
 
-        .tier-card .tier-requirement {
+        .progress-section h4 i {
+            color: #6366f1;
+        }
+
+        .tier-progress {
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .progress-header .current {
+            font-weight: 600;
+        }
+
+        .progress-header .next {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #8b5cf6);
+            border-radius: 10px;
+            transition: width 0.5s ease;
+        }
+
+        .progress-details {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 0.75rem;
             font-size: 0.8rem;
             color: rgba(255,255,255,0.5);
-            margin-top: 0.5rem;
         }
 
-        .auth-tabs {
+        /* Quick Actions */
+        .quick-actions-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .quick-action-btn {
+            padding: 1rem;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: center;
+        }
+
+        .quick-action-btn:hover {
+            background: rgba(99, 102, 241, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .quick-action-btn i {
+            display: block;
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: #818cf8;
+        }
+
+        .quick-action-btn span {
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        /* Referral Section in Portal */
+        .referral-section {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+        }
+
+        .referral-section h4 {
             display: flex;
-            margin-bottom: 1.5rem;
-            background: rgba(255,255,255,0.03);
-            border-radius: 10px;
-            padding: 0.25rem;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-size: 1rem;
+            color: #10b981;
         }
 
-        .auth-tab {
+        .referral-section p {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 1rem;
+        }
+
+        .referral-code-box {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .referral-code-input {
             flex: 1;
             padding: 0.75rem;
-            text-align: center;
-            cursor: pointer;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(16, 185, 129, 0.3);
             border-radius: 8px;
-            transition: all 0.3s;
-            color: rgba(255,255,255,0.6);
+            color: #fff;
+            font-family: monospace;
+            font-size: 0.9rem;
+            text-align: center;
         }
 
-        .auth-tab.active {
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+        .referral-copy-btn {
+            padding: 0.75rem 1rem;
+            background: #10b981;
+            border: none;
+            border-radius: 8px;
             color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .referral-copy-btn:hover {
+            background: #059669;
+        }
+
+        .referral-share-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .share-btn {
+            flex: 1;
+            padding: 0.6rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .share-btn.whatsapp {
+            background: #25d366;
+            color: #fff;
+        }
+
+        .share-btn.copy-link {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Perks List */
+        .portal-perks {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            background: rgba(255,255,255,0.02);
+            border-radius: 12px;
+        }
+
+        .portal-perks h5 {
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 0.75rem;
+        }
+
+        .perk-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.4rem 0;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .perk-item i {
+            color: #10b981;
+            font-size: 0.8rem;
+        }
+
+        /* Price Calculation Display */
+        .price-calc-display {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .price-calc-display.visible {
+            display: block;
+        }
+
+        .price-calc-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.4rem 0;
+            font-size: 0.9rem;
+        }
+
+        .price-calc-row.total {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+            font-weight: 600;
+        }
+
+        .price-calc-row .discount {
+            color: #10b981;
         }
 
         .auth-form {
@@ -1292,146 +1790,223 @@
 
         <!-- Membership Tab -->
         <div class="tab-content" id="membership-tab">
-            <div class="membership-container">
-                <!-- Hero Section -->
-                <div class="membership-hero">
-                    <h2>🎓 Join HomeworkPal Membership</h2>
-                    <p>Become a long-term member and unlock exclusive discounts on every order!</p>
-                    <div class="membership-benefits">
-                        <div class="benefit-item">
-                            <i class="fas fa-percentage"></i>
-                            <span>Up to 20% off</span>
+            <div class="membership-section">
+                <!-- Tier Indicators -->
+                <div class="tier-indicators">
+                    <div class="tier-pill basic">
+                        <span class="tier-dot"></span>
+                        <span>Basic 5%</span>
+                    </div>
+                    <div class="tier-pill silver">
+                        <span class="tier-dot"></span>
+                        <span>Silver 10%</span>
+                    </div>
+                    <div class="tier-pill gold">
+                        <span class="tier-dot"></span>
+                        <span>Gold 15%</span>
+                    </div>
+                    <div class="tier-pill platinum">
+                        <span class="tier-dot"></span>
+                        <span>Platinum 20%</span>
+                    </div>
+                </div>
+
+                <!-- Auth Section (shown when not logged in) -->
+                <div id="memberAuthSection">
+                    <div class="membership-auth-container">
+                        <!-- Benefits Side -->
+                        <div class="membership-benefits-side">
+                            <h2>Join HomeworkPal Membership</h2>
+                            <p class="subtitle">Unlock exclusive discounts and perks on every order</p>
+                            
+                            <div class="benefit-list">
+                                <div class="benefit-row">
+                                    <div class="icon"><i class="fas fa-percentage"></i></div>
+                                    <div class="content">
+                                        <h4>Up to 20% Discount</h4>
+                                        <p>Save more as you order more. Climb the tiers and unlock bigger discounts.</p>
+                                    </div>
+                                </div>
+                                <div class="benefit-row">
+                                    <div class="icon"><i class="fas fa-bolt"></i></div>
+                                    <div class="content">
+                                        <h4>Priority Processing</h4>
+                                        <p>Your assignments get priority attention from our top writers.</p>
+                                    </div>
+                                </div>
+                                <div class="benefit-row">
+                                    <div class="icon"><i class="fas fa-gift"></i></div>
+                                    <div class="content">
+                                        <h4>Earn Referral Rewards</h4>
+                                        <p>Get your unique referral link and earn when friends sign up.</p>
+                                    </div>
+                                </div>
+                                <div class="benefit-row">
+                                    <div class="icon"><i class="fas fa-headset"></i></div>
+                                    <div class="content">
+                                        <h4>24/7 VIP Support</h4>
+                                        <p>Dedicated support for all your questions and concerns.</p>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <div class="benefit-item">
-                            <i class="fas fa-star"></i>
-                            <span>Priority support</span>
-                        </div>
-                        <div class="benefit-item">
-                            <i class="fas fa-gift"></i>
-                            <span>Exclusive perks</span>
+
+                        <!-- Auth Forms Side -->
+                        <div class="membership-auth-side">
+                            <div class="auth-mode-toggle">
+                                <button class="auth-mode-btn" data-mode="register">Create Account</button>
+                                <button class="auth-mode-btn active" data-mode="login">Sign In</button>
+                            </div>
+
+                            <!-- Register Form -->
+                            <form id="memberRegisterForm" class="seamless-form">
+                                <div class="input-row">
+                                    <div class="seamless-input-group">
+                                        <label>Full Name</label>
+                                        <input type="text" class="seamless-input" id="memberRegName" required placeholder="John Doe">
+                                    </div>
+                                    <div class="seamless-input-group">
+                                        <label>Email Address</label>
+                                        <input type="email" class="seamless-input" id="memberRegEmail" required placeholder="john@example.com">
+                                    </div>
+                                </div>
+                                <div class="input-row">
+                                    <div class="seamless-input-group">
+                                        <label>Phone (optional)</label>
+                                        <input type="tel" class="seamless-input" id="memberRegPhone" placeholder="+1 234 567 8900">
+                                    </div>
+                                    <div class="seamless-input-group">
+                                        <label>Password</label>
+                                        <input type="password" class="seamless-input" id="memberRegPassword" required placeholder="Min 6 characters" minlength="6">
+                                    </div>
+                                </div>
+                                <button type="submit" class="auth-submit-btn">
+                                    <i class="fas fa-user-plus"></i> Create Account
+                                </button>
+                            </form>
+
+                            <!-- Login Form -->
+                            <form id="memberLoginForm" class="seamless-form active">
+                                <div class="seamless-input-group">
+                                    <label>Email Address</label>
+                                    <input type="email" class="seamless-input" id="memberLoginEmail" required placeholder="john@example.com">
+                                </div>
+                                <div class="seamless-input-group">
+                                    <label>Password</label>
+                                    <input type="password" class="seamless-input" id="memberLoginPassword" required placeholder="Your password">
+                                </div>
+                                <button type="submit" class="auth-submit-btn">
+                                    <i class="fas fa-sign-in-alt"></i> Sign In to Dashboard
+                                </button>
+                            </form>
                         </div>
                     </div>
                 </div>
 
-                <!-- Membership Tiers -->
-                <div class="membership-tiers" id="membershipTiers">
-                    <div class="tier-card">
-                        <div class="tier-name">Basic</div>
-                        <div class="tier-discount">5<span>% OFF</span></div>
-                        <div class="tier-requirement">Join to get started</div>
-                    </div>
-                    <div class="tier-card">
-                        <div class="tier-name">Silver</div>
-                        <div class="tier-discount">10<span>% OFF</span></div>
-                        <div class="tier-requirement">5+ orders or $100+ spent</div>
-                    </div>
-                    <div class="tier-card">
-                        <div class="tier-name">Gold</div>
-                        <div class="tier-discount">15<span>% OFF</span></div>
-                        <div class="tier-requirement">15+ orders or $500+ spent</div>
-                    </div>
-                    <div class="tier-card">
-                        <div class="tier-name">Platinum</div>
-                        <div class="tier-discount">20<span>% OFF</span></div>
-                        <div class="tier-requirement">30+ orders or $1500+ spent</div>
-                    </div>
-                </div>
-
-                <div class="form-card">
-                    <!-- Auth Section (shown when not logged in) -->
-                    <div id="memberAuthSection">
-                        <div class="auth-tabs">
-                            <div class="auth-tab active" data-auth="register">Create Account</div>
-                            <div class="auth-tab" data-auth="login">Sign In</div>
-                        </div>
-
-                        <!-- Register Form -->
-                        <form id="memberRegisterForm" class="auth-form active">
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Full Name <span class="required">*</span></label>
-                                    <input type="text" id="memberRegName" required placeholder="John Doe">
-                                </div>
-                                <div class="form-group">
-                                    <label>Email <span class="required">*</span></label>
-                                    <input type="email" id="memberRegEmail" required placeholder="john@example.com">
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Phone (optional)</label>
-                                    <input type="tel" id="memberRegPhone" placeholder="+1 234 567 8900">
-                                </div>
-                                <div class="form-group">
-                                    <label>Password <span class="required">*</span></label>
-                                    <input type="password" id="memberRegPassword" required placeholder="Min 6 characters" minlength="6">
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%;">
-                                <i class="fas fa-user-plus"></i> Create Membership Account
-                            </button>
-                        </form>
-
-                        <!-- Login Form -->
-                        <form id="memberLoginForm" class="auth-form">
-                            <div class="form-group">
-                                <label>Email <span class="required">*</span></label>
-                                <input type="email" id="memberLoginEmail" required placeholder="john@example.com">
-                            </div>
-                            <div class="form-group">
-                                <label>Password <span class="required">*</span></label>
-                                <input type="password" id="memberLoginPassword" required placeholder="Your password">
-                            </div>
-                            <button type="submit" class="btn btn-primary" style="width: 100%;">
-                                <i class="fas fa-sign-in-alt"></i> Sign In
-                            </button>
-                        </form>
-                    </div>
-
-                    <!-- Member Dashboard (shown when logged in) -->
-                    <div id="memberDashboard" class="member-dashboard">
-                        <div class="member-card">
-                            <div class="member-header">
-                                <div class="member-avatar" id="memberAvatar">JD</div>
-                                <div class="member-info">
-                                    <h3 id="memberName">John Doe</h3>
-                                    <span class="member-tier-badge" id="memberTierBadge">Basic Member</span>
-                                </div>
-                            </div>
-                            <div class="member-stats">
-                                <div class="stat-box">
-                                    <div class="value" id="memberDiscount">5%</div>
-                                    <div class="label">Your Discount</div>
-                                </div>
-                                <div class="stat-box">
-                                    <div class="value" id="memberOrders">0</div>
-                                    <div class="label">Total Orders</div>
-                                </div>
-                                <div class="stat-box">
-                                    <div class="value" id="memberSpent">$0</div>
-                                    <div class="label">Total Spent</div>
-                                </div>
+                <!-- Member Portal (shown when logged in) -->
+                <div id="memberPortal" class="member-portal">
+                    <!-- Portal Header -->
+                    <div class="portal-header">
+                        <div class="portal-user">
+                            <div class="portal-avatar" id="portalAvatar">JD</div>
+                            <div class="portal-user-info">
+                                <h3 id="portalName">John Doe</h3>
+                                <span class="tier-badge basic" id="portalTierBadge">
+                                    <i class="fas fa-medal"></i> Basic Member
+                                </span>
                             </div>
                         </div>
-
-                        <div class="form-card" style="margin-top: 1rem;">
-                            <h4 style="margin-bottom: 1rem;"><i class="fas fa-gift" style="color: #10b981;"></i> Your Perks</h4>
-                            <ul class="perks-list" id="memberPerks">
-                                <li><i class="fas fa-check-circle"></i> Early access to new services</li>
-                                <li><i class="fas fa-check-circle"></i> Priority email support</li>
-                            </ul>
-                        </div>
-
-                        <div id="nextTierInfo" style="margin-top: 1rem; padding: 1rem; background: rgba(99, 102, 241, 0.1); border-radius: 10px;">
-                            <p style="color: rgba(255,255,255,0.7); font-size: 0.9rem;">
-                                <i class="fas fa-arrow-up" style="color: #6366f1;"></i>
-                                <span id="nextTierText">Complete 5 more orders to reach Silver tier!</span>
-                            </p>
-                        </div>
-
-                        <button onclick="logoutMember()" class="btn btn-ghost" style="width: 100%; margin-top: 1rem; border: 1px solid rgba(255,255,255,0.1);">
+                        <button class="portal-logout-btn" onclick="logoutMember()">
                             <i class="fas fa-sign-out-alt"></i> Sign Out
                         </button>
+                    </div>
+
+                    <!-- Stats Grid -->
+                    <div class="portal-stats">
+                        <div class="stat-card">
+                            <div class="stat-value" id="portalDiscount">5%</div>
+                            <div class="stat-label">Your Discount</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="portalOrders">0</div>
+                            <div class="stat-label">Total Orders</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="portalSpent">$0</div>
+                            <div class="stat-label">Total Spent</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value" id="portalOrdersToNext">5</div>
+                            <div class="stat-label">Orders to Next Tier</div>
+                        </div>
+                    </div>
+
+                    <!-- Portal Grid -->
+                    <div class="portal-grid">
+                        <!-- Left Column -->
+                        <div>
+                            <!-- Progress Section -->
+                            <div class="progress-section">
+                                <h4><i class="fas fa-chart-line"></i> Tier Progress</h4>
+                                
+                                <div class="tier-progress">
+                                    <div class="progress-header">
+                                        <span class="current" id="currentTierLabel">Basic Member</span>
+                                        <span class="next" id="nextTierLabel">Next: Silver</span>
+                                    </div>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" id="tierProgressBar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="progress-details">
+                                        <span id="ordersProgress">0/5 orders</span>
+                                        <span id="spentProgress">$0/$100 spent</span>
+                                    </div>
+                                </div>
+
+                                <!-- Quick Actions -->
+                                <div class="quick-actions-grid">
+                                    <button class="quick-action-btn" onclick="showTab('submit')">
+                                        <i class="fas fa-paper-plane"></i>
+                                        <span>New Order</span>
+                                    </button>
+                                    <button class="quick-action-btn" onclick="showTab('pricing')">
+                                        <i class="fas fa-tags"></i>
+                                        <span>View Pricing</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Perks -->
+                            <div class="portal-perks">
+                                <h5><i class="fas fa-gift" style="margin-right: 0.5rem; color: #10b981;"></i>Your Perks</h5>
+                                <div id="portalPerksList">
+                                    <div class="perk-item"><i class="fas fa-check-circle"></i> Early access to new services</div>
+                                    <div class="perk-item"><i class="fas fa-check-circle"></i> Priority email support</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column - Referral -->
+                        <div class="referral-section">
+                            <h4><i class="fas fa-users"></i> Your Referral Link</h4>
+                            <p>Share your link and earn rewards when friends join!</p>
+                            
+                            <div class="referral-code-box">
+                                <input type="text" class="referral-code-input" id="memberReferralLink" readonly value="Loading...">
+                                <button class="referral-copy-btn" onclick="copyMemberReferralLink()">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+
+                            <div class="referral-share-buttons">
+                                <button class="share-btn whatsapp" onclick="shareMemberWhatsApp()">
+                                    <i class="fab fa-whatsapp"></i> WhatsApp
+                                </button>
+                                <button class="share-btn copy-link" onclick="copyMemberReferralLink()">
+                                    <i class="fas fa-link"></i> Copy Link
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1865,25 +2440,27 @@
 
         // ========== MEMBERSHIP FUNCTIONS ==========
         
+        let memberReferralLink = '';
+        
         // Check membership status on page load
         const memberToken = localStorage.getItem('memberToken');
         if (memberToken) {
             loadMemberProfile();
         }
 
-        // Auth tab switching
-        document.querySelectorAll('.auth-tab').forEach(tab => {
-            tab.addEventListener('click', () => {
-                document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
+        // Auth mode toggle (new seamless design)
+        document.querySelectorAll('.auth-mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.auth-mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
                 
-                const authType = tab.dataset.auth;
-                document.querySelectorAll('.auth-form').forEach(form => form.classList.remove('active'));
-                document.getElementById(authType === 'login' ? 'memberLoginForm' : 'memberRegisterForm').classList.add('active');
+                const mode = btn.dataset.mode;
+                document.querySelectorAll('.seamless-form').forEach(form => form.classList.remove('active'));
+                document.getElementById(mode === 'login' ? 'memberLoginForm' : 'memberRegisterForm').classList.add('active');
             });
         });
 
-        // Member Registration
+        // Member Registration - Auto switch to login after success
         document.getElementById('memberRegisterForm')?.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -1891,6 +2468,10 @@
             const email = document.getElementById('memberRegEmail').value;
             const phone = document.getElementById('memberRegPhone').value;
             const password = document.getElementById('memberRegPassword').value;
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
             
             try {
                 const response = await fetch('/api/membership/register', {
@@ -1902,16 +2483,29 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    localStorage.setItem('memberToken', data.token);
-                    localStorage.setItem('memberEmail', data.member.email);
-                    showToast('success', `Welcome to HomeworkPal, ${data.member.name}! You're now a ${data.member.membership_tier} member.`);
-                    loadMemberProfile();
+                    showToast('success', `Account created! Please sign in with your credentials.`);
+                    
+                    // Reset form
+                    document.getElementById('memberRegisterForm').reset();
+                    
+                    // Auto switch to login tab
+                    document.querySelectorAll('.auth-mode-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelector('.auth-mode-btn[data-mode="login"]').classList.add('active');
+                    document.querySelectorAll('.seamless-form').forEach(form => form.classList.remove('active'));
+                    document.getElementById('memberLoginForm').classList.add('active');
+                    
+                    // Pre-fill email in login form
+                    document.getElementById('memberLoginEmail').value = email;
+                    document.getElementById('memberLoginPassword').focus();
                 } else {
                     showToast('error', data.error || 'Registration failed');
                 }
             } catch (error) {
                 console.error('Registration error:', error);
                 showToast('error', 'Failed to register. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
             }
         });
 
@@ -1921,6 +2515,10 @@
             
             const email = document.getElementById('memberLoginEmail').value;
             const password = document.getElementById('memberLoginPassword').value;
+            
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing In...';
             
             try {
                 const response = await fetch('/api/membership/login', {
@@ -1934,6 +2532,7 @@
                 if (response.ok) {
                     localStorage.setItem('memberToken', data.token);
                     localStorage.setItem('memberEmail', data.member.email);
+                    localStorage.setItem('memberName', data.member.name);
                     showToast('success', `Welcome back, ${data.member.name}!`);
                     loadMemberProfile();
                 } else {
@@ -1942,10 +2541,13 @@
             } catch (error) {
                 console.error('Login error:', error);
                 showToast('error', 'Failed to login. Please try again.');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Sign In to Dashboard';
             }
         });
 
-        // Load Member Profile
+        // Load Member Profile - Updated for new portal design
         async function loadMemberProfile() {
             const token = localStorage.getItem('memberToken');
             if (!token) return;
@@ -1965,63 +2567,62 @@
                 const data = await response.json();
                 const member = data.member;
                 
-                // Update dashboard
-                document.getElementById('memberName').textContent = member.name;
-                document.getElementById('memberAvatar').textContent = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
-                document.getElementById('memberTierBadge').textContent = `${capitalizeFirst(member.membership_tier)} Member`;
-                document.getElementById('memberTierBadge').className = `member-tier-badge tier-${member.membership_tier}`;
-                document.getElementById('memberDiscount').textContent = `${member.discount_percent}%`;
-                document.getElementById('memberOrders').textContent = member.total_orders || 0;
-                document.getElementById('memberSpent').textContent = `$${parseFloat(member.total_spent || 0).toFixed(2)}`;
+                // Store member data
+                localStorage.setItem('memberDiscount', member.discount_percent);
+                
+                // Update portal header
+                const initials = member.name.split(' ').map(n => n[0]).join('').toUpperCase();
+                document.getElementById('portalAvatar').textContent = initials;
+                document.getElementById('portalName').textContent = member.name;
+                
+                const tierBadge = document.getElementById('portalTierBadge');
+                tierBadge.textContent = `${capitalizeFirst(member.membership_tier)} Member`;
+                tierBadge.className = `tier-badge ${member.membership_tier}`;
+                
+                // Update stats
+                document.getElementById('portalDiscount').textContent = `${member.discount_percent}%`;
+                document.getElementById('portalOrders').textContent = member.total_orders || 0;
+                document.getElementById('portalSpent').textContent = `$${parseFloat(member.total_spent || 0).toFixed(0)}`;
+                
+                // Calculate orders to next tier
+                const ordersToNext = calculateOrdersToNextTier(member);
+                document.getElementById('portalOrdersToNext').textContent = ordersToNext;
+                
+                // Update tier progress
+                updateTierProgress(member);
                 
                 // Update perks
-                updatePerks(member.membership_tier);
+                updatePortalPerks(member.membership_tier);
                 
-                // Calculate next tier progress
-                updateNextTierInfo(member);
+                // Load member referral link
+                loadMemberReferralLink(member.name, member.email);
                 
-                // Show dashboard, hide auth
+                // Show portal, hide auth
                 document.getElementById('memberAuthSection').style.display = 'none';
-                document.getElementById('memberDashboard').style.display = 'block';
+                document.getElementById('memberPortal').classList.add('active');
                 
             } catch (error) {
                 console.error('Error loading profile:', error);
             }
         }
 
-        function updatePerks(tier) {
-            const perks = {
-                basic: [
-                    'Early access to new services',
-                    'Priority email support'
-                ],
-                silver: [
-                    '10% discount on all orders',
-                    'Priority email support',
-                    'Free revision requests'
-                ],
-                gold: [
-                    '15% discount on all orders',
-                    'Priority support (24/7)',
-                    'Free revisions',
-                    'Dedicated writer option'
-                ],
-                platinum: [
-                    '20% discount on all orders',
-                    'VIP support (24/7)',
-                    'Unlimited revisions',
-                    'Dedicated account manager',
-                    'Early access to promotions'
-                ]
+        function calculateOrdersToNextTier(member) {
+            const tiers = ['basic', 'silver', 'gold', 'platinum'];
+            const requirements = {
+                silver: { orders: 5 },
+                gold: { orders: 15 },
+                platinum: { orders: 30 }
             };
             
-            const perksList = document.getElementById('memberPerks');
-            perksList.innerHTML = (perks[tier] || perks.basic).map(perk => 
-                `<li><i class="fas fa-check-circle"></i> ${perk}</li>`
-            ).join('');
+            const currentIndex = tiers.indexOf(member.membership_tier);
+            if (currentIndex >= tiers.length - 1) return '🎉';
+            
+            const nextTier = tiers[currentIndex + 1];
+            const ordersNeeded = Math.max(0, requirements[nextTier].orders - (member.total_orders || 0));
+            return ordersNeeded;
         }
 
-        function updateNextTierInfo(member) {
+        function updateTierProgress(member) {
             const tiers = ['basic', 'silver', 'gold', 'platinum'];
             const requirements = {
                 silver: { orders: 5, spent: 100 },
@@ -2030,42 +2631,121 @@
             };
             
             const currentIndex = tiers.indexOf(member.membership_tier);
-            const nextTierEl = document.getElementById('nextTierInfo');
-            const nextTierText = document.getElementById('nextTierText');
+            const currentOrders = member.total_orders || 0;
+            const currentSpent = parseFloat(member.total_spent || 0);
+            
+            // Update labels
+            document.getElementById('currentTierLabel').textContent = `${capitalizeFirst(member.membership_tier)} Member`;
             
             if (currentIndex >= tiers.length - 1) {
-                nextTierEl.innerHTML = `
-                    <p style="color: #ffd700; font-size: 0.9rem;">
-                        <i class="fas fa-crown"></i>
-                        You've reached the highest tier! Enjoy maximum benefits.
-                    </p>
-                `;
+                document.getElementById('nextTierLabel').textContent = 'Max Tier!';
+                document.getElementById('tierProgressBar').style.width = '100%';
+                document.getElementById('ordersProgress').textContent = `${currentOrders} orders`;
+                document.getElementById('spentProgress').textContent = `$${currentSpent.toFixed(0)} spent`;
                 return;
             }
             
             const nextTier = tiers[currentIndex + 1];
             const req = requirements[nextTier];
-            const ordersNeeded = Math.max(0, req.orders - (member.total_orders || 0));
-            const spentNeeded = Math.max(0, req.spent - (member.total_spent || 0));
             
-            if (ordersNeeded <= 0 || spentNeeded <= 0) {
-                nextTierText.textContent = `You're almost at ${capitalizeFirst(nextTier)}! Contact support to upgrade.`;
-            } else {
-                nextTierText.textContent = `Complete ${ordersNeeded} more order${ordersNeeded !== 1 ? 's' : ''} or spend $${spentNeeded.toFixed(2)} more to reach ${capitalizeFirst(nextTier)} tier!`;
+            document.getElementById('nextTierLabel').textContent = `Next: ${capitalizeFirst(nextTier)}`;
+            
+            // Calculate progress percentage
+            const orderProgress = (currentOrders / req.orders) * 100;
+            const spentProgress = (currentSpent / req.spent) * 100;
+            const progress = Math.max(orderProgress, spentProgress);
+            
+            document.getElementById('tierProgressBar').style.width = `${Math.min(progress, 100)}%`;
+            document.getElementById('ordersProgress').textContent = `${currentOrders}/${req.orders} orders`;
+            document.getElementById('spentProgress').textContent = `$${currentSpent.toFixed(0)}/$${req.spent}`;
+        }
+
+        function updatePortalPerks(tier) {
+            const perks = {
+                basic: [
+                    '5% discount on all orders',
+                    'Priority email support',
+                    'Referral program access'
+                ],
+                silver: [
+                    '10% discount on all orders',
+                    'Priority email support',
+                    'Free revision requests',
+                    'Referral program access'
+                ],
+                gold: [
+                    '15% discount on all orders',
+                    'Priority support (24/7)',
+                    'Free revisions',
+                    'Dedicated writer option',
+                    'Referral program access'
+                ],
+                platinum: [
+                    '20% discount on all orders',
+                    'VIP support (24/7)',
+                    'Unlimited revisions',
+                    'Dedicated account manager',
+                    'Early access to promotions',
+                    'Referral program access'
+                ]
+            };
+            
+            const perksList = document.getElementById('portalPerksList');
+            perksList.innerHTML = (perks[tier] || perks.basic).map(perk => 
+                `<div class="perk-item"><i class="fas fa-check-circle"></i> ${perk}</div>`
+            ).join('');
+        }
+
+        async function loadMemberReferralLink(name, email) {
+            try {
+                const response = await fetch('/api/referrals/code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email })
+                });
+                
+                const data = await response.json();
+                
+                if (data.referralLink) {
+                    memberReferralLink = data.referralLink;
+                    document.getElementById('memberReferralLink').value = memberReferralLink;
+                }
+            } catch (error) {
+                console.error('Error fetching member referral link:', error);
             }
+        }
+
+        function copyMemberReferralLink() {
+            const input = document.getElementById('memberReferralLink');
+            input.select();
+            input.setSelectionRange(0, 99999);
+            
+            navigator.clipboard.writeText(memberReferralLink).then(() => {
+                showToast('success', 'Referral link copied!');
+            }).catch(() => {
+                document.execCommand('copy');
+                showToast('success', 'Referral link copied!');
+            });
+        }
+
+        function shareMemberWhatsApp() {
+            const message = encodeURIComponent(`Hey! Join HomeworkPal and get 10% off your first order! 🎓\n\n${memberReferralLink}`);
+            window.open(`https://wa.me/?text=${message}`, '_blank');
         }
 
         function logoutMember() {
             localStorage.removeItem('memberToken');
             localStorage.removeItem('memberEmail');
+            localStorage.removeItem('memberName');
+            localStorage.removeItem('memberDiscount');
             
             // Reset forms
             document.getElementById('memberRegisterForm')?.reset();
             document.getElementById('memberLoginForm')?.reset();
             
-            // Show auth, hide dashboard
+            // Show auth, hide portal
             document.getElementById('memberAuthSection').style.display = 'block';
-            document.getElementById('memberDashboard').style.display = 'none';
+            document.getElementById('memberPortal').classList.remove('active');
             
             showToast('success', 'You have been signed out.');
         }
@@ -2074,21 +2754,34 @@
             return str.charAt(0).toUpperCase() + str.slice(1);
         }
 
-        // Apply member discount to order if logged in
-        async function applyMemberDiscount() {
-            const memberEmail = localStorage.getItem('memberEmail');
-            if (!memberEmail) return null;
+        // Price calculation based on complexity
+        function calculatePriceWithComplexity(pages, packageData, complexity = 'medium') {
+            const complexityMultipliers = {
+                simple: 0,      // Use lower bracket
+                medium: 0.5,    // Use average
+                complex: 1      // Use upper bracket
+            };
             
-            try {
-                const response = await fetch(`/api/membership/discount/${encodeURIComponent(memberEmail)}`);
-                if (response.ok) {
-                    const data = await response.json();
-                    return data.discount_percent || 0;
-                }
-            } catch (error) {
-                console.error('Error checking member discount:', error);
+            const multiplier = complexityMultipliers[complexity] || 0.5;
+            const priceRange = packageData.maxPrice - packageData.minPrice;
+            const basePrice = packageData.minPrice + (priceRange * multiplier);
+            
+            return (pages * basePrice).toFixed(2);
+        }
+
+        // Apply member discount to calculations
+        function getMemberDiscountedPrice(originalPrice) {
+            const memberDiscount = parseInt(localStorage.getItem('memberDiscount') || '0');
+            if (memberDiscount > 0) {
+                const discount = originalPrice * (memberDiscount / 100);
+                return {
+                    original: originalPrice,
+                    discount: discount.toFixed(2),
+                    final: (originalPrice - discount).toFixed(2),
+                    percent: memberDiscount
+                };
             }
-            return 0;
+            return { original: originalPrice, discount: 0, final: originalPrice, percent: 0 };
         }
 
         // Initialize
