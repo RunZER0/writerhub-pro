@@ -450,14 +450,6 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid email or password' });
         }
         
-        // Check if verified
-        if (!member.is_verified) {
-            return res.status(403).json({ 
-                error: 'Please verify your email before logging in. Check your inbox for the verification link.',
-                needsVerification: true
-            });
-        }
-        
         if (member.status !== 'active') {
             return res.status(403).json({ error: 'Account is inactive. Please contact support.' });
         }
@@ -472,6 +464,7 @@ router.post('/login', async (req, res) => {
             { expiresIn: '30d' }
         );
         
+        // Allow login but indicate if unverified (restrictions apply on frontend)
         res.json({
             success: true,
             token,
@@ -481,9 +474,12 @@ router.post('/login', async (req, res) => {
                 name: member.name,
                 tier: member.membership_tier,
                 discount: parseFloat(member.discount_percent),
+                isVerified: member.is_verified,
                 totalOrders: member.total_orders,
                 totalSpent: parseFloat(member.total_spent || 0)
-            }
+            },
+            // Show warning if unverified
+            warning: !member.is_verified ? 'Please verify your email to unlock your membership discount.' : null
         });
     } catch (error) {
         console.error('Member login error:', error);
