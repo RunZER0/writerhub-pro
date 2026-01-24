@@ -2483,22 +2483,38 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    showToast('success', `Account created! Please sign in with your credentials.`);
-                    
-                    // Reset form
-                    document.getElementById('memberRegisterForm').reset();
-                    
-                    // Auto switch to login tab
-                    document.querySelectorAll('.auth-mode-btn').forEach(b => b.classList.remove('active'));
-                    document.querySelector('.auth-mode-btn[data-mode="login"]').classList.add('active');
-                    document.querySelectorAll('.seamless-form').forEach(form => form.classList.remove('active'));
-                    document.getElementById('memberLoginForm').classList.add('active');
-                    
-                    // Pre-fill email in login form
-                    document.getElementById('memberLoginEmail').value = email;
-                    document.getElementById('memberLoginPassword').focus();
+                    if (data.needsVerification) {
+                        // Email verification required
+                        showToast('success', data.message, 8000);
+                        
+                        // Reset form
+                        document.getElementById('memberRegisterForm').reset();
+                        
+                        // Show verification notice
+                        showVerificationNotice(email);
+                    } else {
+                        // Auto-verified (fallback if email fails)
+                        showToast('success', `Account created! Please sign in.`);
+                        
+                        // Reset form
+                        document.getElementById('memberRegisterForm').reset();
+                        
+                        // Auto switch to login tab
+                        document.querySelectorAll('.auth-mode-btn').forEach(b => b.classList.remove('active'));
+                        document.querySelector('.auth-mode-btn[data-mode="login"]').classList.add('active');
+                        document.querySelectorAll('.seamless-form').forEach(form => form.classList.remove('active'));
+                        document.getElementById('memberLoginForm').classList.add('active');
+                        
+                        // Pre-fill email in login form
+                        document.getElementById('memberLoginEmail').value = email;
+                        document.getElementById('memberLoginPassword').focus();
+                    }
                 } else {
-                    showToast('error', data.error || 'Registration failed');
+                    if (data.needsVerification) {
+                        showToast('info', data.error, 6000);
+                    } else {
+                        showToast('error', data.error || 'Registration failed');
+                    }
                 }
             } catch (error) {
                 console.error('Registration error:', error);
@@ -2508,6 +2524,57 @@
                 submitBtn.innerHTML = '<i class="fas fa-user-plus"></i> Create Account';
             }
         });
+        
+        // Show verification notice in auth area
+        function showVerificationNotice(email) {
+            const authSide = document.querySelector('.membership-auth-side');
+            const existingNotice = document.getElementById('verificationNotice');
+            if (existingNotice) existingNotice.remove();
+            
+            const notice = document.createElement('div');
+            notice.id = 'verificationNotice';
+            notice.innerHTML = `
+                <div style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1)); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 20px; margin-bottom: 20px; text-align: center;">
+                    <div style="font-size: 40px; margin-bottom: 10px;">📧</div>
+                    <h3 style="color: #10b981; margin-bottom: 10px;">Check Your Email!</h3>
+                    <p style="color: rgba(255,255,255,0.8); margin-bottom: 15px;">
+                        We've sent a verification link to <strong>${email}</strong>
+                    </p>
+                    <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin-bottom: 15px;">
+                        Click the link in your email to verify your account and start enjoying member benefits.
+                    </p>
+                    <button onclick="resendVerification('${email}')" style="background: rgba(99, 102, 241, 0.2); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 14px;">
+                        <i class="fas fa-redo"></i> Resend Email
+                    </button>
+                    <button onclick="document.getElementById('verificationNotice').remove()" style="background: transparent; color: rgba(255,255,255,0.5); border: none; padding: 8px 16px; cursor: pointer; font-size: 14px; margin-left: 10px;">
+                        Dismiss
+                    </button>
+                </div>
+            `;
+            authSide.insertBefore(notice, authSide.firstChild);
+        }
+        
+        // Resend verification email
+        async function resendVerification(email) {
+            try {
+                const response = await fetch('/api/membership/resend-verification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showToast('success', 'Verification email sent! Check your inbox.');
+                } else {
+                    showToast('error', data.error || 'Failed to resend email');
+                }
+            } catch (error) {
+                console.error('Resend error:', error);
+                showToast('error', 'Failed to resend verification email');
+            }
+        }
 
         // Member Login
         document.getElementById('memberLoginForm')?.addEventListener('submit', async (e) => {
@@ -2545,7 +2612,12 @@
                         });
                     }, 100);
                 } else {
-                    showToast('error', data.error || 'Login failed');
+                    if (data.needsVerification) {
+                        showToast('warning', data.error, 6000);
+                        showVerificationNotice(email);
+                    } else {
+                        showToast('error', data.error || 'Login failed');
+                    }
                 }
             } catch (error) {
                 console.error('Login error:', error);

@@ -27,12 +27,20 @@ async function migrate() {
         total_spent DECIMAL(10,2) DEFAULT 0,
         is_verified BOOLEAN DEFAULT FALSE,
         verification_token VARCHAR(255),
+        token_expiry TIMESTAMP,
         created_at TIMESTAMP DEFAULT NOW(),
         last_login TIMESTAMP,
         status VARCHAR(20) DEFAULT 'active'
       )
     `);
     console.log('✅ Created client_members table');
+    
+    // Add token_expiry column if it doesn't exist (for existing tables)
+    await client.query(`
+      ALTER TABLE client_members 
+      ADD COLUMN IF NOT EXISTS token_expiry TIMESTAMP
+    `);
+    console.log('✅ Added token_expiry column');
     
     // Create membership_tiers for reference
     await client.query(`
