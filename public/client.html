@@ -540,16 +540,297 @@
             cursor: pointer;
         }
 
-        /* Price Estimate */
+        /* Price Breakdown Box */
+        .price-breakdown {
+            background: rgba(16, 185, 129, 0.05);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .price-breakdown-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        .price-breakdown-header .label {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .price-breakdown-header .final-price {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #10b981;
+        }
+        .price-breakdown-items {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 1rem;
+        }
+        .price-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .price-item.discount {
+            color: #10b981;
+        }
+        .price-item.subtotal {
+            border-top: 1px dashed rgba(255,255,255,0.1);
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+        }
+        .price-item.total {
+            border-top: 2px solid rgba(16,185,129,0.3);
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+            font-weight: 700;
+            font-size: 1.1rem;
+            color: #fff;
+        }
+        .member-discount-banner {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.85rem;
+        }
+        .member-discount-banner i {
+            color: #6366f1;
+        }
+
+        /* Receipt Preview Modal */
+        .receipt-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .receipt-modal.active {
+            display: flex;
+        }
+        .receipt-content {
+            background: #fff;
+            border-radius: 16px;
+            max-width: 500px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            color: #1e293b;
+        }
+        .receipt-header {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            padding: 1.5rem;
+            text-align: center;
+            border-radius: 16px 16px 0 0;
+        }
+        .receipt-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .receipt-logo span {
+            color: #fbbf24;
+        }
+        .receipt-body {
+            padding: 1.5rem;
+        }
+        .receipt-section {
+            margin-bottom: 1.5rem;
+        }
+        .receipt-section h4 {
+            color: #64748b;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+        }
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .receipt-row:last-child {
+            border-bottom: none;
+        }
+        .receipt-row.total {
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: #6366f1;
+            border-top: 2px solid #e2e8f0;
+            margin-top: 0.5rem;
+            padding-top: 0.75rem;
+        }
+        .receipt-actions {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 1.5rem 1.5rem;
+        }
+        .receipt-actions button {
+            flex: 1;
+            padding: 0.75rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+        }
+        .receipt-actions .btn-cancel {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+        .receipt-actions .btn-proceed {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+        }
+
+        /* Inquiry Chat Styles */
+        .inquiry-chat-container {
+            display: none;
+            height: 500px;
+            background: rgba(255,255,255,0.02);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            overflow: hidden;
+        }
+        .inquiry-chat-container.active {
+            display: flex;
+            flex-direction: column;
+        }
+        .inquiry-list {
+            width: 100%;
+            max-width: 300px;
+            border-right: 1px solid rgba(255,255,255,0.08);
+            overflow-y: auto;
+        }
+        .inquiry-thread {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .inquiry-thread:hover, .inquiry-thread.active {
+            background: rgba(99, 102, 241, 0.1);
+        }
+        .inquiry-thread .ticket {
+            font-size: 0.75rem;
+            color: #6366f1;
+            font-weight: 600;
+        }
+        .inquiry-thread .subject {
+            font-weight: 500;
+            margin: 0.25rem 0;
+        }
+        .inquiry-thread .preview {
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.5);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .inquiry-thread .unread-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.7rem;
+            padding: 0.15rem 0.4rem;
+            border-radius: 10px;
+            margin-left: 0.5rem;
+        }
+        .inquiry-chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .inquiry-chat-header {
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .inquiry-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 1rem;
+        }
+        .inquiry-message {
+            max-width: 80%;
+            margin-bottom: 1rem;
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+        }
+        .inquiry-message.member {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .inquiry-message.admin {
+            background: rgba(255,255,255,0.1);
+            border-bottom-left-radius: 4px;
+        }
+        .inquiry-message.system {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            margin: 1rem auto;
+            max-width: 90%;
+            text-align: center;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+        }
+        .inquiry-message .sender {
+            font-size: 0.75rem;
+            color: rgba(255,255,255,0.6);
+            margin-bottom: 0.25rem;
+        }
+        .inquiry-message .time {
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.4);
+            margin-top: 0.25rem;
+            text-align: right;
+        }
+        .inquiry-chat-input {
+            padding: 1rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            display: flex;
+            gap: 0.75rem;
+        }
+        .inquiry-chat-input input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+        }
+        .inquiry-chat-input button {
+            padding: 0.75rem 1.25rem;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* Price Estimate (old - keep for fallback) */
         .price-estimate {
             background: rgba(16, 185, 129, 0.1);
             border: 1px solid rgba(16, 185, 129, 0.3);
             border-radius: 12px;
             padding: 1.25rem;
             margin-bottom: 1.5rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: none;
         }
 
         .price-estimate .label {
@@ -2011,14 +2292,50 @@
                             <input type="tel" id="clientPhone" placeholder="+1 234 567 8900">
                         </div>
 
-                        <div class="price-estimate">
-                            <div class="label">Estimated Price</div>
-                            <div class="amount" id="priceEstimate">$10 - $15</div>
+                        <!-- New Price Breakdown -->
+                        <div class="price-breakdown" id="priceBreakdown">
+                            <div class="price-breakdown-header">
+                                <span class="label">Your Price</span>
+                                <span class="final-price" id="finalPriceDisplay">$8.49</span>
+                            </div>
+                            <div class="price-breakdown-items">
+                                <div class="price-item">
+                                    <span>Base Price (<span id="pagesCount">1</span> page)</span>
+                                    <span id="basePriceDisplay">$8.49</span>
+                                </div>
+                                <div class="price-item" id="urgencyFeeRow" style="display: none;">
+                                    <span>Express Fee (<span id="urgencyPercent">0</span>%)</span>
+                                    <span id="urgencyFeeDisplay">$0.00</span>
+                                </div>
+                                <div class="price-item subtotal">
+                                    <span>Subtotal</span>
+                                    <span id="subtotalDisplay">$8.49</span>
+                                </div>
+                                <div class="price-item discount" id="discountRow" style="display: none;">
+                                    <span>Member Discount (<span id="discountPercent">0</span>%)</span>
+                                    <span id="discountDisplay">-$0.00</span>
+                                </div>
+                                <div class="price-item total">
+                                    <span>Total</span>
+                                    <span id="totalDisplay">$8.49</span>
+                                </div>
+                            </div>
+                            <div class="member-discount-banner" id="memberDiscountBanner" style="display: none;">
+                                <i class="fas fa-crown"></i>
+                                <span>You're saving <strong id="savingsAmount">$0.00</strong> with your <span id="memberTierDisplay">Basic</span> membership!</span>
+                            </div>
+                            <div class="member-discount-banner" id="loginForDiscountBanner" style="display: none;">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Join our membership program to get up to 15% off! <a href="#" onclick="showTab('membership'); return false;" style="color: #6366f1;">Sign up</a></span>
+                            </div>
                         </div>
 
                         <div class="form-submit">
+                            <button type="button" class="btn btn-secondary" onclick="showReceiptPreview()">
+                                <i class="fas fa-receipt"></i> Preview Receipt
+                            </button>
                             <button type="submit" class="btn btn-primary">
-                                <i class="fas fa-paper-plane"></i> Submit Assignment
+                                <i class="fas fa-paper-plane"></i> Submit Order
                             </button>
                         </div>
                     </form>
@@ -2325,13 +2642,91 @@
         <!-- Inquiry Tab -->
         <div class="tab-content" id="inquiry-tab">
             <div class="form-container">
-                <div class="form-card">
+                <!-- Member Chat View (logged in members) -->
+                <div id="memberInquiryChat" style="display: none;">
+                    <div class="form-card" style="padding: 1rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="margin: 0;"><i class="fas fa-headset"></i> Support Chat</h3>
+                            <button class="btn btn-secondary" style="padding: 0.5rem 1rem;" onclick="startNewInquiry()">
+                                <i class="fas fa-plus"></i> New Inquiry
+                            </button>
+                        </div>
+                        
+                        <!-- Inquiry Chat Container -->
+                        <div class="inquiry-chat-container active" id="inquiryChatContainer">
+                            <div class="inquiry-list" id="inquiryList">
+                                <div style="padding: 1rem; text-align: center; color: rgba(255,255,255,0.5);">
+                                    Loading inquiries...
+                                </div>
+                            </div>
+                            <div class="inquiry-chat-window" id="inquiryChatWindow">
+                                <div class="inquiry-chat-header">
+                                    <div>
+                                        <span id="inquiryTicketNum" style="font-size: 0.8rem; color: #6366f1;"></span>
+                                        <h4 id="inquirySubjectTitle" style="margin: 0;">Select an inquiry</h4>
+                                    </div>
+                                    <span id="inquiryStatus" class="status-badge" style="display: none;"></span>
+                                </div>
+                                <div class="inquiry-messages" id="inquiryMessages">
+                                    <div style="text-align: center; color: rgba(255,255,255,0.5); padding: 2rem;">
+                                        Select an inquiry from the list or start a new one
+                                    </div>
+                                </div>
+                                <div class="inquiry-chat-input" id="inquiryChatInput" style="display: none;">
+                                    <input type="text" id="inquiryMessageInput" placeholder="Type your message..." onkeypress="if(event.key==='Enter') sendInquiryMessage()">
+                                    <button onclick="sendInquiryMessage()"><i class="fas fa-paper-plane"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- New Inquiry Modal -->
+                <div id="newInquiryModal" class="receipt-modal">
+                    <div class="receipt-content">
+                        <div class="receipt-header">
+                            <div class="receipt-logo">Homework<span>Pal</span></div>
+                            <p style="margin: 0.5rem 0 0; opacity: 0.9;">Start a New Inquiry</p>
+                        </div>
+                        <div class="receipt-body">
+                            <div class="form-group" style="margin-bottom: 1rem;">
+                                <label style="color: #64748b; font-size: 0.9rem;">Subject</label>
+                                <select id="newInquirySubject" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 0.5rem;">
+                                    <option value="">Select a subject</option>
+                                    <option value="pricing">Pricing Question</option>
+                                    <option value="custom">Custom Order</option>
+                                    <option value="revision">Revision Request</option>
+                                    <option value="deadline">Deadline Extension</option>
+                                    <option value="refund">Refund Request</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label style="color: #64748b; font-size: 0.9rem;">Your Message</label>
+                                <textarea id="newInquiryMessage" rows="4" style="width: 100%; padding: 0.75rem; border-radius: 8px; border: 1px solid #e2e8f0; margin-top: 0.5rem; resize: none;" placeholder="Describe your question or issue..."></textarea>
+                            </div>
+                        </div>
+                        <div class="receipt-actions">
+                            <button class="btn-cancel" onclick="closeNewInquiryModal()">Cancel</button>
+                            <button class="btn-proceed" onclick="submitNewInquiry()">
+                                <i class="fas fa-paper-plane"></i> Send
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guest Inquiry Form (non-logged in users) -->
+                <div class="form-card" id="guestInquiryForm">
                     <div style="text-align: center; margin-bottom: 2rem;">
                         <div style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; font-size: 1.5rem;">
                             <i class="fas fa-question-circle"></i>
                         </div>
                         <h2>Have a Question?</h2>
                         <p style="color: rgba(255,255,255,0.5); margin-top: 0.5rem;">Send us your inquiry and we'll get back to you shortly</p>
+                        <p style="color: rgba(99, 102, 241, 0.8); margin-top: 0.5rem; font-size: 0.9rem;">
+                            <i class="fas fa-info-circle"></i> 
+                            <a href="#" onclick="showTab('membership'); return false;" style="color: #6366f1;">Sign in</a> for live chat support!
+                        </p>
                     </div>
 
                     <form id="inquiryForm">
@@ -2432,6 +2827,64 @@
         </div>
     </main>
 
+    <!-- Receipt Preview Modal -->
+    <div id="receiptModal" class="receipt-modal">
+        <div class="receipt-content">
+            <div class="receipt-header">
+                <div class="receipt-logo">Homework<span>Pal</span></div>
+                <p style="margin: 0.5rem 0 0; opacity: 0.9;">Order Summary</p>
+            </div>
+            <div class="receipt-body">
+                <div class="receipt-section">
+                    <h4>📋 Order Details</h4>
+                    <div class="receipt-row">
+                        <span>Package</span>
+                        <span id="receiptPackage">Silver</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Pages</span>
+                        <span id="receiptPages">1 page (~275 words)</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Deadline</span>
+                        <span id="receiptDeadline">3 days</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span>Domain</span>
+                        <span id="receiptDomain">-</span>
+                    </div>
+                </div>
+                <div class="receipt-section">
+                    <h4>💰 Price Breakdown</h4>
+                    <div class="receipt-row">
+                        <span>Base Price</span>
+                        <span id="receiptBasePrice">$12.49</span>
+                    </div>
+                    <div class="receipt-row" id="receiptUrgencyRow" style="display: none;">
+                        <span>Express Fee</span>
+                        <span id="receiptUrgencyFee">$0.00</span>
+                    </div>
+                    <div class="receipt-row" id="receiptDiscountRow" style="display: none; color: #22c55e;">
+                        <span>Member Discount</span>
+                        <span id="receiptDiscount">-$0.00</span>
+                    </div>
+                    <div class="receipt-row total">
+                        <span>Total</span>
+                        <span id="receiptTotal">$12.49</span>
+                    </div>
+                </div>
+            </div>
+            <div class="receipt-actions">
+                <button class="btn-cancel" onclick="closeReceiptModal()">
+                    <i class="fas fa-arrow-left"></i> Back
+                </button>
+                <button class="btn-proceed" onclick="proceedToCheckout()">
+                    <i class="fas fa-check"></i> Confirm & Submit
+                </button>
+            </div>
+        </div>
+    </div>
+
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
@@ -2441,6 +2894,9 @@
         let uploadedFiles = [];
         let referralCode = null;
         let clientReferralLink = '';
+        let currentPriceBreakdown = null;
+        let currentInquiryId = null;
+        let inquiryPollInterval = null;
 
         // Check for referral code in URL on page load
         document.addEventListener('DOMContentLoaded', async () => {
@@ -2512,6 +2968,7 @@
                 document.querySelectorAll('.deadline-option').forEach(o => o.classList.remove('selected'));
                 option.classList.add('selected');
                 selectedDeadlineHours = parseInt(option.dataset.hours);
+                calculatePrice();
             });
         });
 
@@ -2522,11 +2979,136 @@
             calculatePrice();
         });
 
-        function calculatePrice() {
+        // Calculate exact price from backend
+        async function calculatePrice() {
             const pages = parseInt(document.getElementById('pages').value) || 1;
-            const min = pages * selectedPackageData.minPrice;
-            const max = pages * selectedPackageData.maxPrice;
-            document.getElementById('priceEstimate').textContent = `$${min} - $${max}`;
+            const memberToken = localStorage.getItem('memberToken');
+            
+            try {
+                const response = await fetch('/api/orders/calculate', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...(memberToken && { 'Authorization': `Bearer ${memberToken}` })
+                    },
+                    body: JSON.stringify({
+                        packageType: selectedPackageData.name,
+                        pages: pages,
+                        deadlineHours: selectedDeadlineHours,
+                        complexity: 'standard'
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    currentPriceBreakdown = data.breakdown;
+                    updatePriceDisplay(data.breakdown);
+                }
+            } catch (error) {
+                console.error('Price calculation error:', error);
+                // Fallback to simple calculation
+                const basePrice = pages * ((selectedPackageData.minPrice + selectedPackageData.maxPrice) / 2);
+                document.getElementById('finalPriceDisplay').textContent = `$${basePrice.toFixed(2)}`;
+            }
+        }
+        
+        function updatePriceDisplay(breakdown) {
+            // Update main display
+            document.getElementById('finalPriceDisplay').textContent = `$${breakdown.finalPrice}`;
+            document.getElementById('pagesCount').textContent = breakdown.pages;
+            document.getElementById('basePriceDisplay').textContent = `$${breakdown.basePrice}`;
+            document.getElementById('subtotalDisplay').textContent = `$${breakdown.subtotal}`;
+            document.getElementById('totalDisplay').textContent = `$${breakdown.finalPrice}`;
+            
+            // Urgency fee
+            const urgencyRow = document.getElementById('urgencyFeeRow');
+            if (parseFloat(breakdown.urgencyFee) > 0) {
+                urgencyRow.style.display = 'flex';
+                document.getElementById('urgencyPercent').textContent = breakdown.urgencyPercent;
+                document.getElementById('urgencyFeeDisplay').textContent = `$${breakdown.urgencyFee}`;
+            } else {
+                urgencyRow.style.display = 'none';
+            }
+            
+            // Discount
+            const discountRow = document.getElementById('discountRow');
+            const memberBanner = document.getElementById('memberDiscountBanner');
+            const loginBanner = document.getElementById('loginForDiscountBanner');
+            
+            if (parseFloat(breakdown.discountAmount) > 0) {
+                discountRow.style.display = 'flex';
+                document.getElementById('discountPercent').textContent = breakdown.discountPercent;
+                document.getElementById('discountDisplay').textContent = `-$${breakdown.discountAmount}`;
+                
+                memberBanner.style.display = 'flex';
+                document.getElementById('savingsAmount').textContent = `$${breakdown.discountAmount}`;
+                document.getElementById('memberTierDisplay').textContent = breakdown.memberTier || 'Basic';
+                loginBanner.style.display = 'none';
+            } else {
+                discountRow.style.display = 'none';
+                memberBanner.style.display = 'none';
+                
+                // Show login prompt if not logged in
+                if (!localStorage.getItem('memberToken')) {
+                    loginBanner.style.display = 'flex';
+                } else {
+                    loginBanner.style.display = 'none';
+                }
+            }
+        }
+        
+        // Receipt preview
+        function showReceiptPreview() {
+            if (!currentPriceBreakdown) {
+                showToast('error', 'Please wait for price calculation');
+                return;
+            }
+            
+            const b = currentPriceBreakdown;
+            document.getElementById('receiptPackage').textContent = b.packageName;
+            document.getElementById('receiptPages').textContent = `${b.pages} page${b.pages > 1 ? 's' : ''} (~${b.pages * 275} words)`;
+            document.getElementById('receiptDeadline').textContent = getDeadlineLabel(b.deadlineHours);
+            document.getElementById('receiptDomain').textContent = selectedDomain || '-';
+            document.getElementById('receiptBasePrice').textContent = `$${b.basePrice}`;
+            document.getElementById('receiptTotal').textContent = `$${b.finalPrice}`;
+            
+            // Urgency
+            const urgencyRow = document.getElementById('receiptUrgencyRow');
+            if (parseFloat(b.urgencyFee) > 0) {
+                urgencyRow.style.display = 'flex';
+                document.getElementById('receiptUrgencyFee').textContent = `$${b.urgencyFee}`;
+            } else {
+                urgencyRow.style.display = 'none';
+            }
+            
+            // Discount
+            const discountRow = document.getElementById('receiptDiscountRow');
+            if (parseFloat(b.discountAmount) > 0) {
+                discountRow.style.display = 'flex';
+                document.getElementById('receiptDiscount').textContent = `-$${b.discountAmount}`;
+            } else {
+                discountRow.style.display = 'none';
+            }
+            
+            document.getElementById('receiptModal').classList.add('active');
+        }
+        
+        function closeReceiptModal() {
+            document.getElementById('receiptModal').classList.remove('active');
+        }
+        
+        function getDeadlineLabel(hours) {
+            if (hours <= 24) return '24 hours (Express)';
+            if (hours <= 48) return '2 days';
+            if (hours <= 72) return '3 days (Standard)';
+            if (hours <= 120) return '5 days';
+            return '7 days (Extended)';
+        }
+        
+        function proceedToCheckout() {
+            closeReceiptModal();
+            document.getElementById('assignmentForm').dispatchEvent(new Event('submit'));
         }
 
         // File upload
@@ -2864,6 +3446,20 @@
         const memberToken = localStorage.getItem('memberToken');
         if (memberToken) {
             loadMemberProfile();
+            setupInquiryChat();
+        }
+        
+        // Setup inquiry chat for logged-in members
+        function setupInquiryChat() {
+            const token = localStorage.getItem('memberToken');
+            if (token) {
+                document.getElementById('memberInquiryChat').style.display = 'block';
+                document.getElementById('guestInquiryForm').style.display = 'none';
+                loadMemberInquiries();
+            } else {
+                document.getElementById('memberInquiryChat').style.display = 'none';
+                document.getElementById('guestInquiryForm').style.display = 'block';
+            }
         }
 
         // Auth mode toggle (new seamless design)
@@ -3385,8 +3981,233 @@
             return { original: originalPrice, discount: 0, final: originalPrice, percent: 0 };
         }
 
-        // Initialize
-        calculatePrice();
-    </script>
-</body>
+        // ========== INQUIRY CHAT FUNCTIONS ==========
+        
+        async function loadMemberInquiries() {
+            const token = localStorage.getItem('memberToken');
+            if (!token) return;
+            
+            try {
+                const response = await fetch('/api/inquiries/my-inquiries', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.inquiries) {
+                    renderInquiryList(data.inquiries);
+                }
+            } catch (error) {
+                console.error('Error loading inquiries:', error);
+            }
+        }
+        
+        function renderInquiryList(inquiries) {
+            const container = document.getElementById('inquiryList');
+            
+            if (inquiries.length === 0) {
+                container.innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: rgba(255,255,255,0.5);">
+                        <i class="fas fa-inbox" style="font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <p>No inquiries yet</p>
+                        <button class="btn btn-secondary" style="margin-top: 1rem; padding: 0.5rem 1rem;" onclick="startNewInquiry()">
+                            <i class="fas fa-plus"></i> Start First Inquiry
+                        </button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const subjectLabels = {
+                pricing: '💰 Pricing',
+                custom: '🎯 Custom Order',
+                revision: '📝 Revision',
+                deadline: '⏰ Deadline',
+                refund: '💸 Refund',
+                other: '❓ Other'
+            };
+            
+            container.innerHTML = inquiries.map(inq => `
+                <div class="inquiry-thread ${currentInquiryId === inq.id ? 'active' : ''}" onclick="openInquiry(${inq.id})">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span class="ticket">${inq.ticket_number}</span>
+                        ${inq.unread_count > 0 ? `<span class="unread-badge">${inq.unread_count}</span>` : ''}
+                    </div>
+                    <div class="subject">${subjectLabels[inq.subject] || inq.subject}</div>
+                    <div class="preview">${inq.last_message || 'No messages'}</div>
+                    <div style="font-size: 0.7rem; color: rgba(255,255,255,0.4); margin-top: 0.25rem;">
+                        ${formatTimeAgo(inq.last_message_at || inq.created_at)}
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        async function openInquiry(inquiryId) {
+            const token = localStorage.getItem('memberToken');
+            if (!token) return;
+            
+            currentInquiryId = inquiryId;
+            
+            // Update active state in list
+            document.querySelectorAll('.inquiry-thread').forEach(t => t.classList.remove('active'));
+            event?.target?.closest('.inquiry-thread')?.classList.add('active');
+            
+            try {
+                const response = await fetch(`/api/inquiries/${inquiryId}/messages`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await response.json();
+                
+                if (data.inquiry) {
+                    renderInquiryChat(data.inquiry, data.messages);
+                    startInquiryPolling(inquiryId);
+                }
+            } catch (error) {
+                console.error('Error opening inquiry:', error);
+            }
+        }
+        
+        function renderInquiryChat(inquiry, messages) {
+            const subjectLabels = {
+                pricing: '💰 Pricing Question',
+                custom: '🎯 Custom Order',
+                revision: '📝 Revision Request',
+                deadline: '⏰ Deadline Extension',
+                refund: '💸 Refund Request',
+                other: '❓ Other'
+            };
+            
+            document.getElementById('inquiryTicketNum').textContent = inquiry.ticket_number;
+            document.getElementById('inquirySubjectTitle').textContent = subjectLabels[inquiry.subject] || inquiry.subject;
+            
+            const statusEl = document.getElementById('inquiryStatus');
+            statusEl.style.display = 'inline-block';
+            statusEl.textContent = inquiry.status === 'closed' ? '✓ Resolved' : inquiry.status === 'in-progress' ? '⏳ In Progress' : '🔵 Open';
+            statusEl.style.background = inquiry.status === 'closed' ? '#10b981' : inquiry.status === 'in-progress' ? '#f59e0b' : '#6366f1';
+            statusEl.style.padding = '0.25rem 0.75rem';
+            statusEl.style.borderRadius = '12px';
+            statusEl.style.fontSize = '0.75rem';
+            statusEl.style.color = 'white';
+            
+            // Render messages
+            const container = document.getElementById('inquiryMessages');
+            container.innerHTML = messages.map(msg => `
+                <div class="inquiry-message ${msg.sender_type}">
+                    ${msg.sender_type !== 'member' ? `<div class="sender">${msg.sender_name}</div>` : ''}
+                    <div class="text">${msg.message.replace(/\n/g, '<br>')}</div>
+                    <div class="time">${formatTime(msg.created_at)}</div>
+                </div>
+            `).join('');
+            
+            // Scroll to bottom
+            container.scrollTop = container.scrollHeight;
+            
+            // Show input if not closed
+            document.getElementById('inquiryChatInput').style.display = inquiry.status === 'closed' ? 'none' : 'flex';
+        }
+        
+        async function sendInquiryMessage() {
+            const input = document.getElementById('inquiryMessageInput');
+            const message = input.value.trim();
+            
+            if (!message || !currentInquiryId) return;
+            
+            const token = localStorage.getItem('memberToken');
+            
+            try {
+                const response = await fetch(`/api/inquiries/${currentInquiryId}/message`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ message })
+                });
+                
+                if (response.ok) {
+                    input.value = '';
+                    openInquiry(currentInquiryId); // Refresh messages
+                } else {
+                    showToast('error', 'Failed to send message');
+                }
+            } catch (error) {
+                console.error('Error sending message:', error);
+                showToast('error', 'Failed to send message');
+            }
+        }
+        
+        function startNewInquiry() {
+            document.getElementById('newInquiryModal').classList.add('active');
+        }
+        
+        function closeNewInquiryModal() {
+            document.getElementById('newInquiryModal').classList.remove('active');
+        }
+        
+        async function submitNewInquiry() {
+            const subject = document.getElementById('newInquirySubject').value;
+            const message = document.getElementById('newInquiryMessage').value.trim();
+            
+            if (!subject || !message) {
+                showToast('error', 'Please fill in all fields');
+                return;
+            }
+            
+            const token = localStorage.getItem('memberToken');
+            
+            try {
+                const response = await fetch('/api/inquiries/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ subject, message })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    closeNewInquiryModal();
+                    document.getElementById('newInquirySubject').value = '';
+                    document.getElementById('newInquiryMessage').value = '';
+                    showToast('success', `Inquiry created: ${data.inquiry.ticketNumber}`);
+                    loadMemberInquiries();
+                    openInquiry(data.inquiry.id);
+                } else {
+                    showToast('error', data.error || 'Failed to create inquiry');
+                }
+            } catch (error) {
+                console.error('Error creating inquiry:', error);
+                showToast('error', 'Failed to create inquiry');
+            }
+        }
+        
+        function startInquiryPolling(inquiryId) {
+            if (inquiryPollInterval) clearInterval(inquiryPollInterval);
+            
+            inquiryPollInterval = setInterval(() => {
+                if (currentInquiryId === inquiryId) {
+                    openInquiry(inquiryId);
+                }
+            }, 5000); // Poll every 5 seconds
+        }
+        
+        function formatTime(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        }
+        
+        function formatTimeAgo(dateStr) {
+            const date = new Date(dateStr);
+            const now = new Date();
+            const diff = (now - date) / 1000;
+            
+            if (diff < 60) return 'Just now';
+            if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+            if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+            return date.toLocaleDateString();
+        }
+
 </html>

@@ -17,6 +17,9 @@ const clientRoutes = require('./routes/client');
 const accountingRoutes = require('./routes/accounting');
 const referralsRoutes = require('./routes/referrals');
 const membershipRoutes = require('./routes/membership');
+const inquiriesRoutes = require('./routes/inquiries');
+const ordersRoutes = require('./routes/orders');
+const reportsRoutes = require('./routes/reports');
 
 const app = express();
 
@@ -63,6 +66,9 @@ app.use('/api/client', clientRoutes);
 app.use('/api/accounting', accountingRoutes);
 app.use('/api/referrals', referralsRoutes);
 app.use('/api/membership', membershipRoutes);
+app.use('/api/inquiries', inquiriesRoutes);
+app.use('/api/orders', ordersRoutes);
+app.use('/api/reports', reportsRoutes);
 
 // Serve frontend for all other routes (SPA fallback)
 app.get('*', (req, res) => {
