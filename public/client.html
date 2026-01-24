@@ -2771,9 +2771,34 @@
                 provider.addScope('email');
                 provider.addScope('profile');
                 
-                const result = await firebase.auth().signInWithPopup(provider);
-                const user = result.user;
+                // Check if running as PWA (standalone mode)
+                const isPWA = window.matchMedia('(display-mode: standalone)').matches || 
+                              window.navigator.standalone === true;
                 
+                if (isPWA) {
+                    // Use redirect for PWA - better UX
+                    localStorage.setItem('googleAuthPending', 'true');
+                    await firebase.auth().signInWithRedirect(provider);
+                } else {
+                    // Use popup for regular browser
+                    const result = await firebase.auth().signInWithPopup(provider);
+                    await handleGoogleAuthResult(result.user);
+                }
+            } catch (error) {
+                console.error('Google sign-in error:', error);
+                if (error.code === 'auth/popup-closed-by-user') {
+                    showToast('info', 'Sign-in cancelled');
+                } else if (error.code === 'auth/unauthorized-domain') {
+                    showToast('error', 'Domain not authorized. Please contact support.');
+                } else {
+                    showToast('error', 'Google sign-in failed. Please try again.');
+                }
+            }
+        }
+        
+        // Handle Google auth result (used by both popup and redirect)
+        async function handleGoogleAuthResult(user) {
+            try {
                 // Send to backend for member registration/login
                 const response = await fetch('/api/membership/google-auth', {
                     method: 'POST',
@@ -2793,10 +2818,12 @@
                     localStorage.setItem('memberEmail', data.member.email);
                     localStorage.setItem('memberName', data.member.name);
                     localStorage.setItem('memberVerified', data.member.isVerified);
+                    localStorage.removeItem('googleAuthPending');
                     
                     showToast('success', `Welcome, ${data.member.name}!`);
                     await loadMemberProfile();
                     
+                    // Navigate to membership portal
                     setTimeout(() => {
                         showTab('membership');
                         document.getElementById('memberPortal').scrollIntoView({ 
@@ -2805,17 +2832,28 @@
                         });
                     }, 100);
                 } else {
+                    localStorage.removeItem('googleAuthPending');
                     showToast('error', data.error || 'Google sign-in failed');
                 }
             } catch (error) {
-                console.error('Google sign-in error:', error);
-                if (error.code === 'auth/popup-closed-by-user') {
-                    showToast('info', 'Sign-in cancelled');
-                } else {
-                    showToast('error', 'Google sign-in failed. Please try again.');
-                }
+                console.error('Google auth backend error:', error);
+                localStorage.removeItem('googleAuthPending');
+                showToast('error', 'Failed to complete sign-in. Please try again.');
             }
         }
+        
+        // Check for redirect result on page load (for PWA)
+        firebase.auth().getRedirectResult().then(async (result) => {
+            if (result.user && localStorage.getItem('googleAuthPending')) {
+                await handleGoogleAuthResult(result.user);
+            }
+        }).catch((error) => {
+            console.error('Redirect result error:', error);
+            localStorage.removeItem('googleAuthPending');
+            if (error.code === 'auth/unauthorized-domain') {
+                showToast('error', 'Domain not authorized for Google sign-in.');
+            }
+        });
 
         // ========== MEMBERSHIP FUNCTIONS ==========
         
