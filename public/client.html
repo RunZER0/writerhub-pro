@@ -12,6 +12,8 @@
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <!-- Paystack Inline JS -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
         * {
             margin: 0;
@@ -3129,7 +3131,7 @@
                     <i class="fas fa-arrow-left"></i> Back
                 </button>
                 <button class="btn-proceed" onclick="proceedToCheckout()">
-                    <i class="fas fa-check"></i> Confirm & Submit
+                    <i class="fas fa-credit-card"></i> Pay & Submit
                 </button>
             </div>
         </div>
@@ -3148,11 +3150,36 @@
         let currentPriceBreakdown = null;
         let currentInquiryId = null;
         let inquiryPollInterval = null;
+        let paystackPublicKey = null;
+        let paystackCurrency = 'NGN';
+        let pendingPaymentData = null;
+
+        // Load Paystack config on page load
+        async function loadPaystackConfig() {
+            try {
+                const response = await fetch('/api/paystack/config');
+                const config = await response.json();
+                paystackPublicKey = config.publicKey;
+                paystackCurrency = config.currency || 'NGN';
+            } catch (error) {
+                console.error('Failed to load Paystack config:', error);
+            }
+        }
 
         // Check for referral code in URL on page load
         document.addEventListener('DOMContentLoaded', async () => {
+            // Load Paystack configuration
+            loadPaystackConfig();
+            
             const urlParams = new URLSearchParams(window.location.search);
             const ref = urlParams.get('ref');
+            
+            // Check for payment callback
+            const paymentStatus = urlParams.get('payment');
+            const trxref = urlParams.get('trxref') || urlParams.get('reference');
+            if (paymentStatus === 'callback' && trxref) {
+                verifyPaymentAndSubmit(trxref);
+            }
             
             if (ref) {
                 try {
@@ -3494,7 +3521,165 @@
         
         function proceedToCheckout() {
             closeReceiptModal();
-            document.getElementById('assignmentForm').dispatchEvent(new Event('submit'));
+            
+            // Collect form data for payment
+            const clientName = document.getElementById('clientName').value.trim();
+            const clientEmail = document.getElementById('clientEmail').value.trim();
+            const title = document.getElementById('title').value.trim();
+            
+            if (!clientEmail) {
+                showToast('error', 'Email is required for payment');
+                return;
+            }
+            
+            if (!currentPriceBreakdown) {
+                showToast('error', 'Price calculation error. Please try again.');
+                return;
+            }
+            
+            // Store form data for after payment
+            pendingPaymentData = {
+                title,
+                clientName,
+                clientEmail,
+                clientPhone: document.getElementById('clientPhone').value,
+                domain: selectedDomain,
+                description: document.getElementById('description').value.trim(),
+                deadlineHours: selectedDeadlineHours,
+                pages: document.getElementById('pages')?.value || 1,
+                assignmentType: selectedAssignmentType,
+                finalPrice: parseFloat(currentPriceBreakdown.finalPrice),
+                files: uploadedFiles
+            };
+            
+            // Initiate Paystack payment
+            initiatePaystackPayment(clientEmail, pendingPaymentData.finalPrice, title);
+        }
+        
+        function initiatePaystackPayment(email, amount, title) {
+            if (!paystackPublicKey) {
+                showToast('error', 'Payment system not configured. Please contact support.');
+                return;
+            }
+            
+            // Show loading
+            showToast('info', 'Initializing payment...');
+            
+            let handler = PaystackPop.setup({
+                key: paystackPublicKey,
+                email: email,
+                amount: Math.round(amount * 100), // Convert to kobo/pesewas
+                currency: paystackCurrency,
+                ref: 'HP-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 8).toUpperCase(),
+                metadata: {
+                    custom_fields: [
+                        {
+                            display_name: "Assignment",
+                            variable_name: "assignment_title",
+                            value: title
+                        },
+                        {
+                            display_name: "Client Name",
+                            variable_name: "client_name", 
+                            value: pendingPaymentData.clientName
+                        }
+                    ]
+                },
+                onClose: function() {
+                    showToast('warning', 'Payment cancelled');
+                },
+                callback: function(response) {
+                    // Payment successful - verify and submit
+                    verifyPaymentAndSubmit(response.reference);
+                }
+            });
+            
+            handler.openIframe();
+        }
+        
+        async function verifyPaymentAndSubmit(reference) {
+            showToast('info', 'Verifying payment...');
+            
+            // Show loading state
+            document.querySelector('.form-card form').style.display = 'none';
+            document.querySelector('.selected-package').style.display = 'none';
+            document.getElementById('loadingState').classList.add('active');
+            
+            try {
+                // Verify payment with backend
+                const verifyResponse = await fetch(`/api/paystack/verify/${reference}`);
+                const verification = await verifyResponse.json();
+                
+                if (!verification.success) {
+                    throw new Error(verification.error || 'Payment verification failed');
+                }
+                
+                // Payment verified - now submit the assignment
+                const data = pendingPaymentData || JSON.parse(localStorage.getItem('pendingPaymentData'));
+                
+                if (!data) {
+                    throw new Error('Order data not found. Please try again.');
+                }
+                
+                // Build form data for submission
+                const deadline = new Date(Date.now() + data.deadlineHours * 60 * 60 * 1000);
+                
+                const formData = new FormData();
+                formData.append('title', data.title);
+                formData.append('domain', data.domain);
+                formData.append('description', `[${selectedPackageData?.name?.toUpperCase() || 'STANDARD'} PACKAGE]\n\n${data.description}`);
+                formData.append('word_count_min', (data.pages || 1) * 250);
+                formData.append('word_count_max', (data.pages || 1) * 300);
+                formData.append('deadline', deadline.toISOString());
+                formData.append('links', '');
+                formData.append('client_name', data.clientName);
+                formData.append('client_email', data.clientEmail);
+                formData.append('client_phone', data.clientPhone || '');
+                formData.append('payment_reference', reference);
+                formData.append('payment_amount', data.finalPrice);
+                
+                if (referralCode) {
+                    formData.append('referral_code', referralCode);
+                }
+                
+                // Add files if any
+                if (data.files && data.files.length > 0) {
+                    data.files.forEach(file => formData.append('files', file));
+                }
+                
+                const submitResponse = await fetch('/api/client/submit', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await submitResponse.json();
+                document.getElementById('loadingState').classList.remove('active');
+                
+                if (submitResponse.ok) {
+                    // Clear pending data
+                    pendingPaymentData = null;
+                    localStorage.removeItem('pendingPaymentData');
+                    
+                    document.getElementById('orderId').textContent = `HP-${result.assignment_id.toString().padStart(6, '0')}`;
+                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                    document.getElementById('success-tab').classList.add('active');
+                    
+                    showToast('success', 'Payment successful! Assignment submitted.');
+                    
+                    // Get referral code for this client
+                    fetchReferralCode(data.clientName, data.clientEmail);
+                } else {
+                    throw new Error(result.error || 'Failed to submit assignment');
+                }
+                
+            } catch (error) {
+                document.getElementById('loadingState').classList.remove('active');
+                document.querySelector('.form-card form').style.display = 'block';
+                document.querySelector('.selected-package').style.display = 'flex';
+                showToast('error', error.message || 'Payment verification failed. Please contact support with reference: ' + reference);
+                console.error('Payment/Submit error:', error);
+            }
         }
 
         // File upload
@@ -3543,7 +3728,7 @@
             renderUploadedFiles();
         }
 
-        // Form submission
+        // Form submission - shows receipt preview (payment happens on confirm)
         document.getElementById('assignmentForm').addEventListener('submit', async e => {
             e.preventDefault();
             
@@ -3556,68 +3741,20 @@
             const description = document.getElementById('description').value.trim();
             const clientName = document.getElementById('clientName').value.trim();
             const clientEmail = document.getElementById('clientEmail').value.trim();
-            const pages = document.getElementById('pages').value;
+            const pages = document.getElementById('pages')?.value || 1;
 
             if (!title || !description || !clientName || !clientEmail) {
                 showToast('error', 'Please fill all required fields');
                 return;
             }
-
-            // Show loading
-            document.querySelector('.form-card form').style.display = 'none';
-            document.querySelector('.selected-package').style.display = 'none';
-            document.getElementById('loadingState').classList.add('active');
-
-            const deadline = new Date(Date.now() + selectedDeadlineHours * 60 * 60 * 1000);
-            const wordCount = `${pages * 250}-${pages * 300}`;
-
-            const formData = new FormData();
-            formData.append('title', title);
-            formData.append('domain', selectedDomain);
-            formData.append('description', `[${selectedPackageData.name.toUpperCase()} PACKAGE]\n\n${description}`);
-            formData.append('word_count_min', pages * 250);
-            formData.append('word_count_max', pages * 300);
-            formData.append('deadline', deadline.toISOString());
-            formData.append('links', '');
-            formData.append('client_name', clientName);
-            formData.append('client_email', clientEmail);
-            formData.append('client_phone', document.getElementById('clientPhone').value);
             
-            // Include referral code if present
-            if (referralCode) {
-                formData.append('referral_code', referralCode);
+            if (!currentPriceBreakdown) {
+                showToast('error', 'Please wait for price calculation');
+                return;
             }
 
-            uploadedFiles.forEach(file => formData.append('files', file));
-
-            try {
-                const response = await fetch('/api/client/submit', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                const result = await response.json();
-                document.getElementById('loadingState').classList.remove('active');
-
-                if (response.ok) {
-                    document.getElementById('orderId').textContent = `HP-${result.assignment_id.toString().padStart(6, '0')}`;
-                    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-                    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-                    document.getElementById('success-tab').classList.add('active');
-                    
-                    // Get or create referral code for this client
-                    fetchReferralCode(clientName, clientEmail);
-                } else {
-                    document.querySelector('.form-card form').style.display = 'block';
-                    document.querySelector('.selected-package').style.display = 'flex';
-                    showToast('error', result.error || 'Failed to submit');
-                }
-            } catch (error) {
-                document.getElementById('loadingState').classList.remove('active');
-                document.querySelector('.form-card form').style.display = 'block';
-                document.querySelector('.selected-package').style.display = 'flex';
-                showToast('error', 'Network error. Please try again.');
-            }
+            // Show receipt preview modal instead of submitting directly
+            showReceiptPreview();
         });
 
         function showToast(type, message) {
