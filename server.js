@@ -50,12 +50,12 @@ app.get('/writers', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+// Serve .well-known folder for domain verification (Apple Pay, etc.) - MUST be before static middleware
+app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
+
 // Static files (after explicit routes)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-
-// Serve .well-known folder for domain verification (Apple Pay, etc.)
-app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
 
 // API Routes
 app.use('/api/auth', authRoutes);
