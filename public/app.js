@@ -430,6 +430,16 @@ async function api(endpoint, options = {}) {
     const data = await response.json();
 
     if (!response.ok) {
+        // Handle token expired - log out user
+        if (response.status === 401 && (data.error === 'Token expired' || data.error === 'Invalid token')) {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            showToast('warning', 'Session Expired', 'Please log in again');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+            throw new Error('Session expired - please log in again');
+        }
         throw new Error(data.error || 'Request failed');
     }
 

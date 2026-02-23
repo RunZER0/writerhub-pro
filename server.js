@@ -54,6 +54,9 @@ app.get('/writers', (req, res) => {
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve .well-known folder for domain verification (Apple Pay, etc.)
+app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
+
 // API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/writers', writerRoutes);
