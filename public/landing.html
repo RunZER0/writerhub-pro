@@ -9,6 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
+    <!-- Paystack Inline JS -->
+    <script src="https://js.paystack.co/v1/inline.js"></script>
     <style>
         * {
             margin: 0;
@@ -103,6 +105,247 @@
         .writer-link {
             font-size: 0.8rem !important;
             opacity: 0.5;
+        }
+
+        /* Quick Pay Banner */
+        .quick-pay-banner {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1001;
+            background: linear-gradient(90deg, #059669, #10b981);
+            padding: 0.5rem 1rem;
+            text-align: center;
+            font-size: 0.85rem;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .quick-pay-banner:hover {
+            background: linear-gradient(90deg, #047857, #059669);
+        }
+        
+        .quick-pay-banner i {
+            margin-right: 0.5rem;
+        }
+        
+        .quick-pay-banner span {
+            text-decoration: underline;
+            font-weight: 600;
+        }
+        
+        /* Adjust nav position when banner is visible */
+        nav {
+            top: 32px;
+        }
+        
+        .hero {
+            padding-top: 8rem;
+        }
+
+        /* Quick Pay Nav Link */
+        .nav-quickpay {
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, #059669, #10b981);
+            border-radius: 8px;
+            color: #fff !important;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+        
+        .nav-quickpay:hover {
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Quick Pay Modal */
+        .quickpay-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        
+        .quickpay-modal.active {
+            display: flex;
+        }
+        
+        .quickpay-content {
+            background: linear-gradient(145deg, #1a1a2e, #16162a);
+            border-radius: 20px;
+            max-width: 450px;
+            width: 100%;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            position: relative;
+        }
+        
+        .quickpay-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.3s;
+        }
+        
+        .quickpay-close:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .quickpay-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .quickpay-header i {
+            font-size: 2.5rem;
+            color: #10b981;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+        
+        .quickpay-header h2 {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .quickpay-header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 0.9rem;
+        }
+        
+        .quickpay-form .form-group {
+            margin-bottom: 1.25rem;
+        }
+        
+        .quickpay-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+        
+        .quickpay-form input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+        
+        .quickpay-form input:focus {
+            outline: none;
+            border-color: #10b981;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        
+        .quickpay-form input::placeholder {
+            color: rgba(255, 255, 255, 0.4);
+        }
+        
+        .quickpay-amount-input {
+            position: relative;
+        }
+        
+        .quickpay-amount-input .currency {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: rgba(255, 255, 255, 0.6);
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        
+        .quickpay-amount-input input {
+            padding-left: 3rem;
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+        
+        .quickpay-submit {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+        
+        .quickpay-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px rgba(16, 185, 129, 0.3);
+        }
+        
+        .quickpay-submit:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .quickpay-info {
+            margin-top: 1.25rem;
+            padding: 1rem;
+            background: rgba(16, 185, 129, 0.1);
+            border-radius: 10px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.7);
+            text-align: center;
+        }
+        
+        .quickpay-info i {
+            color: #10b981;
+            margin-right: 0.5rem;
+        }
+        
+        .quickpay-toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            font-weight: 500;
+            z-index: 3000;
+            display: none;
+        }
+        
+        .quickpay-toast.success {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            display: block;
+        }
+        
+        .quickpay-toast.error {
+            background: linear-gradient(135deg, #dc2626, #ef4444);
+            color: white;
+            display: block;
         }
 
         /* Hero Section */
@@ -941,10 +1184,24 @@
             .step::after { display: none; }
 
             nav { padding: 1rem 1.5rem; }
-            .nav-links { gap: 1rem; }
+            .nav-links { gap: 0.75rem; }
 
-            .nav-links a:not(.nav-cta):not(.writer-link) {
+            .nav-links a:not(.nav-cta):not(.writer-link):not(.nav-quickpay) {
                 display: none;
+            }
+            
+            .nav-quickpay {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.75rem;
+            }
+
+            .quick-pay-banner {
+                font-size: 0.75rem;
+                padding: 0.4rem 0.5rem;
+            }
+            
+            .quick-pay-banner span {
+                display: inline;
             }
 
             .testimonial { width: 300px; }
@@ -990,6 +1247,11 @@
 <body>
     <div class="bg-mesh"></div>
 
+    <!-- Quick Pay Banner -->
+    <div class="quick-pay-banner" onclick="openQuickPay()">
+        <i class="fas fa-bolt"></i> Already agreed on a price? <span>Quick Pay Now</span> <i class="fas fa-arrow-right"></i>
+    </div>
+
     <nav>
         <a href="/" class="logo">
             <i class="fas fa-graduation-cap"></i>
@@ -1000,6 +1262,7 @@
             <a href="#how">How It Works</a>
             <a href="#testimonials">Reviews</a>
             <a href="#referral">Referrals</a>
+            <a href="javascript:void(0)" onclick="openQuickPay()" class="nav-quickpay"><i class="fas fa-credit-card"></i> Quick Pay</a>
             <a href="/writers" class="writer-link"><i class="fas fa-user-edit"></i> Writers</a>
             <a href="/client" class="nav-cta">Get Started</a>
         </div>
@@ -1251,6 +1514,50 @@
             <div id="policyContent" class="policy-body"></div>
         </div>
     </div>
+
+    <!-- Quick Pay Modal -->
+    <div id="quickPayModal" class="quickpay-modal">
+        <div class="quickpay-content">
+            <button class="quickpay-close" onclick="closeQuickPay()">
+                <i class="fas fa-times"></i>
+            </button>
+            <div class="quickpay-header">
+                <i class="fas fa-bolt"></i>
+                <h2>Quick Pay</h2>
+                <p>Pay the agreed amount directly</p>
+            </div>
+            <form class="quickpay-form" id="quickPayForm" onsubmit="handleQuickPay(event)">
+                <div class="form-group">
+                    <label for="qpName">Your Name *</label>
+                    <input type="text" id="qpName" placeholder="Enter your full name" required>
+                </div>
+                <div class="form-group">
+                    <label for="qpEmail">Email Address *</label>
+                    <input type="email" id="qpEmail" placeholder="your@email.com" required>
+                </div>
+                <div class="form-group">
+                    <label for="qpDescription">What is this payment for?</label>
+                    <input type="text" id="qpDescription" placeholder="e.g. Essay on Climate Change">
+                </div>
+                <div class="form-group">
+                    <label for="qpAmount">Amount to Pay *</label>
+                    <div class="quickpay-amount-input">
+                        <span class="currency" id="qpCurrency">₦</span>
+                        <input type="number" id="qpAmount" placeholder="0.00" min="100" step="0.01" required>
+                    </div>
+                </div>
+                <button type="submit" class="quickpay-submit" id="qpSubmitBtn">
+                    <i class="fas fa-lock"></i> Pay Securely
+                </button>
+            </form>
+            <div class="quickpay-info">
+                <i class="fas fa-shield-alt"></i> Secured by Paystack. Supports Card, Bank, USSD, Apple Pay & more.
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Pay Toast -->
+    <div id="quickPayToast" class="quickpay-toast"></div>
 
     <script>
         // Consistent seed based on current date (changes daily but same for all users)
@@ -1623,8 +1930,145 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 closePolicyModal();
+                closeQuickPay();
             }
         });
+
+        // ========================================
+        // Quick Pay Functionality
+        // ========================================
+        let qpPaystackPublicKey = null;
+        let qpPaystackCurrency = 'NGN';
+        const currencySymbols = { NGN: '₦', GHS: '₵', ZAR: 'R', USD: '$', KES: 'KSh' };
+
+        // Load Paystack config
+        async function loadQuickPayConfig() {
+            try {
+                const response = await fetch('/api/paystack/config');
+                const config = await response.json();
+                qpPaystackPublicKey = config.publicKey;
+                qpPaystackCurrency = config.currency || 'NGN';
+                document.getElementById('qpCurrency').textContent = currencySymbols[qpPaystackCurrency] || qpPaystackCurrency;
+            } catch (error) {
+                console.error('Failed to load Paystack config:', error);
+            }
+        }
+
+        // Load config on page load
+        loadQuickPayConfig();
+
+        function openQuickPay() {
+            document.getElementById('quickPayModal').classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeQuickPay() {
+            document.getElementById('quickPayModal').classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        // Close Quick Pay modal on outside click
+        document.getElementById('quickPayModal').addEventListener('click', (e) => {
+            if (e.target.id === 'quickPayModal') {
+                closeQuickPay();
+            }
+        });
+
+        function showQuickPayToast(type, message) {
+            const toast = document.getElementById('quickPayToast');
+            toast.textContent = message;
+            toast.className = 'quickpay-toast ' + type;
+            setTimeout(() => {
+                toast.className = 'quickpay-toast';
+            }, 4000);
+        }
+
+        function handleQuickPay(e) {
+            e.preventDefault();
+            
+            if (!qpPaystackPublicKey) {
+                showQuickPayToast('error', 'Payment system not configured. Please contact support.');
+                return;
+            }
+
+            const name = document.getElementById('qpName').value.trim();
+            const email = document.getElementById('qpEmail').value.trim();
+            const description = document.getElementById('qpDescription').value.trim() || 'Quick Payment';
+            const amount = parseFloat(document.getElementById('qpAmount').value);
+
+            if (!name || !email || !amount || amount < 100) {
+                showQuickPayToast('error', 'Please fill all required fields. Minimum amount is 100.');
+                return;
+            }
+
+            // Disable button
+            const btn = document.getElementById('qpSubmitBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+
+            // Generate reference
+            const ref = 'QP-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+            let handler = PaystackPop.setup({
+                key: qpPaystackPublicKey,
+                email: email,
+                amount: Math.round(amount * 100), // Convert to smallest unit
+                currency: qpPaystackCurrency,
+                ref: ref,
+                metadata: {
+                    custom_fields: [
+                        { display_name: "Client Name", variable_name: "client_name", value: name },
+                        { display_name: "Description", variable_name: "description", value: description },
+                        { display_name: "Payment Type", variable_name: "payment_type", value: "quick_pay" }
+                    ]
+                },
+                onClose: function() {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely';
+                    showQuickPayToast('error', 'Payment cancelled');
+                },
+                callback: function(response) {
+                    // Verify payment
+                    verifyQuickPayment(response.reference, name, email, description, amount);
+                }
+            });
+
+            handler.openIframe();
+        }
+
+        async function verifyQuickPayment(reference, name, email, description, amount) {
+            const btn = document.getElementById('qpSubmitBtn');
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
+
+            try {
+                const response = await fetch(`/api/paystack/verify/${reference}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    // Close modal and show success
+                    closeQuickPay();
+                    document.getElementById('quickPayForm').reset();
+                    
+                    // Show success message
+                    showQuickPayToast('success', `Payment of ${currencySymbols[qpPaystackCurrency]}${amount.toLocaleString()} successful! Reference: ${reference}`);
+                    
+                    // Optionally redirect to client portal
+                    setTimeout(() => {
+                        if (confirm('Payment successful! Would you like to submit an assignment now?')) {
+                            window.location.href = '/client';
+                        }
+                    }, 2000);
+                } else {
+                    showQuickPayToast('error', data.error || 'Payment verification failed');
+                }
+            } catch (error) {
+                console.error('Verification error:', error);
+                showQuickPayToast('error', 'Payment verification failed. Please contact support with reference: ' + reference);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely';
+            }
+        }
     </script>
 </body>
 </html>
