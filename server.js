@@ -53,6 +53,11 @@ app.get('/writers', (req, res) => {
 // Serve .well-known folder for domain verification (Apple Pay, etc.) - MUST be before static middleware
 app.use('/.well-known', express.static(path.join(__dirname, '.well-known')));
 
+// Explicit route for Apple Pay verification file
+app.get('/.well-known/apple-developer-merchantid-domain-association', (req, res) => {
+    res.sendFile(path.join(__dirname, '.well-known', 'apple-developer-merchantid-domain-association'));
+});
+
 // Static files (after explicit routes)
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
