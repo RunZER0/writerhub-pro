@@ -9,8 +9,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg">
-    <!-- Paystack Inline JS -->
-    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <!-- Paystack Inline JS v2 - Apple Pay support -->
+    <script src="https://js.paystack.co/v2/inline.js"></script>
     <style>
         * {
             margin: 0;
@@ -2081,7 +2081,7 @@
             }, 6000);
         }
 
-        function handleQuickPay(e) {
+        async function handleQuickPay(e) {
             e.preventDefault();
             
             if (!qpPaystackPublicKey) {
@@ -2107,31 +2107,39 @@
             // Generate reference
             const ref = 'QP-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
 
-            let handler = PaystackPop.setup({
-                key: qpPaystackPublicKey,
-                email: email,
-                amount: Math.round(amount * 100), // Convert to smallest unit
-                currency: qpPaystackCurrency,
-                ref: ref,
-                metadata: {
-                    custom_fields: [
-                        { display_name: "Client Name", variable_name: "client_name", value: name },
-                        { display_name: "Description", variable_name: "description", value: description },
-                        { display_name: "Payment Type", variable_name: "payment_type", value: "quick_pay" }
-                    ]
-                },
-                onClose: function() {
-                    btn.disabled = false;
-                    btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely';
-                    showQuickPayToast('error', 'Payment cancelled');
-                },
-                callback: function(response) {
-                    // Verify payment
-                    verifyQuickPayment(response.reference, name, email, description, amount);
-                }
-            });
-
-            handler.openIframe();
+            // Use Paystack v2 checkout() for Apple Pay support
+            const paystackPop = new PaystackPop();
+            
+            try {
+                await paystackPop.checkout({
+                    key: qpPaystackPublicKey,
+                    email: email,
+                    amount: Math.round(amount * 100), // Convert to smallest unit
+                    currency: qpPaystackCurrency,
+                    ref: ref,
+                    metadata: {
+                        custom_fields: [
+                            { display_name: "Client Name", variable_name: "client_name", value: name },
+                            { display_name: "Description", variable_name: "description", value: description },
+                            { display_name: "Payment Type", variable_name: "payment_type", value: "quick_pay" }
+                        ]
+                    },
+                    onSuccess: function(response) {
+                        // Verify payment
+                        verifyQuickPayment(response.reference, name, email, description, amount);
+                    },
+                    onCancel: function() {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely';
+                        showQuickPayToast('error', 'Payment cancelled');
+                    }
+                });
+            } catch (error) {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely';
+                showQuickPayToast('error', 'Payment initialization failed');
+                console.error('Paystack error:', error);
+            }
         }
 
         async function verifyQuickPayment(reference, name, email, description, amount) {

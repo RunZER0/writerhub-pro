@@ -13,7 +13,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
     <!-- Paystack Inline JS -->
-    <script src="https://js.paystack.co/v1/inline.js"></script>
+    <!-- Paystack Inline JS v2 - Apple Pay support -->
+    <script src="https://js.paystack.co/v2/inline.js"></script>
     <style>
         * {
             margin: 0;
@@ -3560,7 +3561,7 @@
             initiatePaystackPayment(clientEmail, pendingPaymentData.finalPrice, title);
         }
         
-        function initiatePaystackPayment(email, amount, title) {
+        async function initiatePaystackPayment(email, amount, title) {
             if (!paystackPublicKey) {
                 showToast('error', 'Payment system not configured. Please contact support.');
                 return;
@@ -3569,36 +3570,44 @@
             // Show loading
             showToast('info', 'Initializing payment...');
             
-            let handler = PaystackPop.setup({
-                key: paystackPublicKey,
-                email: email,
-                amount: Math.round(amount * 100), // Convert to kobo/pesewas
-                currency: paystackCurrency,
-                ref: 'HP-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 8).toUpperCase(),
-                metadata: {
-                    custom_fields: [
-                        {
-                            display_name: "Assignment",
-                            variable_name: "assignment_title",
-                            value: title
-                        },
-                        {
-                            display_name: "Client Name",
-                            variable_name: "client_name", 
-                            value: pendingPaymentData.clientName
-                        }
-                    ]
-                },
-                onClose: function() {
-                    showToast('warning', 'Payment cancelled');
-                },
-                callback: function(response) {
-                    // Payment successful - verify and submit
-                    verifyPaymentAndSubmit(response.reference);
-                }
-            });
+            const ref = 'HP-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 8).toUpperCase();
             
-            handler.openIframe();
+            // Use Paystack v2 checkout() for Apple Pay support
+            const paystackPop = new PaystackPop();
+            
+            try {
+                await paystackPop.checkout({
+                    key: paystackPublicKey,
+                    email: email,
+                    amount: Math.round(amount * 100), // Convert to kobo/pesewas
+                    currency: paystackCurrency,
+                    ref: ref,
+                    metadata: {
+                        custom_fields: [
+                            {
+                                display_name: "Assignment",
+                                variable_name: "assignment_title",
+                                value: title
+                            },
+                            {
+                                display_name: "Client Name",
+                                variable_name: "client_name", 
+                                value: pendingPaymentData.clientName
+                            }
+                        ]
+                    },
+                    onSuccess: function(response) {
+                        // Payment successful - verify and submit
+                        verifyPaymentAndSubmit(response.reference);
+                    },
+                    onCancel: function() {
+                        showToast('warning', 'Payment cancelled');
+                    }
+                });
+            } catch (error) {
+                showToast('error', 'Payment initialization failed. Please try again.');
+                console.error('Paystack error:', error);
+            }
         }
         
         async function verifyPaymentAndSubmit(reference) {
