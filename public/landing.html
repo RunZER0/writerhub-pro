@@ -1508,7 +1508,7 @@
                     <label for="qpAmount">Amount to Pay *</label>
                     <div class="quickpay-amount-input">
                         <span class="currency" id="qpCurrency">₦</span>
-                        <input type="number" id="qpAmount" placeholder="0.00" min="100" step="0.01" required>
+                        <input type="number" id="qpAmount" placeholder="0.00" min="1" step="0.01" required>
                     </div>
                 </div>
                 <button type="submit" class="quickpay-submit" id="qpSubmitBtn">
@@ -1961,8 +1961,8 @@
             const description = document.getElementById('qpDescription').value.trim() || 'Quick Payment';
             const amount = parseFloat(document.getElementById('qpAmount').value);
 
-            if (!name || !email || !amount || amount < 100) {
-                showQuickPayToast('error', 'Please fill all required fields. Minimum amount is 100.');
+            if (!name || !email || !amount || amount <= 0) {
+                showQuickPayToast('error', 'Please fill all required fields.');
                 return;
             }
 
