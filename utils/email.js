@@ -1,36 +1,35 @@
-const nodemailer = require('nodemailer');
-
-// Create transporter
-const createTransporter = () => {
-    return nodemailer.createTransport({
-        host: process.env.EMAIL_HOST || 'smtp.gmail.com',
-        port: process.env.EMAIL_PORT || 587,
-        secure: false,
-        auth: {
-            user: process.env.EMAIL_USER,
-            pass: process.env.EMAIL_PASS
-        }
-    });
-};
-
-// Send email
+// Sends via Brevo's HTTPS API rather than SMTP — Render's free tier blocks
+// outbound SMTP ports (25/465/587), so a direct nodemailer/SMTP transport
+// never delivers there. This matches the transport already used elsewhere
+// in the app (routes/membership.js, routes/orders.js, routes/turnitin.js).
 const sendEmail = async (to, subject, html) => {
     try {
-        if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+        if (!process.env.BREVO_API_KEY) {
             console.log('📧 Email not configured, skipping notification');
             return false;
         }
 
-        const transporter = createTransporter();
-        
-        const mailOptions = {
-            from: `"HomeworkPal" <${process.env.EMAIL_USER}>`,
-            to,
-            subject,
-            html
-        };
+        const response = await fetch('https://api.brevo.com/v3/smtp/email', {
+            method: 'POST',
+            headers: {
+                'accept': 'application/json',
+                'api-key': process.env.BREVO_API_KEY,
+                'content-type': 'application/json'
+            },
+            body: JSON.stringify({
+                sender: { name: 'HomeworkPal', email: process.env.SENDER_EMAIL || 'noreply@homeworkpal.com' },
+                to: [{ email: to }],
+                subject,
+                htmlContent: html
+            })
+        });
 
-        await transporter.sendMail(mailOptions);
+        if (!response.ok) {
+            const error = await response.json().catch(() => ({}));
+            console.error('Email error:', error);
+            return false;
+        }
+
         console.log(`📧 Email sent to ${to}`);
         return true;
     } catch (error) {
@@ -71,7 +70,7 @@ const emailTemplates = {
                         ${assignment.description ? `<p style="color: #64748b; margin-top: 16px; padding-top: 16px; border-top: 1px solid #e2e8f0;">${assignment.description}</p>` : ''}
                     </div>
                     
-                    <a href="${process.env.APP_URL || 'http://localhost:3000'}" 
+                    <a href="${process.env.BASE_URL || 'http://localhost:3000'}" 
                        style="display: inline-block; background: #6366f1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
                         View Assignment
                     </a>
@@ -101,7 +100,7 @@ const emailTemplates = {
                         ${payment.reference ? `<p style="color: #94a3b8; font-size: 14px; margin-top: 10px;">Ref: ${payment.reference}</p>` : ''}
                     </div>
                     
-                    <a href="${process.env.APP_URL || 'http://localhost:3000'}" 
+                    <a href="${process.env.BASE_URL || 'http://localhost:3000'}" 
                        style="display: inline-block; background: #10b981; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
                         View Dashboard
                     </a>
@@ -139,7 +138,7 @@ const emailTemplates = {
                     
                     <p style="color: #ef4444; font-size: 14px;">⚠️ Please change your password after your first login!</p>
                     
-                    <a href="${process.env.APP_URL || 'http://localhost:3000'}" 
+                    <a href="${process.env.BASE_URL || 'http://localhost:3000'}" 
                        style="display: inline-block; background: #6366f1; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold;">
                         Login Now
                     </a>

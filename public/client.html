@@ -644,6 +644,96 @@
             cursor: pointer;
         }
 
+        /* Plagiarism/AI Check tab */
+        .turnitin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .turnitin-price-pill {
+            flex-shrink: 0;
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+            font-weight: 600;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+        .turnitin-wallet-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .turnitin-scanning {
+            text-align: center;
+            padding: 2.5rem 1rem;
+        }
+        .turnitin-scan-anim {
+            width: 64px;
+            height: 64px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: #6366f1;
+            animation: turnitinPulse 1.6s ease-in-out infinite;
+        }
+        @keyframes turnitinPulse {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.12); opacity: 0.6; }
+        }
+        .turnitin-scan-status {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .turnitin-reports-list {
+            margin-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.08);
+            padding-top: 1.5rem;
+        }
+        .turnitin-list-header {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255,255,255,0.4);
+            margin-bottom: 0.75rem;
+        }
+        .turnitin-report-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.9rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+        }
+        .turnitin-report-row:last-child { border-bottom: none; }
+        .turnitin-report-info { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
+        .turnitin-report-filename {
+            font-weight: 600;
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .turnitin-report-date { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+        .turnitin-report-action { flex-shrink: 0; }
+
         /* Price Breakdown Box */
         .price-breakdown {
             background: rgba(16, 185, 129, 0.05);
@@ -2201,6 +2291,9 @@
             <div class="tab" data-tab="membership">
                 <i class="fas fa-crown"></i> Membership
             </div>
+            <div class="tab" data-tab="turnitin">
+                <i class="fas fa-shield-halved"></i> Plagiarism Check
+            </div>
             <div class="tab" data-tab="inquiry">
                 <i class="fas fa-question-circle"></i> Inquiry
             </div>
@@ -2892,6 +2985,58 @@
             </div>
         </div>
 
+        <!-- Plagiarism/AI Check Tab -->
+        <div class="tab-content" id="turnitin-tab">
+            <div class="form-container">
+                <!-- Logged-out prompt -->
+                <div id="turnitinLoginPrompt" class="form-card" style="display: none; text-align: center; padding: 3rem 2rem;">
+                    <i class="fas fa-shield-halved" style="font-size: 2.5rem; color: #6366f1; margin-bottom: 1rem;"></i>
+                    <h3 style="margin: 0 0 0.5rem;">Log in to check your work</h3>
+                    <p style="color: rgba(255,255,255,0.5); margin-bottom: 1.5rem;">Plagiarism &amp; AI detection reports are available to logged-in members.</p>
+                    <button class="btn btn-primary" onclick="showTab('membership')"><i class="fas fa-right-to-bracket"></i> Go to Membership Login</button>
+                </div>
+
+                <!-- Main UI (logged-in members) -->
+                <div id="turnitinMain" class="form-card" style="display: none;">
+                    <div class="turnitin-header">
+                        <div>
+                            <h3 style="margin: 0 0 0.25rem;"><i class="fas fa-shield-halved"></i> Plagiarism &amp; AI Check</h3>
+                            <p style="margin: 0; color: rgba(255,255,255,0.5); font-size: 0.9rem;">Scan your document before you submit it. We'll email you the moment it's ready.</p>
+                        </div>
+                        <div class="turnitin-price-pill" id="turnitinPricePill">Loading price…</div>
+                    </div>
+
+                    <div id="turnitinWalletPill" class="turnitin-wallet-pill" style="display: none;">
+                        <i class="fas fa-gift"></i> <span id="turnitinWalletCount">0</span> free check(s) available
+                    </div>
+
+                    <div class="file-upload" id="turnitinDropzone">
+                        <i class="fas fa-cloud-upload-alt"></i>
+                        <p>Click to upload or drag and drop<br><small>PDF or Word document (Max 20MB)</small></p>
+                        <input type="file" id="turnitinFileInput" accept=".pdf,.doc,.docx" style="display: none;">
+                    </div>
+                    <div class="uploaded-files" id="turnitinSelectedFile"></div>
+
+                    <button class="btn btn-primary" id="turnitinSubmitBtn" style="width: 100%; margin-top: 1rem;" onclick="submitTurnitinCheck()" disabled>
+                        <i class="fas fa-lock"></i> <span id="turnitinSubmitLabel">Select a file first</span>
+                    </button>
+
+                    <!-- Scanning / loading state -->
+                    <div id="turnitinScanningState" class="turnitin-scanning" style="display: none;">
+                        <div class="turnitin-scan-anim"><i class="fas fa-file-shield"></i></div>
+                        <div class="turnitin-scan-status" id="turnitinScanStatus">Uploading your document…</div>
+                        <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem;">This can take a little while — we'll email you the moment it's ready.</p>
+                    </div>
+
+                    <!-- Past checks -->
+                    <div class="turnitin-reports-list">
+                        <div class="turnitin-list-header">Your Checks</div>
+                        <div id="turnitinReportsBody"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Inquiry Tab -->
         <div class="tab-content" id="inquiry-tab">
             <div class="form-container">
@@ -3248,6 +3393,328 @@
             
             document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
             document.getElementById(`${tabName}-tab`)?.classList.add('active');
+        }
+
+        // ========== PLAGIARISM/AI CHECK (TURNITIN) ==========
+
+        let turnitinPricing = { kes: 200, usd: 2, walletCredits: 0 };
+        let turnitinCurrency = 'USD';
+        let turnitinSelectedFile = null;
+        let turnitinDropzoneReady = false;
+        let turnitinPollTimer = null;
+
+        function setupTurnitinTab() {
+            const token = localStorage.getItem('memberToken');
+            const loginPrompt = document.getElementById('turnitinLoginPrompt');
+            const main = document.getElementById('turnitinMain');
+            if (!loginPrompt || !main) return;
+
+            if (token) {
+                loginPrompt.style.display = 'none';
+                main.style.display = 'block';
+                initTurnitinDropzone();
+                detectTurnitinCurrency();
+                loadTurnitinPricing();
+                loadTurnitinReports();
+            } else {
+                loginPrompt.style.display = 'block';
+                main.style.display = 'none';
+            }
+        }
+
+        function detectTurnitinCurrency() {
+            fetch('https://ip-api.com/json/?fields=status,countryCode')
+                .then(r => r.json())
+                .then(data => {
+                    turnitinCurrency = (data.status === 'success' && data.countryCode === 'KE') ? 'KES' : 'USD';
+                    updateTurnitinPricePill();
+                    updateTurnitinSubmitButton();
+                })
+                .catch(() => {
+                    turnitinCurrency = 'USD';
+                    updateTurnitinPricePill();
+                    updateTurnitinSubmitButton();
+                });
+        }
+
+        async function loadTurnitinPricing() {
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/turnitin/pricing', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) return;
+                turnitinPricing = await res.json();
+                updateTurnitinPricePill();
+                updateTurnitinWalletPill();
+                updateTurnitinSubmitButton();
+            } catch (error) {
+                console.error('Failed to load turnitin pricing:', error);
+            }
+        }
+
+        function updateTurnitinPricePill() {
+            const pill = document.getElementById('turnitinPricePill');
+            if (!pill) return;
+            const amount = turnitinCurrency === 'KES' ? turnitinPricing.kes : turnitinPricing.usd;
+            const symbol = turnitinCurrency === 'KES' ? 'KSh' : '$';
+            pill.textContent = `${symbol}${amount} per check`;
+        }
+
+        function updateTurnitinWalletPill() {
+            const pill = document.getElementById('turnitinWalletPill');
+            const count = document.getElementById('turnitinWalletCount');
+            if (!pill || !count) return;
+            if (turnitinPricing.walletCredits > 0) {
+                count.textContent = turnitinPricing.walletCredits;
+                pill.style.display = 'inline-flex';
+            } else {
+                pill.style.display = 'none';
+            }
+        }
+
+        function initTurnitinDropzone() {
+            if (turnitinDropzoneReady) return;
+            turnitinDropzoneReady = true;
+
+            const dropzone = document.getElementById('turnitinDropzone');
+            const input = document.getElementById('turnitinFileInput');
+
+            dropzone.addEventListener('click', () => input.click());
+            dropzone.addEventListener('dragover', e => {
+                e.preventDefault();
+                dropzone.style.borderColor = '#6366f1';
+            });
+            dropzone.addEventListener('dragleave', () => {
+                dropzone.style.borderColor = 'rgba(255,255,255,0.1)';
+            });
+            dropzone.addEventListener('drop', e => {
+                e.preventDefault();
+                dropzone.style.borderColor = 'rgba(255,255,255,0.1)';
+                if (e.dataTransfer.files.length) setTurnitinFile(e.dataTransfer.files[0]);
+            });
+            input.addEventListener('change', () => {
+                if (input.files.length) setTurnitinFile(input.files[0]);
+            });
+        }
+
+        function setTurnitinFile(file) {
+            const allowed = ['.pdf', '.doc', '.docx'];
+            const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
+            if (!allowed.includes(ext)) {
+                showToast('error', 'Only PDF and Word documents are accepted');
+                return;
+            }
+            if (file.size > 20 * 1024 * 1024) {
+                showToast('error', 'File is too large (max 20MB)');
+                return;
+            }
+
+            turnitinSelectedFile = file;
+            document.getElementById('turnitinSelectedFile').innerHTML = `
+                <div class="uploaded-file">
+                    <i class="fas fa-file-alt"></i>
+                    <span>${file.name}</span>
+                    <i class="fas fa-times remove" onclick="clearTurnitinFile()"></i>
+                </div>
+            `;
+            updateTurnitinSubmitButton();
+        }
+
+        function clearTurnitinFile() {
+            turnitinSelectedFile = null;
+            document.getElementById('turnitinSelectedFile').innerHTML = '';
+            document.getElementById('turnitinFileInput').value = '';
+            updateTurnitinSubmitButton();
+        }
+
+        function updateTurnitinSubmitButton() {
+            const btn = document.getElementById('turnitinSubmitBtn');
+            const label = document.getElementById('turnitinSubmitLabel');
+            if (!btn || !label) return;
+
+            if (!turnitinSelectedFile) {
+                btn.disabled = true;
+                label.textContent = 'Select a file first';
+                return;
+            }
+            btn.disabled = false;
+            if (turnitinPricing.walletCredits > 0) {
+                label.textContent = 'Use 1 Free Check';
+            } else {
+                const amount = turnitinCurrency === 'KES' ? turnitinPricing.kes : turnitinPricing.usd;
+                const symbol = turnitinCurrency === 'KES' ? 'KSh' : '$';
+                label.textContent = `Check Document — ${symbol}${amount}`;
+            }
+        }
+
+        async function submitTurnitinCheck() {
+            if (!turnitinSelectedFile) return;
+            const btn = document.getElementById('turnitinSubmitBtn');
+            btn.disabled = true;
+
+            if (turnitinPricing.walletCredits > 0) {
+                await performTurnitinSubmit({ useWallet: true });
+                return;
+            }
+
+            if (!paystackPublicKey) {
+                showToast('error', 'Payment system not configured. Please contact support.');
+                btn.disabled = false;
+                return;
+            }
+
+            const amount = turnitinCurrency === 'KES' ? turnitinPricing.kes : turnitinPricing.usd;
+            const email = currentMemberData?.email;
+            const ref = 'TC-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+
+            const paystackPop = new PaystackPop();
+            try {
+                await paystackPop.checkout({
+                    key: paystackPublicKey,
+                    email: email,
+                    amount: Math.round(amount * 100),
+                    currency: turnitinCurrency,
+                    ref: ref,
+                    metadata: {
+                        custom_fields: [
+                            { display_name: 'Payment Type', variable_name: 'payment_type', value: 'turnitin_check' }
+                        ]
+                    },
+                    onSuccess: function(response) {
+                        performTurnitinSubmit({ paystackReference: response.reference });
+                    },
+                    onCancel: function() {
+                        btn.disabled = false;
+                        updateTurnitinSubmitButton();
+                        showToast('warning', 'Payment cancelled');
+                    }
+                });
+            } catch (error) {
+                btn.disabled = false;
+                updateTurnitinSubmitButton();
+                showToast('error', 'Payment initialization failed. Please try again.');
+                console.error('Paystack error:', error);
+            }
+        }
+
+        async function performTurnitinSubmit(extra) {
+            const token = localStorage.getItem('memberToken');
+            const formData = new FormData();
+            formData.append('file', turnitinSelectedFile);
+            if (extra.useWallet) formData.append('useWallet', 'true');
+            if (extra.paystackReference) formData.append('paystackReference', extra.paystackReference);
+
+            document.querySelector('#turnitinMain .file-upload').style.display = 'none';
+            document.getElementById('turnitinSelectedFile').style.display = 'none';
+            document.getElementById('turnitinSubmitBtn').style.display = 'none';
+            const scanning = document.getElementById('turnitinScanningState');
+            const statusEl = document.getElementById('turnitinScanStatus');
+            scanning.style.display = 'block';
+            statusEl.textContent = 'Uploading your document…';
+
+            try {
+                const res = await fetch('/api/turnitin/submit', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` },
+                    body: formData
+                });
+                const data = await res.json();
+
+                if (!res.ok || !data.success) {
+                    showToast('error', data.error || 'Something went wrong. Please try again.');
+                    resetTurnitinUploadUI();
+                    loadTurnitinPricing();
+                    return;
+                }
+
+                statusEl.textContent = 'Submitted — awaiting scan…';
+                showToast('success', "Document submitted! We'll email you when it's ready.");
+                clearTurnitinFile();
+                loadTurnitinPricing();
+                loadTurnitinReports();
+                startTurnitinPolling();
+
+                setTimeout(resetTurnitinUploadUI, 2500);
+            } catch (error) {
+                console.error('Turnitin submit error:', error);
+                showToast('error', 'Failed to submit document. Please try again.');
+                resetTurnitinUploadUI();
+            }
+        }
+
+        function resetTurnitinUploadUI() {
+            document.querySelector('#turnitinMain .file-upload').style.display = 'block';
+            document.getElementById('turnitinSelectedFile').style.display = 'block';
+            document.getElementById('turnitinSubmitBtn').style.display = 'block';
+            document.getElementById('turnitinScanningState').style.display = 'none';
+            updateTurnitinSubmitButton();
+        }
+
+        async function loadTurnitinReports() {
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/turnitin/my-reports', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) return;
+                const data = await res.json();
+                renderTurnitinReports(data.reports || []);
+            } catch (error) {
+                console.error('Failed to load reports:', error);
+            }
+        }
+
+        function renderTurnitinReports(reports) {
+            const body = document.getElementById('turnitinReportsBody');
+            if (!body) return;
+
+            if (reports.length === 0) {
+                body.innerHTML = `<p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; text-align: center; padding: 1rem 0;">No checks yet — upload a document above to get started.</p>`;
+                return;
+            }
+
+            const statusLabels = {
+                processing: { text: 'Processing', cls: 'in-progress' },
+                completed: { text: 'Ready', cls: 'completed' },
+                refunded: { text: 'Refunded to wallet', cls: 'pending' },
+                failed: { text: 'Refunded to wallet', cls: 'pending' }
+            };
+
+            body.innerHTML = reports.map(r => {
+                const status = statusLabels[r.status] || { text: r.status, cls: '' };
+                const date = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+                const scoreNote = r.status === 'completed' && r.similarity_score != null ? ` · ${r.similarity_score}% similarity` : '';
+                const action = r.status === 'completed'
+                    ? `<a href="/api/turnitin/download/${r.id}" target="_blank" class="btn btn-secondary" style="padding: 0.4rem 0.9rem; font-size: 0.8rem;"><i class="fas fa-download"></i> Download</a>`
+                    : `<span class="status-badge ${status.cls}">${status.text}</span>`;
+                return `
+                    <div class="turnitin-report-row">
+                        <div class="turnitin-report-info">
+                            <div class="turnitin-report-filename">${r.original_filename}</div>
+                            <div class="turnitin-report-date">${date}${scoreNote}</div>
+                        </div>
+                        <div class="turnitin-report-action">${action}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function startTurnitinPolling() {
+            if (turnitinPollTimer) clearInterval(turnitinPollTimer);
+            let ticks = 0;
+            turnitinPollTimer = setInterval(async () => {
+                ticks++;
+                try {
+                    const token = localStorage.getItem('memberToken');
+                    const res = await fetch('/api/turnitin/my-reports', { headers: { 'Authorization': `Bearer ${token}` } });
+                    const data = await res.json();
+                    renderTurnitinReports(data.reports || []);
+                    const stillProcessing = (data.reports || []).some(r => r.status === 'processing');
+                    if (!stillProcessing || ticks > 24) {
+                        clearInterval(turnitinPollTimer);
+                        turnitinPollTimer = null;
+                    }
+                } catch (error) {
+                    console.error('Turnitin polling error:', error);
+                }
+            }, 5000);
         }
 
         // Package selection
@@ -3983,9 +4450,11 @@
         if (memberToken) {
             loadMemberProfile();
             setupInquiryChat();
+            setupTurnitinTab();
         } else {
             // Setup for non-logged in users
             setupInquiryChat();
+            setupTurnitinTab();
         }
         
         // Setup inquiry chat for logged-in members

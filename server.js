@@ -23,11 +23,18 @@ const reportsRoutes = require('./routes/reports');
 const aiPricingRoutes = require('./routes/ai-pricing');
 const clientChatRoutes = require('./routes/client-chat');
 const paystackRoutes = require('./routes/paystack');
+const turnitinRoutes = require('./routes/turnitin');
+const quickpayRoutes = require('./routes/quickpay');
 
 const app = express();
 
 // Middleware
 app.use(cors());
+
+// Writenix webhook needs the untouched raw body for HMAC signature verification,
+// so it must be mounted BEFORE the global express.json() parser below.
+app.post('/api/writenix-webhook', express.raw({ type: 'application/json' }), require('./routes/writenix-webhook'));
+
 app.use(express.json());
 
 // Serve landing page at root (BEFORE static middleware)
@@ -83,6 +90,8 @@ app.use('/api/reports', reportsRoutes);
 app.use('/api/pricing', aiPricingRoutes);
 app.use('/api/client-chat', clientChatRoutes);
 app.use('/api/paystack', paystackRoutes);
+app.use('/api/turnitin', turnitinRoutes);
+app.use('/api/quickpay', quickpayRoutes);
 
 // Serve frontend for all other routes (SPA fallback)
 app.get('*', (req, res) => {

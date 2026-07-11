@@ -159,12 +159,14 @@
         .quickpay-content {
             background: rgba(20, 20, 30, 0.95);
             border-radius: 16px;
-            max-width: 360px;
+            max-width: 420px;
             width: 100%;
             padding: 1.5rem;
             border: 1px solid rgba(255, 255, 255, 0.08);
             position: relative;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            max-height: 90vh;
+            overflow-y: auto;
         }
         
         .quickpay-close {
@@ -305,7 +307,175 @@
             color: #10b981;
             margin-right: 0.3rem;
         }
-        
+
+        /* Quick Pay: Client Code gate + agreement step */
+        .quickpay-explainer {
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: rgba(255, 255, 255, 0.55);
+            margin-bottom: 1rem;
+        }
+
+        .quickpay-explainer a,
+        .quickpay-code-error a {
+            color: #10b981;
+            font-weight: 600;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .quickpay-explainer a:hover,
+        .quickpay-code-error a:hover {
+            text-decoration: underline;
+        }
+
+        .quickpay-code-error {
+            font-size: 0.78rem;
+            color: #f87171;
+            background: rgba(239, 68, 68, 0.08);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 8px;
+            padding: 0.6rem 0.75rem;
+            margin: -0.4rem 0 0.75rem;
+            line-height: 1.5;
+        }
+
+        .quickpay-signup-panel {
+            margin-top: 1.25rem;
+            padding-top: 1.1rem;
+            border-top: 1px dashed rgba(255, 255, 255, 0.1);
+        }
+
+        .quickpay-divider {
+            text-align: center;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: rgba(255, 255, 255, 0.35);
+            margin-bottom: 0.85rem;
+        }
+
+        .quickpay-signup-result {
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: #6ee7b7;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .quickpay-submit.secondary {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #34d399;
+            box-shadow: none;
+            text-decoration: none;
+        }
+
+        .quickpay-submit.secondary:hover {
+            background: rgba(16, 185, 129, 0.18);
+            box-shadow: none;
+        }
+
+        .quickpay-identity {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 0.85rem 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .quickpay-identity-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 1rem;
+            font-size: 0.8rem;
+            padding: 0.3rem 0;
+        }
+
+        .quickpay-identity-row span {
+            color: rgba(255, 255, 255, 0.45);
+        }
+
+        .quickpay-identity-row strong {
+            color: white;
+            font-weight: 600;
+            text-align: right;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .quickpay-change-code {
+            background: none;
+            border: none;
+            color: #10b981;
+            font-size: 0.72rem;
+            cursor: pointer;
+            padding: 0.4rem 0 0;
+            text-decoration: underline;
+        }
+
+        .quickpay-agreement {
+            font-size: 0.76rem;
+            line-height: 1.7;
+            color: rgba(255, 255, 255, 0.6);
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 2px solid #10b981;
+            border-radius: 4px;
+            padding: 0.85rem 1rem;
+            margin: 1rem 0;
+        }
+
+        .quickpay-agreement strong {
+            color: rgba(255, 255, 255, 0.85);
+        }
+
+        .quickpay-agree-check {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.6);
+            cursor: pointer;
+            margin-bottom: 0.25rem;
+            line-height: 1.4;
+        }
+
+        .quickpay-agree-check input {
+            margin-top: 0.15rem;
+            accent-color: #10b981;
+            width: 15px;
+            height: 15px;
+            flex-shrink: 0;
+        }
+
+        .quickpay-success {
+            text-align: center;
+            padding: 1rem 0 0.5rem;
+        }
+
+        .quickpay-success i {
+            font-size: 2.5rem;
+            color: #10b981;
+            margin-bottom: 0.75rem;
+            display: block;
+        }
+
+        .quickpay-success h3 {
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .quickpay-success p {
+            font-size: 0.82rem;
+            color: rgba(255, 255, 255, 0.55);
+            line-height: 1.6;
+            margin-bottom: 1.25rem;
+        }
+
         .quickpay-toast {
             position: fixed;
             bottom: 2rem;
@@ -349,13 +519,12 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-            padding: 0.5rem 1rem;
-            background: rgba(99, 102, 241, 0.15);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 50px;
+            padding: 0 0 0.35rem 0;
             font-size: 0.8rem;
             color: #a5b4fc;
             margin-bottom: 1.5rem;
+            border-bottom: 1.5px solid rgba(99, 102, 241, 0.5);
+            letter-spacing: 0.3px;
         }
 
         .hero-badge i { color: #6366f1; }
@@ -1417,7 +1586,7 @@
             <div class="why-card">
                 <div class="why-icon"><i class="fas fa-dollar-sign"></i></div>
                 <h3>Affordable Pricing</h3>
-                <p>Student-friendly rates starting at just $7/page. Quality work doesn't have to break the bank.</p>
+                <p>Student-friendly rates starting at <span id="pricingText">just $7/page</span>. Quality work doesn't have to break the bank.</p>
             </div>
             <div class="why-card">
                 <div class="why-icon"><i class="fas fa-lock"></i></div>
@@ -1595,30 +1764,86 @@
                 <h2>Quick Pay</h2>
                 <p>Pay the agreed amount directly</p>
             </div>
-            <form class="quickpay-form" id="quickPayForm" onsubmit="handleQuickPay(event)">
+
+            <!-- Step A: Client Code gate -->
+            <div id="qpStepCode" class="quickpay-form">
+                <p class="quickpay-explainer">
+                    To keep Quick Pay safe for everyone, every payment needs a verified <strong>Client Code</strong>.
+                    Already have one? Enter it below. New here? <a onclick="qpToggleSignup()">Sign up</a> to get one in seconds.
+                </p>
+
                 <div class="form-group">
-                    <label for="qpName">Your Name *</label>
-                    <input type="text" id="qpName" placeholder="Enter your full name" required>
+                    <label for="qpCodeInput">Your Client Code</label>
+                    <input type="text" id="qpCodeInput" placeholder="e.g. HP-7F3K2Q" autocomplete="off" style="text-transform: uppercase;">
                 </div>
-                <div class="form-group">
-                    <label for="qpEmail">Email Address *</label>
-                    <input type="email" id="qpEmail" placeholder="your@email.com" required>
+                <div id="qpCodeError" class="quickpay-code-error" style="display: none;"></div>
+                <button type="button" class="quickpay-submit" id="qpValidateBtn" onclick="qpValidateCode()">
+                    <i class="fas fa-arrow-right"></i> Continue
+                </button>
+
+                <!-- Inline sign-up -->
+                <div id="qpSignupPanel" class="quickpay-signup-panel" style="display: none;">
+                    <div class="quickpay-divider">Get a Client Code</div>
+                    <div class="form-group">
+                        <label for="qpSignupName">Your Name *</label>
+                        <input type="text" id="qpSignupName" placeholder="Enter your full name">
+                    </div>
+                    <div class="form-group">
+                        <label for="qpSignupEmail">Email Address *</label>
+                        <input type="email" id="qpSignupEmail" placeholder="your@email.com">
+                    </div>
+                    <button type="button" class="quickpay-submit secondary" id="qpSignupBtn" onclick="qpSubmitSignup()">
+                        <i class="fas fa-paper-plane"></i> Get My Client Code
+                    </button>
+                    <div id="qpSignupResult" class="quickpay-signup-result" style="display: none;"></div>
                 </div>
+            </div>
+
+            <!-- Step B: Payment + Agreement -->
+            <form class="quickpay-form" id="qpStepPay" style="display: none;" onsubmit="handleQuickPay(event)">
+                <div class="quickpay-identity">
+                    <div class="quickpay-identity-row"><span>Name</span><strong id="qpIdentityName"></strong></div>
+                    <div class="quickpay-identity-row"><span>Email</span><strong id="qpIdentityEmail"></strong></div>
+                    <div class="quickpay-identity-row"><span>Client Code</span><strong id="qpIdentityCode"></strong></div>
+                    <button type="button" class="quickpay-change-code" onclick="qpBackToCode()">Not you? Use a different code</button>
+                </div>
+
                 <div class="form-group">
-                    <label for="qpDescription">What is this payment for?</label>
-                    <input type="text" id="qpDescription" placeholder="e.g. Essay on Climate Change">
+                    <label for="qpDescription">What is this payment for? *</label>
+                    <input type="text" id="qpDescription" placeholder="e.g. Essay on Climate Change" required oninput="qpUpdateAgreement()">
                 </div>
                 <div class="form-group">
                     <label for="qpAmount">Amount to Pay *</label>
                     <div class="quickpay-amount-input">
                         <span class="currency" id="qpCurrency">₦</span>
-                        <input type="number" id="qpAmount" placeholder="0.00" min="1" step="0.01" required>
+                        <input type="number" id="qpAmount" placeholder="0.00" min="1" step="0.01" required oninput="qpUpdateAgreement()">
                     </div>
                 </div>
-                <button type="submit" class="quickpay-submit" id="qpSubmitBtn">
-                    <i class="fas fa-lock"></i> Pay Securely
+
+                <div class="quickpay-agreement" id="qpAgreementText">
+                    Fill in the fields above to preview your agreement.
+                </div>
+
+                <label class="quickpay-agree-check">
+                    <input type="checkbox" id="qpAgreeCheckbox" onchange="qpToggleAgree()">
+                    <span>I have read and agree to the terms above</span>
+                </label>
+
+                <button type="submit" class="quickpay-submit" id="qpSubmitBtn" disabled>
+                    <i class="fas fa-lock"></i> Proceed to Pay
                 </button>
             </form>
+
+            <!-- Success state -->
+            <div id="qpStepSuccess" class="quickpay-success" style="display: none;">
+                <i class="fas fa-circle-check"></i>
+                <h3>Payment Successful</h3>
+                <p id="qpSuccessMessage"></p>
+                <a href="javascript:void(0)" id="qpDownloadInvoiceLink" class="quickpay-submit secondary" target="_blank">
+                    <i class="fas fa-file-invoice"></i> Download Invoice
+                </a>
+            </div>
+
             <div class="quickpay-info">
                 <i class="fas fa-shield-alt"></i> Secured by Paystack. Supports Card, Bank, USSD, Apple Pay & more.
             </div>
@@ -1648,72 +1873,96 @@
         document.getElementById('floatingCompleted').textContent = monthCompleted + ' Papers';
         document.getElementById('statSatisfaction').textContent = satisfaction + '%';
 
-        // Testimonials data
+        // Testimonials data — Default (non-Ivy, realistic universities)
         const testimonials = [
             {
-                text: "I was drowning in assignments and HomeworkPal saved my semester. The quality exceeded my expectations and it was delivered 2 days early!",
-                name: "Sarah M.",
-                role: "Business Major, UCLA",
-                avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop"
+                text: "I was drowning in assignments and HomeworkPal saved my semester. The quality exceeded my expectations and it was delivered 2 days early!"
             },
             {
                 text: "Best decision I made this year. The writer understood exactly what I needed and the research paper got me an A. Will definitely use again!",
-                name: "James K.",
-                role: "Engineering Student, MIT",
-                avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop"
+                role: "Student, University of Michigan"
             },
             {
                 text: "Affordable, fast, and high quality. What more could you ask for? The support team was super helpful and responsive too.",
-                name: "Emily R.",
-                role: "Psychology Student, NYU",
-                avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop"
+                role: "Student, Arizona State University"
             },
             {
                 text: "The Turnitin report they provided was exactly what I needed. Zero plagiarism and passed AI detection. Absolutely impressed!",
-                name: "Michael T.",
-                role: "Medical Student, Johns Hopkins",
-                avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop"
+                role: "Student, University of Florida"
             },
             {
                 text: "I've used other services before but HomeworkPal is on another level. Professional, timely, and the quality is consistently excellent.",
-                name: "Jessica L.",
-                role: "Law Student, Harvard",
-                avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop"
+                role: "Student, University of Washington"
             },
             {
                 text: "My dissertation was a nightmare until I found these guys. They helped me structure everything perfectly. Got it approved first try!",
-                name: "David W.",
-                role: "PhD Candidate, Stanford",
-                avatar: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
+                role: "Student, University of Illinois Urbana-Champaign"
             },
             {
                 text: "The writer assigned to my case study was clearly an expert in the field. Detailed analysis and perfect citations. 10/10!",
-                name: "Amanda C.",
-                role: "MBA Student, Wharton",
-                avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop"
+                role: "Student, UNC Chapel Hill"
             },
             {
                 text: "Needed an urgent paper in 24 hours and they delivered! Not just on time but the quality was amazing. Lifesaver!",
-                name: "Ryan P.",
-                role: "Computer Science, Berkeley",
-                avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&h=100&fit=crop"
+                role: "Student, UC Davis"
             },
             {
                 text: "I was skeptical at first but after my first order, I'm a believer. Great communication throughout the process.",
-                name: "Sophie H.",
-                role: "Nursing Student, Columbia",
-                avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=100&h=100&fit=crop"
+                role: "Student, University of Wisconsin-Madison"
             },
             {
                 text: "Fair prices, excellent work, and they actually follow the instructions. That's all I ever wanted. Found my go-to service!",
-                name: "Chris B.",
-                role: "Economics Major, Princeton",
-                avatar: "https://images.unsplash.com/photo-1463453091185-61582044d556?w=100&h=100&fit=crop"
+                role: "Student, Ohio State University"
             }
         ];
 
-        // Create testimonial HTML
+        // Testimonials data — Kenyan (Kenyan universities, Masters/PhD level)
+        const kenyanTestimonials = [
+            {
+                text: "I was drowning in assignments and HomeworkPal saved my semester. The quality exceeded my expectations and it was delivered 2 days early!",
+                role: "Masters Student, University of Nairobi"
+            },
+            {
+                text: "Best decision I made this year. The writer understood exactly what I needed and the research paper got me an A. Will definitely use again!",
+                role: "PhD Researcher, Strathmore University"
+            },
+            {
+                text: "Affordable, fast, and high quality. What more could you ask for? The support team was super helpful and responsive too.",
+                role: "Masters Candidate, Daystar University"
+            },
+            {
+                text: "The Turnitin report they provided was exactly what I needed. Zero plagiarism and passed AI detection. Absolutely impressed!",
+                role: "PhD Student, Riara University"
+            },
+            {
+                text: "I've used other services before but HomeworkPal is on another level. Professional, timely, and the quality is consistently excellent.",
+                role: "Masters Student, Pioneer University"
+            },
+            {
+                text: "My dissertation was a nightmare until I found these guys. They helped me structure everything perfectly. Got it approved first try!",
+                role: "PhD Candidate, University of Nairobi"
+            },
+            {
+                text: "The writer assigned to my case study was clearly an expert in the field. Detailed analysis and perfect citations. 10/10!",
+                role: "Masters Student, Strathmore University"
+            },
+            {
+                text: "Needed an urgent paper in 24 hours and they delivered! Not just on time but the quality was amazing. Lifesaver!",
+                role: "PhD Researcher, Daystar University"
+            },
+            {
+                text: "I was skeptical at first but after my first order, I'm a believer. Great communication throughout the process.",
+                role: "Masters Candidate, Riara University"
+            },
+            {
+                text: "Fair prices, excellent work, and they actually follow the instructions. That's all I ever wanted. Found my go-to service!",
+                role: "PhD Student, University of Nairobi"
+            }
+        ];
+
+        // Create testimonial HTML (Anonymous, no avatar images)
         function createTestimonialHTML(t) {
+            const role = t.role || 'Verified Student';
             return `
                 <div class="testimonial">
                     <div class="testimonial-stars">
@@ -1725,10 +1974,12 @@
                     </div>
                     <p class="testimonial-text">"${t.text}"</p>
                     <div class="testimonial-author">
-                        <img src="${t.avatar}" alt="${t.name}" class="testimonial-avatar">
+                        <div class="testimonial-avatar" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 1.1rem;">
+                            <i class="fas fa-user"></i>
+                        </div>
                         <div>
-                            <div class="testimonial-name">${t.name}</div>
-                            <div class="testimonial-role">${t.role}</div>
+                            <div class="testimonial-name">Anonymous</div>
+                            <div class="testimonial-role">${role}</div>
                         </div>
                     </div>
                 </div>
@@ -1736,9 +1987,15 @@
         }
 
         // Populate and duplicate testimonials for infinite scroll
-        const track = document.getElementById('testimonialsTrack');
-        const testimonialsHTML = testimonials.map(createTestimonialHTML).join('');
-        track.innerHTML = testimonialsHTML + testimonialsHTML; // Duplicate for seamless loop
+        let activeTestimonials = testimonials; // Default — may switch for Kenya
+
+        function renderTestimonials() {
+            const track = document.getElementById('testimonialsTrack');
+            const html = activeTestimonials.map(createTestimonialHTML).join('');
+            track.innerHTML = html + html; // Duplicate for seamless loop
+        }
+
+        renderTestimonials();
 
         // Slow increment animation for stats (optional subtle effect)
         let currentPapers = baseCompleted;
@@ -1749,6 +2006,26 @@
                 document.getElementById('statPapers').textContent = currentPapers.toLocaleString();
             }
         }, 8000);
+
+        // ============ Geo-IP Detection ============
+        // Detect country and swap testimonials + pricing for Kenyan visitors
+        (function detectLocation() {
+            fetch('https://ip-api.com/json/?fields=status,countryCode')
+                .then(r => r.json())
+                .then(data => {
+                    if (data.status === 'success' && data.countryCode === 'KE') {
+                        // Swap to Kenyan testimonials
+                        activeTestimonials = kenyanTestimonials;
+                        renderTestimonials();
+
+                        // Swap pricing to KES
+                        document.getElementById('pricingText').innerHTML = 'KES 250 - 350/page';
+                    }
+                })
+                .catch(() => {
+                    // Silently fall back to default testimonials/pricing
+                });
+        })();
 
         // ============ PWA Install Prompt ============
         let deferredPrompt;
@@ -2055,7 +2332,11 @@
             document.body.style.overflow = '';
         }
 
+        let qpVerifiedClient = null; // { name, email, clientCode }
+        let qpCurrentInvoiceNumber = null;
+
         function openQuickPay() {
+            qpResetModal();
             document.getElementById('quickPayModal').classList.add('active');
             document.body.style.overflow = 'hidden';
         }
@@ -2063,6 +2344,26 @@
         function closeQuickPay() {
             document.getElementById('quickPayModal').classList.remove('active');
             document.body.style.overflow = '';
+        }
+
+        function qpResetModal() {
+            qpVerifiedClient = null;
+            qpCurrentInvoiceNumber = null;
+            document.getElementById('qpStepCode').style.display = 'block';
+            document.getElementById('qpStepPay').style.display = 'none';
+            document.getElementById('qpStepSuccess').style.display = 'none';
+            document.getElementById('qpSignupPanel').style.display = 'none';
+            document.getElementById('qpCodeError').style.display = 'none';
+            document.getElementById('qpSignupResult').style.display = 'none';
+            document.getElementById('qpCodeInput').value = '';
+            document.getElementById('qpSignupName').value = '';
+            document.getElementById('qpSignupEmail').value = '';
+            document.getElementById('qpDescription').value = '';
+            document.getElementById('qpAmount').value = '';
+            document.getElementById('qpAgreeCheckbox').checked = false;
+            document.getElementById('qpSubmitBtn').disabled = true;
+            const btn = document.getElementById('qpSubmitBtn');
+            btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay';
         }
 
         // Close Quick Pay modal on outside click
@@ -2081,98 +2382,247 @@
             }, 6000);
         }
 
+        // ---- Step A: Client Code gate ----
+
+        function qpToggleSignup() {
+            const panel = document.getElementById('qpSignupPanel');
+            panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+        }
+
+        async function qpSubmitSignup() {
+            const name = document.getElementById('qpSignupName').value.trim();
+            const email = document.getElementById('qpSignupEmail').value.trim();
+            const resultBox = document.getElementById('qpSignupResult');
+
+            if (!name || !email) {
+                resultBox.style.display = 'block';
+                resultBox.textContent = 'Please enter your name and email.';
+                return;
+            }
+
+            const btn = document.getElementById('qpSignupBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+
+            try {
+                const res = await fetch('/api/quickpay/signup', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email })
+                });
+                const data = await res.json();
+
+                resultBox.style.display = 'block';
+                if (data.success) {
+                    if (data.clientCode) {
+                        resultBox.innerHTML = `Your Client Code is <strong>${data.clientCode}</strong>. We've filled it in below — hit Continue.`;
+                        document.getElementById('qpCodeInput').value = data.clientCode;
+                    } else {
+                        resultBox.innerHTML = data.message;
+                    }
+                } else {
+                    resultBox.innerHTML = data.error || 'Signup failed. Please try again.';
+                }
+            } catch (error) {
+                console.error('QuickPay signup error:', error);
+                resultBox.style.display = 'block';
+                resultBox.innerHTML = 'Signup failed. Please try again.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Get My Client Code';
+            }
+        }
+
+        async function qpValidateCode() {
+            const code = document.getElementById('qpCodeInput').value.trim().toUpperCase();
+            const errorBox = document.getElementById('qpCodeError');
+            errorBox.style.display = 'none';
+
+            if (!code) {
+                errorBox.innerHTML = 'Please enter your Client Code.';
+                errorBox.style.display = 'block';
+                return;
+            }
+
+            const btn = document.getElementById('qpValidateBtn');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking...';
+
+            try {
+                const res = await fetch(`/api/quickpay/code/${encodeURIComponent(code)}`);
+                const data = await res.json();
+
+                if (!data.found) {
+                    errorBox.innerHTML = `We can't find you. <a onclick="qpToggleSignup()">Sign up</a> to get a Client Code.`;
+                    errorBox.style.display = 'block';
+                    return;
+                }
+
+                qpVerifiedClient = { name: data.name, email: data.email, clientCode: data.clientCode };
+                document.getElementById('qpIdentityName').textContent = data.name;
+                document.getElementById('qpIdentityEmail').textContent = data.email;
+                document.getElementById('qpIdentityCode').textContent = data.clientCode;
+
+                document.getElementById('qpStepCode').style.display = 'none';
+                document.getElementById('qpStepPay').style.display = 'block';
+                qpUpdateAgreement();
+            } catch (error) {
+                console.error('Code validation error:', error);
+                errorBox.innerHTML = 'Something went wrong. Please try again.';
+                errorBox.style.display = 'block';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-arrow-right"></i> Continue';
+            }
+        }
+
+        function qpBackToCode() {
+            qpVerifiedClient = null;
+            document.getElementById('qpStepPay').style.display = 'none';
+            document.getElementById('qpStepCode').style.display = 'block';
+            document.getElementById('qpAgreeCheckbox').checked = false;
+            document.getElementById('qpSubmitBtn').disabled = true;
+        }
+
+        // ---- Step B: Payment + Agreement ----
+
+        function qpUpdateAgreement() {
+            const box = document.getElementById('qpAgreementText');
+            if (!qpVerifiedClient) {
+                box.textContent = 'Fill in the fields above to preview your agreement.';
+                return;
+            }
+            const workPaidFor = document.getElementById('qpDescription').value.trim() || '[work not yet specified]';
+            const amountVal = document.getElementById('qpAmount').value;
+            const amountText = amountVal ? parseFloat(amountVal).toFixed(2) : '0.00';
+            const dateText = new Date().toLocaleString('en-US', { dateStyle: 'long', timeStyle: 'short' });
+
+            box.innerHTML = `This confirms that <strong>${qpVerifiedClient.name}</strong> (Client Code <strong>${qpVerifiedClient.clientCode}</strong>, ${qpVerifiedClient.email}) authorizes payment of <strong>${qpPaystackCurrency} ${amountText}</strong> to HomeworkPal for: "<strong>${workPaidFor}</strong>". This agreement is made on ${dateText} and, together with the invoice issued at the time of payment, constitutes the agreed record of this transaction for the purposes of resolving any future dispute. Client Code ${qpVerifiedClient.clientCode} serves as the identifying signature of the paying party.`;
+        }
+
+        function qpToggleAgree() {
+            document.getElementById('qpSubmitBtn').disabled = !document.getElementById('qpAgreeCheckbox').checked;
+        }
+
         async function handleQuickPay(e) {
             e.preventDefault();
-            
+
+            if (!qpVerifiedClient) {
+                showQuickPayToast('error', 'Please verify your Client Code first.');
+                return;
+            }
             if (!qpPaystackPublicKey) {
                 showQuickPayToast('error', 'Payment system not configured. Please contact support.');
                 return;
             }
+            if (!document.getElementById('qpAgreeCheckbox').checked) {
+                showQuickPayToast('error', 'Please agree to the terms before proceeding.');
+                return;
+            }
 
-            const name = document.getElementById('qpName').value.trim();
-            const email = document.getElementById('qpEmail').value.trim();
-            const description = document.getElementById('qpDescription').value.trim() || 'Quick Payment';
+            const workPaidFor = document.getElementById('qpDescription').value.trim();
             const amount = parseFloat(document.getElementById('qpAmount').value);
 
-            if (!name || !email || !amount || amount <= 0) {
+            if (!workPaidFor || !amount || amount <= 0) {
                 showQuickPayToast('error', 'Please fill all required fields.');
                 return;
             }
 
-            // Disable button
             const btn = document.getElementById('qpSubmitBtn');
             btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending invoice...';
+
+            // Generate + email the invoice BEFORE any payment happens, regardless of whether payment completes
+            let invoiceNumber;
+            try {
+                const invoiceRes = await fetch('/api/quickpay/invoice', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        clientCode: qpVerifiedClient.clientCode,
+                        workPaidFor,
+                        amount,
+                        currency: qpPaystackCurrency,
+                        clientLocalTime: new Date().toString(),
+                        clientTimezone: Intl.DateTimeFormat().resolvedOptions().timeZone
+                    })
+                });
+                const invoiceData = await invoiceRes.json();
+                if (!invoiceData.success) throw new Error(invoiceData.error || 'Failed to generate invoice');
+                invoiceNumber = invoiceData.invoiceNumber;
+            } catch (error) {
+                console.error('QuickPay invoice error:', error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay';
+                showQuickPayToast('error', 'Could not generate your invoice. Please try again.');
+                return;
+            }
+
+            qpCurrentInvoiceNumber = invoiceNumber;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
 
-            // Generate reference
             const ref = 'QP-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
-
-            // Use Paystack v2 checkout() for Apple Pay support
             const paystackPop = new PaystackPop();
-            
+
             try {
                 await paystackPop.checkout({
                     key: qpPaystackPublicKey,
-                    email: email,
-                    amount: Math.round(amount * 100), // Convert to smallest unit
+                    email: qpVerifiedClient.email,
+                    amount: Math.round(amount * 100),
                     currency: qpPaystackCurrency,
                     ref: ref,
                     metadata: {
                         custom_fields: [
-                            { display_name: "Client Name", variable_name: "client_name", value: name },
-                            { display_name: "Description", variable_name: "description", value: description },
+                            { display_name: "Client Code", variable_name: "client_code", value: qpVerifiedClient.clientCode },
+                            { display_name: "Invoice", variable_name: "invoice_number", value: invoiceNumber },
                             { display_name: "Payment Type", variable_name: "payment_type", value: "quick_pay" }
                         ]
                     },
                     onSuccess: function(response) {
-                        // Verify payment
-                        verifyQuickPayment(response.reference, name, email, description, amount);
+                        qpFinalizePayment(response.reference, invoiceNumber, amount);
                     },
                     onCancel: function() {
                         btn.disabled = false;
-                        btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely';
-                        showQuickPayToast('error', 'Payment cancelled');
+                        btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay';
+                        showQuickPayToast('error', 'Payment cancelled. Your invoice was already emailed to you — you can complete payment anytime.');
                     }
                 });
             } catch (error) {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely';
+                btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay';
                 showQuickPayToast('error', 'Payment initialization failed');
                 console.error('Paystack error:', error);
             }
         }
 
-        async function verifyQuickPayment(reference, name, email, description, amount) {
+        async function qpFinalizePayment(reference, invoiceNumber, amount) {
             const btn = document.getElementById('qpSubmitBtn');
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verifying...';
 
             try {
-                const response = await fetch(`/api/paystack/verify/${reference}`);
-                const data = await response.json();
+                const paidRes = await fetch(`/api/quickpay/invoice/${invoiceNumber}/paid`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ paystackReference: reference })
+                });
+                const paidData = await paidRes.json();
 
-                if (data.success) {
-                    // Close modal and show success
-                    closeQuickPay();
-                    document.getElementById('quickPayForm').reset();
-                    
-                    // Show success message
-                    showQuickPayToast('success', `Payment of ${currencySymbols[qpPaystackCurrency]}${amount.toLocaleString()} successful! Reference: ${reference}`);
-                    
-                    // Optionally redirect to client portal
-                    setTimeout(() => {
-                        if (confirm('Payment successful! Would you like to submit an assignment now?')) {
-                            window.location.href = '/client';
-                        }
-                    }, 2000);
-                } else {
-                    showQuickPayToast('error', data.error || 'Payment verification failed');
+                if (!paidData.success) {
+                    throw new Error(paidData.error || 'Payment verification failed');
                 }
+
+                document.getElementById('qpStepPay').style.display = 'none';
+                document.getElementById('qpStepSuccess').style.display = 'block';
+                document.getElementById('qpSuccessMessage').textContent =
+                    `Payment of ${currencySymbols[qpPaystackCurrency] || qpPaystackCurrency}${amount.toLocaleString()} confirmed. Invoice #${invoiceNumber} has been emailed to you.`;
+                document.getElementById('qpDownloadInvoiceLink').href = `/api/quickpay/invoice/${invoiceNumber}/download`;
+
+                showQuickPayToast('success', 'Payment successful!');
             } catch (error) {
-                console.error('Verification error:', error);
-                showQuickPayToast('error', 'Payment verification failed. Please contact support with reference: ' + reference);
-            } finally {
+                console.error('QuickPay finalize error:', error);
+                showQuickPayToast('error', `Payment succeeded but we couldn't confirm it automatically. Reference: ${reference}. Contact valdaceai@gmail.com if this persists.`);
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-lock"></i> Pay Securely';
+                btn.innerHTML = '<i class="fas fa-lock"></i> Proceed to Pay';
             }
         }
     </script>
