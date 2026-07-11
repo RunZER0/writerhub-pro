@@ -311,72 +311,136 @@
             color: #000;
         }
 
-        /* Unified Pricing */
-        .unified-pricing {
-            max-width: 480px;
-            margin: 0 auto;
-            background: rgba(99, 102, 241, 0.05);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            border-radius: 20px;
-            padding: 2.5rem 2rem;
+        /* Unified Pricing — editorial layout, no bounding box/card */
+        .pricing-hero {
             text-align: center;
+            padding: 3rem 1rem 2rem;
+            position: relative;
         }
 
-        .unified-pricing-badge {
+        .pricing-hero::before {
+            content: '';
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 560px;
+            max-width: 90vw;
+            height: 320px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.16), transparent 70%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .pricing-eyebrow {
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            padding: 0.4rem 1rem;
+            padding: 0.35rem 0.9rem;
             border-radius: 999px;
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.1);
             color: #34d399;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 1.25rem;
-        }
-
-        .unified-pricing h2 {
-            font-size: 1.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .unified-price-range {
-            font-size: 2.5rem;
+            font-size: 0.72rem;
             font-weight: 700;
-            margin-bottom: 0.25rem;
-        }
-
-        .unified-price-range span {
-            font-size: 1rem;
-            font-weight: 500;
-            color: rgba(255,255,255,0.5);
-        }
-
-        .unified-pricing-note {
-            color: rgba(255,255,255,0.5);
-            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
             margin-bottom: 1.5rem;
         }
 
-        .unified-features {
-            list-style: none;
-            text-align: left;
-            margin-bottom: 2rem;
+        .pricing-hero-title {
+            font-size: 2.1rem;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 1.75rem;
         }
 
-        .unified-features li {
-            display: flex;
-            align-items: center;
-            gap: 0.75rem;
-            padding: 0.6rem 0;
-            color: rgba(255,255,255,0.7);
+        .pricing-hero-amount {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #10b981);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .pricing-hero-amount .unit {
+            display: block;
+            margin-top: 0.6rem;
+            font-size: 1rem;
+            font-weight: 500;
+            color: rgba(255, 255, 255, 0.4);
+            -webkit-text-fill-color: rgba(255, 255, 255, 0.4);
+        }
+
+        .pricing-hero-note {
+            color: rgba(255, 255, 255, 0.5);
             font-size: 0.9rem;
+            margin-bottom: 2.25rem;
         }
 
-        .unified-features li i {
-            color: #10b981;
+        .pricing-hero-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 1rem 2.5rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border: none;
+            border-radius: 999px;
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+        }
+
+        .pricing-hero-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(99, 102, 241, 0.4);
+        }
+
+        .pricing-divider {
+            max-width: 160px;
+            height: 1px;
+            margin: 0 auto 3rem;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+        }
+
+        .pricing-perks {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+            gap: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        .perk {
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .perk i {
+            font-size: 1.15rem;
+            color: #6366f1;
+            margin-top: 0.2rem;
+            flex-shrink: 0;
             width: 20px;
+        }
+
+        .perk strong {
+            display: block;
+            font-size: 0.92rem;
+            margin-bottom: 0.15rem;
+        }
+
+        .perk span {
+            display: block;
+            font-size: 0.78rem;
+            color: rgba(255, 255, 255, 0.45);
         }
 
         /* Form Section */
@@ -712,47 +776,15 @@
             cursor: pointer;
         }
 
-        /* Plagiarism/AI Check tab */
-        .turnitin-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 1rem;
-            margin-bottom: 1.5rem;
-            flex-wrap: wrap;
-        }
-        .turnitin-price-pill {
-            flex-shrink: 0;
-            padding: 0.5rem 1rem;
-            border-radius: 999px;
-            background: rgba(99, 102, 241, 0.12);
-            border: 1px solid rgba(99, 102, 241, 0.3);
-            color: #a5b4fc;
-            font-weight: 600;
-            font-size: 0.85rem;
-            white-space: nowrap;
-        }
-        .turnitin-wallet-pill {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            padding: 0.4rem 0.9rem;
-            border-radius: 999px;
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.3);
-            color: #34d399;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-        .turnitin-scanning {
+        /* Plagiarism/AI Check tab — "Scan Lab", no card design */
+        .scanlab-empty {
             text-align: center;
-            padding: 2.5rem 1rem;
+            padding: 4rem 1rem;
         }
-        .turnitin-scan-anim {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 1rem;
+        .scanlab-empty-icon {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 1.5rem;
             border-radius: 50%;
             background: rgba(99, 102, 241, 0.1);
             display: flex;
@@ -760,47 +792,258 @@
             justify-content: center;
             font-size: 1.75rem;
             color: #6366f1;
-            animation: turnitinPulse 1.6s ease-in-out infinite;
         }
-        @keyframes turnitinPulse {
-            0%, 100% { transform: scale(1); opacity: 1; }
-            50% { transform: scale(1.12); opacity: 0.6; }
-        }
-        .turnitin-scan-status {
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-        }
-        .turnitin-reports-list {
-            margin-top: 2rem;
-            border-top: 1px solid rgba(255,255,255,0.08);
-            padding-top: 1.5rem;
-        }
-        .turnitin-list-header {
-            font-size: 0.8rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            color: rgba(255,255,255,0.4);
-            margin-bottom: 0.75rem;
-        }
-        .turnitin-report-row {
+        .scanlab-empty h3 { font-size: 1.3rem; margin-bottom: 0.5rem; }
+        .scanlab-empty p { color: rgba(255,255,255,0.5); margin-bottom: 1.75rem; }
+
+        .scanlab-header {
             display: flex;
             align-items: center;
-            justify-content: space-between;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            padding: 0.5rem 0 2.25rem;
+        }
+        .scanlab-header-icon {
+            position: relative;
+            width: 64px;
+            height: 64px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.75rem;
+            color: #6366f1;
+        }
+        .scanlab-pulse-ring {
+            position: absolute;
+            inset: 0;
+            border-radius: 50%;
+            border: 1.5px solid rgba(99, 102, 241, 0.45);
+            animation: scanlabPulse 2.4s ease-out infinite;
+        }
+        .scanlab-pulse-ring.delay { animation-delay: 1.2s; }
+        @keyframes scanlabPulse {
+            0% { transform: scale(0.6); opacity: 0.8; }
+            100% { transform: scale(1.9); opacity: 0; }
+        }
+        .scanlab-header-text { flex: 1; min-width: 220px; }
+        .scanlab-header-text h2 { font-size: 1.4rem; margin-bottom: 0.35rem; }
+        .scanlab-header-text p { color: rgba(255,255,255,0.5); font-size: 0.88rem; }
+        .scanlab-tags {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+        .scanlab-tag {
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+        .scanlab-tag.price {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: #a5b4fc;
+        }
+        .scanlab-tag.wallet {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+        }
+
+        .scanlab-dropzone {
+            border: 2px dashed rgba(99, 102, 241, 0.35);
+            border-radius: 20px;
+            padding: 3rem 2rem;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s;
+        }
+        .scanlab-dropzone::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08), transparent 60%);
+            pointer-events: none;
+        }
+        .scanlab-dropzone:hover {
+            border-color: #6366f1;
+            background: rgba(99, 102, 241, 0.04);
+        }
+        .scanlab-dropzone-icon {
+            width: 56px;
+            height: 56px;
+            margin: 0 auto 1rem;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+            color: #a5b4fc;
+            animation: scanlabFloat 3s ease-in-out infinite;
+        }
+        @keyframes scanlabFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+        .scanlab-dropzone-title { font-weight: 700; margin-bottom: 0.3rem; }
+        .scanlab-dropzone-sub { color: rgba(255,255,255,0.4); font-size: 0.82rem; }
+
+        .scanlab-selected-file { margin-top: 1rem; min-height: 1px; }
+        .scanlab-file-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.6rem;
+            padding: 0.5rem 0.5rem 0.5rem 1rem;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.25);
+            font-size: 0.85rem;
+        }
+        .scanlab-file-chip i.file-icon { color: #34d399; }
+        .scanlab-file-chip .remove {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.06);
+            cursor: pointer;
+            font-size: 0.7rem;
+            border: none;
+            color: rgba(255,255,255,0.7);
+        }
+
+        .scanlab-submit {
+            width: 100%;
+            margin-top: 1.25rem;
+            padding: 1rem;
+            border: none;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.25s;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.25);
+        }
+        .scanlab-submit:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 14px 32px rgba(99, 102, 241, 0.35);
+        }
+        .scanlab-submit:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            box-shadow: none;
+            transform: none;
+        }
+
+        .scanlab-scanning { text-align: center; padding: 3rem 1rem; }
+        .scanlab-radar {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            margin: 0 auto 1.5rem;
+            border-radius: 50%;
+            background: rgba(99, 102, 241, 0.06);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: #6366f1;
+            overflow: hidden;
+        }
+        .scanlab-radar-sweep {
+            position: absolute;
+            inset: 0;
+            background: conic-gradient(from 0deg, transparent 0deg, rgba(99, 102, 241, 0.4) 50deg, transparent 100deg);
+            animation: scanlabSweep 1.8s linear infinite;
+        }
+        @keyframes scanlabSweep { to { transform: rotate(360deg); } }
+        .scanlab-scan-status { font-weight: 700; margin-bottom: 0.4rem; }
+        .scanlab-scanning p { color: rgba(255,255,255,0.4); font-size: 0.85rem; }
+
+        .scanlab-timeline {
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+        .scanlab-timeline-header {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: rgba(255,255,255,0.35);
+            margin-bottom: 1.25rem;
+        }
+        .timeline-row {
+            display: flex;
+            align-items: center;
             gap: 1rem;
             padding: 0.9rem 0;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+            position: relative;
         }
-        .turnitin-report-row:last-child { border-bottom: none; }
-        .turnitin-report-info { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; }
-        .turnitin-report-filename {
+        .timeline-row:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 5px;
+            top: 2rem;
+            bottom: -0.1rem;
+            width: 1px;
+            background: rgba(255,255,255,0.08);
+        }
+        .timeline-dot {
+            width: 11px;
+            height: 11px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            background: rgba(255,255,255,0.2);
+        }
+        .timeline-dot.processing {
+            background: #3b82f6;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+            animation: timelinePulse 1.5s ease-in-out infinite;
+        }
+        .timeline-dot.completed { background: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15); }
+        .timeline-dot.pending { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15); }
+        @keyframes timelinePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .timeline-content { flex: 1; min-width: 0; }
+        .timeline-filename {
             font-weight: 600;
             font-size: 0.9rem;
             overflow: hidden;
             text-overflow: ellipsis;
             white-space: nowrap;
         }
-        .turnitin-report-date { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
-        .turnitin-report-action { flex-shrink: 0; }
+        .timeline-meta { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
+        .timeline-action { flex-shrink: 0; }
+        .timeline-status-text { font-size: 0.78rem; font-weight: 700; }
+        .timeline-status-text.processing { color: #60a5fa; }
+        .timeline-status-text.pending { color: #fbbf24; }
+        .timeline-download {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.9rem;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
 
         /* Price Breakdown Box */
         .price-breakdown {
@@ -2369,21 +2612,42 @@
 
         <!-- Pricing Tab -->
         <div class="tab-content active" id="pricing-tab">
-            <div class="unified-pricing">
-                <div class="unified-pricing-badge"><i class="fas fa-wand-magic-sparkles"></i> We've unified our prices</div>
-                <h2>One simple price, per page</h2>
-                <div class="unified-price-range" id="unifiedPriceRange">$7 - $9 <span>/ page</span></div>
-                <p class="unified-pricing-note">Final price depends on page count, deadline, and complexity.</p>
-                <ul class="unified-features">
-                    <li><i class="fas fa-check"></i> Plagiarism-free, original content</li>
-                    <li><i class="fas fa-check"></i> Professional formatting (APA, MLA, Harvard &amp; more)</li>
-                    <li><i class="fas fa-check"></i> Free revisions</li>
-                    <li><i class="fas fa-check"></i> Direct support from your writer</li>
-                    <li><i class="fas fa-check"></i> Reliable, on-time delivery</li>
-                </ul>
-                <button class="btn btn-select" id="unifiedPricingBtn" onclick="selectUnifiedPricing()" style="max-width: 280px; margin: 0 auto;">
-                    Get Started
+            <div class="pricing-hero">
+                <span class="pricing-eyebrow"><i class="fas fa-wand-magic-sparkles"></i> We've unified our prices</span>
+                <h1 class="pricing-hero-title">One simple price,<br>per page.</h1>
+                <div class="pricing-hero-amount" id="unifiedPriceRange">
+                    $7 – $9
+                    <span class="unit">/ page</span>
+                </div>
+                <p class="pricing-hero-note">Final price depends on page count, deadline, and complexity.</p>
+                <button class="pricing-hero-cta" id="unifiedPricingBtn" onclick="selectUnifiedPricing()">
+                    Get Started <i class="fas fa-arrow-right"></i>
                 </button>
+            </div>
+
+            <div class="pricing-divider"></div>
+
+            <div class="pricing-perks">
+                <div class="perk">
+                    <i class="fas fa-shield-halved"></i>
+                    <div><strong>Plagiarism-free</strong><span>100% original, every time</span></div>
+                </div>
+                <div class="perk">
+                    <i class="fas fa-file-signature"></i>
+                    <div><strong>Any format</strong><span>APA, MLA, Harvard &amp; more</span></div>
+                </div>
+                <div class="perk">
+                    <i class="fas fa-rotate"></i>
+                    <div><strong>Free revisions</strong><span>Until you're satisfied</span></div>
+                </div>
+                <div class="perk">
+                    <i class="fas fa-comments"></i>
+                    <div><strong>Direct support</strong><span>Talk to your writer</span></div>
+                </div>
+                <div class="perk">
+                    <i class="fas fa-clock"></i>
+                    <div><strong>On-time delivery</strong><span>Every single deadline</span></div>
+                </div>
             </div>
         </div>
 
@@ -2999,52 +3263,60 @@
             </div>
         </div>
 
-        <!-- Plagiarism/AI Check Tab -->
+        <!-- Plagiarism/AI Check Tab — "Scan Lab", no card design -->
         <div class="tab-content" id="turnitin-tab">
             <div class="form-container">
                 <!-- Logged-out prompt -->
-                <div id="turnitinLoginPrompt" class="form-card" style="display: none; text-align: center; padding: 3rem 2rem;">
-                    <i class="fas fa-shield-halved" style="font-size: 2.5rem; color: #6366f1; margin-bottom: 1rem;"></i>
-                    <h3 style="margin: 0 0 0.5rem;">Log in to check your work</h3>
-                    <p style="color: rgba(255,255,255,0.5); margin-bottom: 1.5rem;">Plagiarism &amp; AI detection reports are available to logged-in members.</p>
-                    <button class="btn btn-primary" onclick="showTab('membership')"><i class="fas fa-right-to-bracket"></i> Go to Membership Login</button>
+                <div id="turnitinLoginPrompt" class="scanlab-empty" style="display: none;">
+                    <div class="scanlab-empty-icon"><i class="fas fa-shield-halved"></i></div>
+                    <h3>Log in to check your work</h3>
+                    <p>Plagiarism &amp; AI detection reports are available to logged-in members.</p>
+                    <button class="pricing-hero-cta" onclick="showTab('membership')"><i class="fas fa-right-to-bracket"></i> Go to Membership Login</button>
                 </div>
 
                 <!-- Main UI (logged-in members) -->
-                <div id="turnitinMain" class="form-card" style="display: none;">
-                    <div class="turnitin-header">
-                        <div>
-                            <h3 style="margin: 0 0 0.25rem;"><i class="fas fa-shield-halved"></i> Plagiarism &amp; AI Check</h3>
-                            <p style="margin: 0; color: rgba(255,255,255,0.5); font-size: 0.9rem;">Scan your document before you submit it. We'll email you the moment it's ready.</p>
+                <div id="turnitinMain" style="display: none;">
+                    <div class="scanlab-header">
+                        <div class="scanlab-header-icon">
+                            <div class="scanlab-pulse-ring"></div>
+                            <div class="scanlab-pulse-ring delay"></div>
+                            <i class="fas fa-shield-halved"></i>
                         </div>
-                        <div class="turnitin-price-pill" id="turnitinPricePill">Loading price…</div>
+                        <div class="scanlab-header-text">
+                            <h2>Scan your work before you submit it</h2>
+                            <p>Plagiarism &amp; AI detection. We'll email you the moment it's ready.</p>
+                        </div>
+                        <div class="scanlab-tags">
+                            <span class="scanlab-tag price" id="turnitinPricePill">Loading price…</span>
+                            <span class="scanlab-tag wallet" id="turnitinWalletPill" style="display: none;"><i class="fas fa-gift"></i> <span id="turnitinWalletCount">0</span> free</span>
+                        </div>
                     </div>
 
-                    <div id="turnitinWalletPill" class="turnitin-wallet-pill" style="display: none;">
-                        <i class="fas fa-gift"></i> <span id="turnitinWalletCount">0</span> free check(s) available
-                    </div>
-
-                    <div class="file-upload" id="turnitinDropzone">
-                        <i class="fas fa-cloud-upload-alt"></i>
-                        <p>Click to upload or drag and drop<br><small>PDF or Word document (Max 20MB)</small></p>
+                    <div class="scanlab-dropzone" id="turnitinDropzone">
+                        <div class="scanlab-dropzone-icon"><i class="fas fa-file-arrow-up"></i></div>
+                        <p class="scanlab-dropzone-title">Drop your document here</p>
+                        <p class="scanlab-dropzone-sub">or click to browse — PDF or Word, up to 20MB</p>
                         <input type="file" id="turnitinFileInput" accept=".pdf,.doc,.docx" style="display: none;">
                     </div>
-                    <div class="uploaded-files" id="turnitinSelectedFile"></div>
+                    <div class="scanlab-selected-file" id="turnitinSelectedFile"></div>
 
-                    <button class="btn btn-primary" id="turnitinSubmitBtn" style="width: 100%; margin-top: 1rem;" onclick="submitTurnitinCheck()" disabled>
+                    <button class="scanlab-submit" id="turnitinSubmitBtn" onclick="submitTurnitinCheck()" disabled>
                         <i class="fas fa-lock"></i> <span id="turnitinSubmitLabel">Select a file first</span>
                     </button>
 
                     <!-- Scanning / loading state -->
-                    <div id="turnitinScanningState" class="turnitin-scanning" style="display: none;">
-                        <div class="turnitin-scan-anim"><i class="fas fa-file-shield"></i></div>
-                        <div class="turnitin-scan-status" id="turnitinScanStatus">Uploading your document…</div>
-                        <p style="color: rgba(255,255,255,0.4); font-size: 0.85rem;">This can take a little while — we'll email you the moment it's ready.</p>
+                    <div id="turnitinScanningState" class="scanlab-scanning" style="display: none;">
+                        <div class="scanlab-radar">
+                            <div class="scanlab-radar-sweep"></div>
+                            <i class="fas fa-file-shield"></i>
+                        </div>
+                        <div class="scanlab-scan-status" id="turnitinScanStatus">Uploading your document…</div>
+                        <p>This can take a little while — we'll email you the moment it's ready.</p>
                     </div>
 
                     <!-- Past checks -->
-                    <div class="turnitin-reports-list">
-                        <div class="turnitin-list-header">Your Checks</div>
+                    <div class="scanlab-timeline">
+                        <div class="scanlab-timeline-header">Your Checks</div>
                         <div id="turnitinReportsBody"></div>
                     </div>
                 </div>
@@ -3506,11 +3778,11 @@
                 dropzone.style.borderColor = '#6366f1';
             });
             dropzone.addEventListener('dragleave', () => {
-                dropzone.style.borderColor = 'rgba(255,255,255,0.1)';
+                dropzone.style.borderColor = 'rgba(99, 102, 241, 0.35)';
             });
             dropzone.addEventListener('drop', e => {
                 e.preventDefault();
-                dropzone.style.borderColor = 'rgba(255,255,255,0.1)';
+                dropzone.style.borderColor = 'rgba(99, 102, 241, 0.35)';
                 if (e.dataTransfer.files.length) setTurnitinFile(e.dataTransfer.files[0]);
             });
             input.addEventListener('change', () => {
@@ -3532,10 +3804,10 @@
 
             turnitinSelectedFile = file;
             document.getElementById('turnitinSelectedFile').innerHTML = `
-                <div class="uploaded-file">
-                    <i class="fas fa-file-alt"></i>
+                <div class="scanlab-file-chip">
+                    <i class="fas fa-file-alt file-icon"></i>
                     <span>${file.name}</span>
-                    <i class="fas fa-times remove" onclick="clearTurnitinFile()"></i>
+                    <button type="button" class="remove" onclick="clearTurnitinFile()"><i class="fas fa-times"></i></button>
                 </div>
             `;
             updateTurnitinSubmitButton();
@@ -3627,7 +3899,7 @@
             if (extra.useWallet) formData.append('useWallet', 'true');
             if (extra.paystackReference) formData.append('paystackReference', extra.paystackReference);
 
-            document.querySelector('#turnitinMain .file-upload').style.display = 'none';
+            document.querySelector('#turnitinMain .scanlab-dropzone').style.display = 'none';
             document.getElementById('turnitinSelectedFile').style.display = 'none';
             document.getElementById('turnitinSubmitBtn').style.display = 'none';
             const scanning = document.getElementById('turnitinScanningState');
@@ -3666,7 +3938,7 @@
         }
 
         function resetTurnitinUploadUI() {
-            document.querySelector('#turnitinMain .file-upload').style.display = 'block';
+            document.querySelector('#turnitinMain .scanlab-dropzone').style.display = 'block';
             document.getElementById('turnitinSelectedFile').style.display = 'block';
             document.getElementById('turnitinSubmitBtn').style.display = 'block';
             document.getElementById('turnitinScanningState').style.display = 'none';
@@ -3695,26 +3967,30 @@
             }
 
             const statusLabels = {
-                processing: { text: 'Processing', cls: 'in-progress' },
-                completed: { text: 'Ready', cls: 'completed' },
-                refunded: { text: 'Refunded to wallet', cls: 'pending' },
-                failed: { text: 'Refunded to wallet', cls: 'pending' }
+                processing: { text: 'Processing', dot: 'processing', cls: 'processing' },
+                completed: { text: 'Ready', dot: 'completed', cls: '' },
+                refunded: { text: 'Refunded to wallet', dot: 'pending', cls: 'pending' },
+                failed: { text: 'Refunded to wallet', dot: 'pending', cls: 'pending' }
             };
 
             body.innerHTML = reports.map(r => {
-                const status = statusLabels[r.status] || { text: r.status, cls: '' };
+                const status = statusLabels[r.status] || { text: r.status, dot: '', cls: '' };
                 const date = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                const scoreNote = r.status === 'completed' && r.similarity_score != null ? ` · ${r.similarity_score}% similarity` : '';
+                const scoreParts = [];
+                if (r.status === 'completed' && r.similarity_score != null) scoreParts.push(`${r.similarity_score}% similarity`);
+                if (r.status === 'completed' && r.ai_score != null) scoreParts.push(`${r.ai_score}% AI`);
+                const scoreNote = scoreParts.length ? ` · ${scoreParts.join(' · ')}` : '';
                 const action = r.status === 'completed'
-                    ? `<a href="/api/turnitin/download/${r.id}" target="_blank" class="btn btn-secondary" style="padding: 0.4rem 0.9rem; font-size: 0.8rem;"><i class="fas fa-download"></i> Download</a>`
-                    : `<span class="status-badge ${status.cls}">${status.text}</span>`;
+                    ? `<a href="/api/turnitin/download/${r.id}" target="_blank" class="timeline-download"><i class="fas fa-download"></i> Download</a>`
+                    : `<span class="timeline-status-text ${status.cls}">${status.text}</span>`;
                 return `
-                    <div class="turnitin-report-row">
-                        <div class="turnitin-report-info">
-                            <div class="turnitin-report-filename">${r.original_filename}</div>
-                            <div class="turnitin-report-date">${date}${scoreNote}</div>
+                    <div class="timeline-row">
+                        <div class="timeline-dot ${status.dot}"></div>
+                        <div class="timeline-content">
+                            <div class="timeline-filename">${r.original_filename}</div>
+                            <div class="timeline-meta">${date}${scoreNote}</div>
                         </div>
-                        <div class="turnitin-report-action">${action}</div>
+                        <div class="timeline-action">${action}</div>
                     </div>
                 `;
             }).join('');
@@ -3767,8 +4043,8 @@
             const rangeEl = document.getElementById('unifiedPriceRange');
             if (rangeEl) {
                 rangeEl.innerHTML = isKes
-                    ? 'KES 250 - 350 <span>/ page</span>'
-                    : '$7 - $9 <span>/ page</span>';
+                    ? 'KES 250 – 350 <span class="unit">/ page</span>'
+                    : '$7 – $9 <span class="unit">/ page</span>';
             }
             // Keep the Submit tab's summary in sync if the user already selected before this resolved
             if (selectedPackageData.name === 'standard') {
