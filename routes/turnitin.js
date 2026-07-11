@@ -3,6 +3,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { Readable } = require('stream');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
 const { isAdminBypassEmail } = require('../utils/admin-emails');
@@ -344,7 +345,8 @@ router.get('/my-reports', authenticateMember, async (req, res) => {
     }
 });
 
-// Download a completed report
+// Download a completed report — proxied (not redirected) so it downloads with a friendly
+// filename and never exposes Writenix's underlying (possibly signed/expiring) URL to the client.
 router.get('/download/:id', authenticateMember, async (req, res) => {
     try {
         const result = await pool.query(
@@ -358,7 +360,25 @@ router.get('/download/:id', authenticateMember, async (req, res) => {
         if (report.status !== 'completed' || !report.report_url) {
             return res.status(400).json({ error: 'Report is not ready yet' });
         }
-        res.redirect(report.report_url);
+
+        try {
+            const upstream = await fetch(report.report_url);
+            if (!upstream.ok || !upstream.body) {
+                throw new Error(`Upstream returned ${upstream.status}`);
+            }
+
+            const baseName = report.original_filename.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'report';
+            const contentType = upstream.headers.get('content-type') || 'application/pdf';
+
+            res.setHeader('Content-Type', contentType);
+            res.setHeader('Content-Disposition', `attachment; filename="${baseName} - Report.pdf"`);
+
+            Readable.fromWeb(upstream.body).pipe(res);
+        } catch (proxyError) {
+            // Fall back to a plain redirect rather than leaving the user stuck if the proxy fetch fails
+            console.error('Report proxy download failed, falling back to redirect:', proxyError.message);
+            res.redirect(report.report_url);
+        }
     } catch (error) {
         console.error('Error downloading report:', error);
         res.status(500).json({ error: 'Failed to download report' });
