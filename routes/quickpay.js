@@ -84,6 +84,42 @@ function verificationEmailHtml(name, clientCode, verifyUrl) {
     `;
 }
 
+function clientCodeEmailHtml(name, clientCode) {
+    return `
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: linear-gradient(135deg, #10b981, #059669); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+                .header h1 { color: white; margin: 0; font-size: 26px; }
+                .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+                .code-box { background: white; border: 2px dashed #10b981; border-radius: 12px; padding: 24px; margin: 20px 0; text-align: center; }
+                .code-label { color: #64748b; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px; }
+                .code-value { color: #059669; font-size: 32px; font-weight: 700; letter-spacing: 3px; font-family: 'Courier New', monospace; }
+                .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header"><h1>⚡ Quick Pay</h1></div>
+                <div class="content">
+                    <h2>Hi ${name}, you're verified!</h2>
+                    <p>Here's your Client Code — you'll enter it every time you use Quick Pay, and every invoice we send you will also land in this inbox.</p>
+                    <div class="code-box">
+                        <div class="code-label">Your Client Code</div>
+                        <div class="code-value">${clientCode}</div>
+                    </div>
+                    <p style="color: #666; font-size: 14px;">Keep this email — it's the easiest place to find your code again later.</p>
+                </div>
+                <div class="footer"><p>© ${new Date().getFullYear()} HomeworkPal. All rights reserved.</p></div>
+            </div>
+        </body>
+        </html>
+    `;
+}
+
 function verificationResultPage(status, message, clientCode) {
     const statusConfig = {
         success: { icon: '✓', color: '#10b981', bgColor: 'rgba(16, 185, 129, 0.1)' },
@@ -313,7 +349,18 @@ router.get('/verify', async (req, res) => {
             [client.id]
         );
 
-        res.send(verificationResultPage('success', `Welcome, ${client.name}! Your email is verified.`, client.client_code));
+        // Email the Client Code to the now-verified address — this is also the address
+        // invoices go to, so it doubles as confirmation they've got the right inbox.
+        const codeEmailSent = await sendBrevoEmail(
+            client.email, client.name,
+            'Your HomeworkPal Client Code',
+            clientCodeEmailHtml(client.name, client.client_code)
+        );
+        if (!codeEmailSent) {
+            console.error(`Client Code email failed to send to ${client.email} after verification (code: ${client.client_code})`);
+        }
+
+        res.send(verificationResultPage('success', `Welcome, ${client.name}! Your email is verified${codeEmailSent ? ' and your Client Code has been emailed to you' : ''}.`, client.client_code));
     } catch (error) {
         console.error('QuickPay verify error:', error);
         res.status(500).send(verificationResultPage('error', 'Verification failed. Please try again.'));
