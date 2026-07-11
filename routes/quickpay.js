@@ -14,10 +14,16 @@ const BASE_URL = process.env.BASE_URL || 'https://www.homeworkpal.online';
 
 // ---- Helpers ----
 
+// Two letters + four digits (e.g. "AB1234") — short and easy to remember/read aloud.
+// I and O are excluded from the letter pool since they're easily confused with 1 and 0.
+const CLIENT_CODE_LETTERS = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+
 async function generateClientCode() {
-    for (let attempt = 0; attempt < 10; attempt++) {
-        const suffix = crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 6);
-        const code = `HP-${suffix}`;
+    for (let attempt = 0; attempt < 20; attempt++) {
+        const letter1 = CLIENT_CODE_LETTERS[crypto.randomInt(CLIENT_CODE_LETTERS.length)];
+        const letter2 = CLIENT_CODE_LETTERS[crypto.randomInt(CLIENT_CODE_LETTERS.length)];
+        const digits = crypto.randomInt(0, 10000).toString().padStart(4, '0');
+        const code = `${letter1}${letter2}${digits}`;
         const existing = await pool.query('SELECT id FROM quickpay_clients WHERE client_code = $1', [code]);
         if (existing.rows.length === 0) return code;
     }
