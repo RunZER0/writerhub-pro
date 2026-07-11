@@ -3,9 +3,9 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
 
-// OpenAI configuration
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = 'gpt-4o-mini'; // Cost-effective yet capable
+// DeepSeek configuration (OpenAI-compatible chat completions API)
+const DEEPSEEK_API_KEY = process.env.DEEPSEEK_API_KEY;
+const DEEPSEEK_MODEL = 'deepseek-chat'; // Cost-effective general-purpose model (DeepSeek-V3)
 
 // Assignment type base pricing
 const ASSIGNMENT_PRICING = {
@@ -67,8 +67,8 @@ const authenticateMember = (req, res, next) => {
 
 // AI-powered price estimation
 async function getAIEstimate(assignmentDetails) {
-    if (!OPENAI_API_KEY) {
-        console.log('OpenAI API key not configured, using fallback estimation');
+    if (!DEEPSEEK_API_KEY) {
+        console.log('DeepSeek API key not configured, using fallback estimation');
         return null;
     }
 
@@ -120,14 +120,14 @@ Additional details:
 Provide a fair price estimate based on the complexity and work involved.`;
 
     try {
-        const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        const response = await fetch('https://api.deepseek.com/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${OPENAI_API_KEY}`
+                'Authorization': `Bearer ${DEEPSEEK_API_KEY}`
             },
             body: JSON.stringify({
-                model: OPENAI_MODEL,
+                model: DEEPSEEK_MODEL,
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
@@ -138,7 +138,7 @@ Provide a fair price estimate based on the complexity and work involved.`;
         });
 
         if (!response.ok) {
-            console.error('OpenAI API error:', await response.text());
+            console.error('DeepSeek API error:', await response.text());
             return null;
         }
 
