@@ -311,6 +311,74 @@
             color: #000;
         }
 
+        /* Unified Pricing */
+        .unified-pricing {
+            max-width: 480px;
+            margin: 0 auto;
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+
+        .unified-pricing-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 1rem;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            color: #34d399;
+            font-size: 0.8rem;
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+
+        .unified-pricing h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .unified-price-range {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .unified-price-range span {
+            font-size: 1rem;
+            font-weight: 500;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .unified-pricing-note {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .unified-features {
+            list-style: none;
+            text-align: left;
+            margin-bottom: 2rem;
+        }
+
+        .unified-features li {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.6rem 0;
+            color: rgba(255,255,255,0.7);
+            font-size: 0.9rem;
+        }
+
+        .unified-features li i {
+            color: #10b981;
+            width: 20px;
+        }
+
         /* Form Section */
         .form-container {
             max-width: 700px;
@@ -2301,75 +2369,21 @@
 
         <!-- Pricing Tab -->
         <div class="tab-content active" id="pricing-tab">
-            <div class="pricing-grid">
-                <!-- Bronze -->
-                <div class="pricing-card" data-package="bronze">
-                    <div class="pricing-tier">
-                        <div class="tier-icon"><i class="fas fa-medal"></i></div>
-                        <div class="tier-name">Bronze</div>
-                    </div>
-                    <div class="pricing-price">
-                        <span class="price-range">$6<sup>.99</sup> - $9<sup>.99</sup></span>
-                        <span class="price-unit">/ page</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Standard delivery (5-7 days)</li>
-                        <li><i class="fas fa-check"></i> Plagiarism-free content</li>
-                        <li><i class="fas fa-check"></i> Basic formatting</li>
-                        <li><i class="fas fa-check"></i> 1 free revision</li>
-                        <li><i class="fas fa-check"></i> Email support</li>
-                    </ul>
-                    <button class="btn btn-select" onclick="selectPackage('bronze', 6.99, 9.99)">
-                        Select Bronze
-                    </button>
-                </div>
-
-                <!-- Silver -->
-                <div class="pricing-card popular" data-package="silver">
-                    <div class="pricing-tier">
-                        <div class="tier-icon"><i class="fas fa-medal"></i></div>
-                        <div class="tier-name">Silver</div>
-                    </div>
-                    <div class="pricing-price">
-                        <span class="price-range">$9<sup>.99</sup> - $14<sup>.99</sup></span>
-                        <span class="price-unit">/ page</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Fast delivery (3-5 days)</li>
-                        <li><i class="fas fa-check"></i> Plagiarism-free content</li>
-                        <li><i class="fas fa-check"></i> Advanced formatting</li>
-                        <li><i class="fas fa-check"></i> 3 free revisions</li>
-                        <li><i class="fas fa-check"></i> Priority support</li>
-                        <li><i class="fas fa-check"></i> Detailed research</li>
-                    </ul>
-                    <button class="btn btn-select" onclick="selectPackage('silver', 9.99, 14.99)">
-                        Select Silver
-                    </button>
-                </div>
-
-                <!-- Gold -->
-                <div class="pricing-card" data-package="gold">
-                    <div class="pricing-tier">
-                        <div class="tier-icon"><i class="fas fa-crown"></i></div>
-                        <div class="tier-name">Gold</div>
-                    </div>
-                    <div class="pricing-price">
-                        <span class="price-range">$15<sup>.99</sup> - $19<sup>.99</sup></span>
-                        <span class="price-unit">/ page</span>
-                    </div>
-                    <ul class="pricing-features">
-                        <li><i class="fas fa-check"></i> Express delivery (24-48 hrs)</li>
-                        <li><i class="fas fa-check"></i> Plagiarism-free content</li>
-                        <li><i class="fas fa-check"></i> Premium formatting</li>
-                        <li><i class="fas fa-check"></i> Unlimited revisions</li>
-                        <li><i class="fas fa-check"></i> 24/7 VIP support</li>
-                        <li><i class="fas fa-check"></i> Expert writer assigned</li>
-                        <li><i class="fas fa-check"></i> Plagiarism report included</li>
-                    </ul>
-                    <button class="btn btn-select" onclick="selectPackage('gold', 15.99, 19.99)">
-                        Select Gold
-                    </button>
-                </div>
+            <div class="unified-pricing">
+                <div class="unified-pricing-badge"><i class="fas fa-wand-magic-sparkles"></i> We've unified our prices</div>
+                <h2>One simple price, per page</h2>
+                <div class="unified-price-range" id="unifiedPriceRange">$7 - $9 <span>/ page</span></div>
+                <p class="unified-pricing-note">Final price depends on page count, deadline, and complexity.</p>
+                <ul class="unified-features">
+                    <li><i class="fas fa-check"></i> Plagiarism-free, original content</li>
+                    <li><i class="fas fa-check"></i> Professional formatting (APA, MLA, Harvard &amp; more)</li>
+                    <li><i class="fas fa-check"></i> Free revisions</li>
+                    <li><i class="fas fa-check"></i> Direct support from your writer</li>
+                    <li><i class="fas fa-check"></i> Reliable, on-time delivery</li>
+                </ul>
+                <button class="btn btn-select" id="unifiedPricingBtn" onclick="selectUnifiedPricing()" style="max-width: 280px; margin: 0 auto;">
+                    Get Started
+                </button>
             </div>
         </div>
 
@@ -3290,7 +3304,8 @@
     <div class="toast-container" id="toastContainer"></div>
 
     <script>
-        let selectedPackageData = { name: 'silver', minPrice: 9.99, maxPrice: 14.99 };
+        let selectedPackageData = { name: 'standard', minPrice: 7, maxPrice: 9 };
+        let unifiedPricingCurrency = 'usd'; // 'usd' or 'kes', resolved via geo detection
         let selectedDomain = '';
         let selectedDeadlineHours = 72;
         let selectedAssignmentType = 'standard';
@@ -3395,6 +3410,20 @@
             document.getElementById(`${tabName}-tab`)?.classList.add('active');
         }
 
+        // ========== SHARED GEO-CURRENCY DETECTION ==========
+        // Single cached /api/geo call shared by the Pricing tab and the Plagiarism Check tab,
+        // so multiple features asking for the visitor's country don't each fire their own request.
+        let geoDetectionPromise = null;
+        function detectGeoCountry() {
+            if (!geoDetectionPromise) {
+                geoDetectionPromise = fetch('/api/geo')
+                    .then(r => r.json())
+                    .then(data => data.countryCode)
+                    .catch(() => null);
+            }
+            return geoDetectionPromise;
+        }
+
         // ========== PLAGIARISM/AI CHECK (TURNITIN) ==========
 
         let turnitinPricing = { kes: 200, usd: 2, walletCredits: 0 };
@@ -3423,20 +3452,11 @@
         }
 
         function detectTurnitinCurrency() {
-            // Resolved server-side (see routes/geo.js) — avoids the CORS/HTTPS pitfalls of
-            // calling third-party geo APIs directly from the browser.
-            fetch('/api/geo')
-                .then(r => r.json())
-                .then(data => {
-                    turnitinCurrency = data.countryCode === 'KE' ? 'KES' : 'USD';
-                    updateTurnitinPricePill();
-                    updateTurnitinSubmitButton();
-                })
-                .catch(() => {
-                    turnitinCurrency = 'USD';
-                    updateTurnitinPricePill();
-                    updateTurnitinSubmitButton();
-                });
+            detectGeoCountry().then(countryCode => {
+                turnitinCurrency = countryCode === 'KE' ? 'KES' : 'USD';
+                updateTurnitinPricePill();
+                updateTurnitinSubmitButton();
+            });
         }
 
         async function loadTurnitinPricing() {
@@ -3721,26 +3741,46 @@
             }, 5000);
         }
 
-        // Package selection
-        function selectPackage(name, minPrice, maxPrice) {
-            selectedPackageData = { name, minPrice, maxPrice };
-            
-            const icons = {
-                bronze: { bg: 'linear-gradient(135deg, #cd7f32, #8b4513)', icon: 'fa-medal' },
-                silver: { bg: 'linear-gradient(135deg, #c0c0c0, #808080)', icon: 'fa-medal' },
-                gold: { bg: 'linear-gradient(135deg, #ffd700, #b8860b)', icon: 'fa-crown' }
-            };
+        // Unified pricing — one package, currency resolved via geo detection
+        function selectUnifiedPricing() {
+            const isKes = unifiedPricingCurrency === 'kes';
+            const minPrice = isKes ? 250 : 7;
+            const maxPrice = isKes ? 350 : 9;
+            selectedPackageData = { name: 'standard', minPrice, maxPrice };
 
             const iconEl = document.getElementById('packageIcon');
-            iconEl.style.background = icons[name].bg;
-            iconEl.innerHTML = `<i class="fas ${icons[name].icon}"></i>`;
-            
-            document.getElementById('packageName').textContent = `${name.charAt(0).toUpperCase() + name.slice(1)} Package`;
-            document.getElementById('packagePrice').textContent = `$${minPrice} - $${maxPrice} per page`;
-            
+            iconEl.style.background = 'linear-gradient(135deg, #6366f1, #8b5cf6)';
+            iconEl.innerHTML = '<i class="fas fa-file-alt"></i>';
+
+            document.getElementById('packageName').textContent = 'Written Assignment';
+            const symbol = isKes ? 'KES' : '$';
+            document.getElementById('packagePrice').textContent = `${symbol}${minPrice} - ${symbol}${maxPrice} per page`;
+
             calculatePrice();
             showTab('submit');
         }
+
+        // Update the Pricing tab + selected-package display once geo detection resolves
+        function applyUnifiedPricingCurrency(countryCode) {
+            unifiedPricingCurrency = countryCode === 'KE' ? 'kes' : 'usd';
+            const isKes = unifiedPricingCurrency === 'kes';
+            const rangeEl = document.getElementById('unifiedPriceRange');
+            if (rangeEl) {
+                rangeEl.innerHTML = isKes
+                    ? 'KES 250 - 350 <span>/ page</span>'
+                    : '$7 - $9 <span>/ page</span>';
+            }
+            // Keep the Submit tab's summary in sync if the user already selected before this resolved
+            if (selectedPackageData.name === 'standard') {
+                const symbol = isKes ? 'KES' : '$';
+                const minPrice = isKes ? 250 : 7;
+                const maxPrice = isKes ? 350 : 9;
+                selectedPackageData = { name: 'standard', minPrice, maxPrice };
+                const priceEl = document.getElementById('packagePrice');
+                if (priceEl) priceEl.textContent = `${symbol}${minPrice} - ${symbol}${maxPrice} per page`;
+            }
+        }
+        detectGeoCountry().then(applyUnifiedPricingCurrency);
 
         // Domain selection
         document.querySelectorAll('.domain-option').forEach(option => {
@@ -3791,6 +3831,7 @@
             switch (selectedAssignmentType) {
                 case 'standard':
                     requestData.pages = parseInt(document.getElementById('pages')?.value) || 1;
+                    requestData.currency = unifiedPricingCurrency;
                     break;
                 case 'excel':
                     requestData.complexity = document.getElementById('excelComplexity')?.value || 'moderate';
@@ -3859,7 +3900,7 @@
             switch (selectedAssignmentType) {
                 case 'standard':
                     const pages = parseInt(document.getElementById('pages')?.value) || 1;
-                    return pages * 12.49;
+                    return pages * (unifiedPricingCurrency === 'kes' ? 250 : 8);
                 case 'excel':
                     const excelPrices = { simple: 25, moderate: 50, complex: 100, advanced: 175 };
                     return excelPrices[document.getElementById('excelComplexity')?.value || 'moderate'];
@@ -3888,10 +3929,11 @@
                 if (el) el.style.display = display;
             };
             
-            // Update main display
-            setElement('finalPriceDisplay', `$${breakdown.finalPrice}`);
-            setElement('basePriceDisplay', `$${breakdown.basePrice}`);
-            setElement('totalDisplay', `$${breakdown.finalPrice}`);
+            // Update main display (KES for standard-type orders detected in Kenya, $ everywhere else)
+            const symbol = breakdown.currency === 'KES' ? 'KES ' : '$';
+            setElement('finalPriceDisplay', `${symbol}${breakdown.finalPrice}`);
+            setElement('basePriceDisplay', `${symbol}${breakdown.basePrice}`);
+            setElement('totalDisplay', `${symbol}${breakdown.finalPrice}`);
             
             // Update price description based on type
             const descEl = document.getElementById('priceDescription');
@@ -3919,10 +3961,10 @@
             if (parseFloat(breakdown.discountAmount) > 0) {
                 setDisplay('discountRow', 'flex');
                 setElement('discountPercent', breakdown.discountPercent);
-                setElement('discountDisplay', `-$${breakdown.discountAmount}`);
-                
+                setElement('discountDisplay', `-${symbol}${breakdown.discountAmount}`);
+
                 setDisplay('memberDiscountBanner', 'flex');
-                setElement('savingsAmount', `$${breakdown.discountAmount}`);
+                setElement('savingsAmount', `${symbol}${breakdown.discountAmount}`);
                 setElement('memberTierDisplay', breakdown.memberTier || 'Basic');
                 setDisplay('loginForDiscountBanner', 'none');
             } else {
@@ -4028,30 +4070,35 @@
                 files: uploadedFiles
             };
             
-            // Initiate Paystack payment
-            initiatePaystackPayment(clientEmail, pendingPaymentData.finalPrice, title);
+            // Initiate Paystack payment — standard (page-based) orders are priced in whatever
+            // currency the unified pricing resolved to (KES for Kenya, USD elsewhere), so the
+            // actual charge must use that same currency, not the site's unrelated global default.
+            const orderCurrency = selectedAssignmentType === 'standard'
+                ? (unifiedPricingCurrency === 'kes' ? 'KES' : 'USD')
+                : paystackCurrency;
+            initiatePaystackPayment(clientEmail, pendingPaymentData.finalPrice, title, orderCurrency);
         }
-        
-        async function initiatePaystackPayment(email, amount, title) {
+
+        async function initiatePaystackPayment(email, amount, title, currency = paystackCurrency) {
             if (!paystackPublicKey) {
                 showToast('error', 'Payment system not configured. Please contact support.');
                 return;
             }
-            
+
             // Show loading
             showToast('info', 'Initializing payment...');
-            
+
             const ref = 'HP-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 8).toUpperCase();
-            
+
             // Use Paystack v2 checkout() for Apple Pay support
             const paystackPop = new PaystackPop();
-            
+
             try {
                 await paystackPop.checkout({
                     key: paystackPublicKey,
                     email: email,
                     amount: Math.round(amount * 100), // Convert to kobo/pesewas
-                    currency: paystackCurrency,
+                    currency: currency,
                     ref: ref,
                     metadata: {
                         custom_fields: [

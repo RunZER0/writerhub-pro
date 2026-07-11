@@ -9,11 +9,12 @@ const DEEPSEEK_MODEL = 'deepseek-chat'; // Cost-effective general-purpose model 
 
 // Assignment type base pricing
 const ASSIGNMENT_PRICING = {
-    // Standard page-based assignments
+    // Standard page-based assignments — unified single rate per currency.
+    // Displayed as a range to the client, but always computed at the flat
+    // internal rate (KES 250 or USD 8) regardless of where in the range it's shown.
     standard: {
-        bronze: { basePrice: 8.49 },
-        silver: { basePrice: 12.49 },
-        gold: { basePrice: 17.99 }
+        usd: { basePrice: 8, displayMin: 7, displayMax: 9 },
+        kes: { basePrice: 250, displayMin: 250, displayMax: 350 }
     },
     // Excel/spreadsheet work (per task/sheet complexity)
     excel: {
@@ -159,19 +160,21 @@ Provide a fair price estimate based on the complexity and work involved.`;
 
 // Calculate price based on assignment type
 function calculateTypeBasedPrice(details) {
-    const { type, packageType = 'silver', pages, slides, tasks, courseDuration, complexity = 'moderate' } = details;
-    
+    const { type, packageType = 'silver', pages, slides, tasks, courseDuration, complexity = 'moderate', currency = 'usd' } = details;
+
     let basePrice = 0;
     let breakdown = [];
-    
+
     switch (type) {
-        case 'standard':
-            // Page-based pricing
+        case 'standard': {
+            // Page-based pricing — unified flat rate, currency-aware (see ASSIGNMENT_PRICING.standard)
             const pageCount = parseInt(pages) || 1;
-            const tierPricing = ASSIGNMENT_PRICING.standard[packageType] || ASSIGNMENT_PRICING.standard.silver;
+            const tierPricing = ASSIGNMENT_PRICING.standard[currency.toLowerCase()] || ASSIGNMENT_PRICING.standard.usd;
+            const symbol = currency.toLowerCase() === 'kes' ? 'KES' : '$';
             basePrice = pageCount * tierPricing.basePrice;
-            breakdown.push({ item: `${pageCount} page(s) @ $${tierPricing.basePrice}/page`, amount: basePrice });
+            breakdown.push({ item: `${pageCount} page(s) @ ${symbol}${tierPricing.basePrice}/page`, amount: basePrice });
             break;
+        }
             
         case 'excel':
             basePrice = ASSIGNMENT_PRICING.excel[complexity] || ASSIGNMENT_PRICING.excel.moderate;
@@ -225,7 +228,8 @@ router.post('/calculate', authenticateMember, async (req, res) => {
             description,
             deadlineHours = 72,
             specialRequirements,
-            useAI = false
+            useAI = false,
+            currency = 'usd'
         } = req.body;
         
         let priceResult;
@@ -256,7 +260,8 @@ router.post('/calculate', authenticateMember, async (req, res) => {
             slides,
             tasks,
             courseDuration,
-            complexity
+            complexity,
+            currency
         });
         
         // Use AI estimate if available and reasonable, otherwise use rule-based
@@ -319,7 +324,8 @@ router.post('/calculate', authenticateMember, async (req, res) => {
                 // For standard type, include page info
                 ...(type === 'standard' && {
                     pages: parseInt(pages) || 1,
-                    pricePerPage: (ASSIGNMENT_PRICING.standard[packageType]?.basePrice || 12.49).toFixed(2)
+                    currency: currency.toLowerCase() === 'kes' ? 'KES' : 'USD',
+                    pricePerPage: (ASSIGNMENT_PRICING.standard[currency.toLowerCase()]?.basePrice || ASSIGNMENT_PRICING.standard.usd.basePrice).toFixed(2)
                 }),
                 // For presentation, include slide info
                 ...(type === 'presentation' && {
@@ -344,13 +350,10 @@ router.get('/pricing-guide', (req, res) => {
         success: true,
         pricing: {
             standard: {
-                description: 'Written assignments (essays, papers, reports)',
+                description: 'Written assignments (essays, papers, reports) — unified pricing',
                 unit: 'per page (~275 words)',
-                tiers: {
-                    bronze: '$8.49/page',
-                    silver: '$12.49/page',
-                    gold: '$17.99/page'
-                }
+                usd: '$7 - $9/page',
+                kes: 'KES 250 - 350/page'
             },
             excel: {
                 description: 'Spreadsheet & data work',
