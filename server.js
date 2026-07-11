@@ -25,8 +25,13 @@ const clientChatRoutes = require('./routes/client-chat');
 const paystackRoutes = require('./routes/paystack');
 const turnitinRoutes = require('./routes/turnitin');
 const quickpayRoutes = require('./routes/quickpay');
+const geoRoutes = require('./routes/geo');
 
 const app = express();
+
+// Render sits behind a proxy — without this, req.ip reflects the proxy's internal
+// address instead of the real visitor IP, which breaks server-side geo-IP lookups.
+app.set('trust proxy', true);
 
 // Middleware
 app.use(cors());
@@ -92,6 +97,7 @@ app.use('/api/client-chat', clientChatRoutes);
 app.use('/api/paystack', paystackRoutes);
 app.use('/api/turnitin', turnitinRoutes);
 app.use('/api/quickpay', quickpayRoutes);
+app.use('/api/geo', geoRoutes);
 
 // Serve frontend for all other routes (SPA fallback)
 app.get('*', (req, res) => {

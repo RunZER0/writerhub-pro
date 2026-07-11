@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
+const { isAdminBypassEmail } = require('../utils/admin-emails');
 
 const Brevo = require('@getbrevo/brevo');
 const brevoApi = new Brevo.TransactionalEmailsApi();
@@ -172,13 +173,14 @@ async function refundToWallet(reportId, memberId, member, reason) {
 router.get('/pricing', authenticateMember, async (req, res) => {
     try {
         const result = await pool.query(
-            'SELECT turnitin_wallet_credits FROM client_members WHERE id = $1',
+            'SELECT turnitin_wallet_credits, email FROM client_members WHERE id = $1',
             [req.member.memberId]
         );
         res.json({
             kes: TURNITIN_PRICE_KES,
             usd: TURNITIN_PRICE_USD,
-            walletCredits: result.rows[0]?.turnitin_wallet_credits || 0
+            walletCredits: result.rows[0]?.turnitin_wallet_credits || 0,
+            isAdmin: isAdminBypassEmail(result.rows[0]?.email)
         });
     } catch (error) {
         console.error('Error fetching turnitin pricing:', error);
@@ -216,8 +218,11 @@ router.post('/submit', authenticateMember, (req, res, next) => {
         let amountCharged = null;
         let currency = null;
         let paystackReference = null;
+        const isAdmin = isAdminBypassEmail(member.email);
 
-        if (useWallet) {
+        if (isAdmin) {
+            // Admin accounts skip payment/wallet entirely.
+        } else if (useWallet) {
             const decrement = await pool.query(
                 `UPDATE client_members
                  SET turnitin_wallet_credits = turnitin_wallet_credits - 1

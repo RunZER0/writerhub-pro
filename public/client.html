@@ -3423,11 +3423,12 @@
         }
 
         function detectTurnitinCurrency() {
-            // ip-api.com's free tier blocks HTTPS (403) — ipapi.co is HTTPS-native on its free tier.
-            fetch('https://ipapi.co/json/')
+            // Resolved server-side (see routes/geo.js) — avoids the CORS/HTTPS pitfalls of
+            // calling third-party geo APIs directly from the browser.
+            fetch('/api/geo')
                 .then(r => r.json())
                 .then(data => {
-                    turnitinCurrency = data.country_code === 'KE' ? 'KES' : 'USD';
+                    turnitinCurrency = data.countryCode === 'KE' ? 'KES' : 'USD';
                     updateTurnitinPricePill();
                     updateTurnitinSubmitButton();
                 })
@@ -3538,7 +3539,9 @@
                 return;
             }
             btn.disabled = false;
-            if (turnitinPricing.walletCredits > 0) {
+            if (turnitinPricing.isAdmin) {
+                label.textContent = 'Submit (Admin — Free)';
+            } else if (turnitinPricing.walletCredits > 0) {
                 label.textContent = 'Use 1 Free Check';
             } else {
                 const amount = turnitinCurrency === 'KES' ? turnitinPricing.kes : turnitinPricing.usd;
@@ -3552,7 +3555,7 @@
             const btn = document.getElementById('turnitinSubmitBtn');
             btn.disabled = true;
 
-            if (turnitinPricing.walletCredits > 0) {
+            if (turnitinPricing.isAdmin || turnitinPricing.walletCredits > 0) {
                 await performTurnitinSubmit({ useWallet: true });
                 return;
             }
