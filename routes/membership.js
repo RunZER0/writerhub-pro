@@ -227,33 +227,20 @@ router.post('/register', async (req, res) => {
         
         const member = result.rows[0];
         
-        // Send verification email
+        // Send verification email — every member must verify their email, so a delivery
+        // failure here is never treated as a pass; the account stays unverified and the
+        // user can retry via the resend-verification endpoint.
         const emailSent = await sendVerificationEmail(emailLower, name, verificationToken);
-        
+
         if (!emailSent) {
-            // If email fails, auto-verify as fallback (better UX than blocking)
-            await pool.query('UPDATE client_members SET is_verified = TRUE WHERE id = $1', [member.id]);
-            
-            const token = jwt.sign(
-                { memberId: member.id, email: member.email, type: 'client_member' },
-                process.env.JWT_SECRET || 'homework-pal-secret',
-                { expiresIn: '30d' }
-            );
-            
+            console.error(`Verification email failed to send to ${emailLower} during registration`);
             return res.json({
                 success: true,
-                token,
-                member: {
-                    id: member.id,
-                    email: member.email,
-                    name: member.name,
-                    tier: member.membership_tier,
-                    discount: parseFloat(member.discount_percent)
-                },
-                message: 'Registration successful! Welcome to HomeworkPal membership.'
+                needsVerification: true,
+                message: `Your account was created, but we ran into an issue sending the verification email to ${emailLower}. If it doesn't arrive in a few minutes, use "Resend Verification" to try again.`
             });
         }
-        
+
         res.json({
             success: true,
             needsVerification: true,

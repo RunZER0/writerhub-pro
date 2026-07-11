@@ -2010,10 +2010,13 @@
         // ============ Geo-IP Detection ============
         // Detect country and swap testimonials + pricing for Kenyan visitors
         (function detectLocation() {
-            fetch('https://ip-api.com/json/?fields=status,countryCode')
+            // ip-api.com's free tier blocks HTTPS outright (403) — HTTPS is a paid-plan-only
+            // feature there, and a plain http:// call gets blocked as mixed content from this
+            // HTTPS page anyway. ipapi.co is HTTPS-native on its free tier.
+            fetch('https://ipapi.co/json/')
                 .then(r => r.json())
                 .then(data => {
-                    if (data.status === 'success' && data.countryCode === 'KE') {
+                    if (data.country_code === 'KE') {
                         // Swap to Kenyan testimonials
                         activeTestimonials = kenyanTestimonials;
                         renderTestimonials();

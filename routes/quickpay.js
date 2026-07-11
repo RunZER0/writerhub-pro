@@ -249,12 +249,10 @@ router.post('/signup', async (req, res) => {
                 verificationEmailHtml(name, null, `${BASE_URL}/api/quickpay/verify?token=${newToken}`)
             );
             if (!resendSent) {
-                // Don't let an email provider hiccup strand someone from getting their code (same fallback membership.js uses)
-                await pool.query(
-                    `UPDATE quickpay_clients SET is_verified = TRUE, verification_token = NULL, token_expiry = NULL WHERE id = $1`,
-                    [client.id]
-                );
-                return res.json({ success: true, needsVerification: false, clientCode: client.client_code, message: `Your Client Code is ${client.client_code}. Save it — you'll need it every time you use Quick Pay.` });
+                // The Client Code system exists specifically to guarantee a verified identity
+                // behind every payment, so a delivery hiccup is never treated as a pass.
+                console.error(`QuickPay verification email failed to send to ${emailLower} (resend)`);
+                return res.status(502).json({ error: "We couldn't send the verification email right now. Please try again in a moment." });
             }
             return res.json({ success: true, needsVerification: true, message: `We've sent a new verification link to ${emailLower}.` });
         }
@@ -275,11 +273,11 @@ router.post('/signup', async (req, res) => {
         );
 
         if (!emailSent) {
-            await pool.query(
-                `UPDATE quickpay_clients SET is_verified = TRUE, verification_token = NULL, token_expiry = NULL WHERE email = $1`,
-                [emailLower]
-            );
-            return res.json({ success: true, needsVerification: false, clientCode, message: `Your Client Code is ${clientCode}. Save it — you'll need it every time you use Quick Pay.` });
+            // Every Client Code must be backed by a verified email — never issue one on an
+            // email-delivery failure. The account stays unverified; retrying signup with the
+            // same email re-sends the link via the branch above.
+            console.error(`QuickPay verification email failed to send to ${emailLower} during signup`);
+            return res.status(502).json({ error: "We couldn't send the verification email right now. Please try again in a moment." });
         }
 
         res.json({ success: true, needsVerification: true, message: `We've sent a verification link to ${emailLower}. Click it to get your Client Code.` });

@@ -3423,10 +3423,11 @@
         }
 
         function detectTurnitinCurrency() {
-            fetch('https://ip-api.com/json/?fields=status,countryCode')
+            // ip-api.com's free tier blocks HTTPS (403) — ipapi.co is HTTPS-native on its free tier.
+            fetch('https://ipapi.co/json/')
                 .then(r => r.json())
                 .then(data => {
-                    turnitinCurrency = (data.status === 'success' && data.countryCode === 'KE') ? 'KES' : 'USD';
+                    turnitinCurrency = data.country_code === 'KE' ? 'KES' : 'USD';
                     updateTurnitinPricePill();
                     updateTurnitinSubmitButton();
                 })
@@ -4407,7 +4408,8 @@
                     
                     showToast('success', `Welcome, ${data.member.name}!`);
                     await loadMemberProfile();
-                    
+                    setupTurnitinTab();
+
                     // Navigate to membership portal
                     setTimeout(() => {
                         showTab('membership');
@@ -4629,7 +4631,8 @@
                     localStorage.setItem('memberName', data.member.name);
                     showToast('success', `Welcome back, ${data.member.name}!`);
                     await loadMemberProfile();
-                    
+                    setupTurnitinTab();
+
                     // Ensure membership tab is active and scroll to portal
                     setTimeout(() => {
                         showTab('membership');
@@ -4956,7 +4959,8 @@
             // Show auth, hide portal
             document.getElementById('memberAuthSection').style.display = 'block';
             document.getElementById('memberPortal').classList.remove('active');
-            
+            setupTurnitinTab();
+
             showToast('success', 'You have been signed out.');
         }
 
