@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const { pool } = require('../db');
-const { notifyMember, sendMemberEmail, reportEmailTemplate, refundToWallet, DISPUTE_EMAIL } = require('./turnitin');
+const { notifyMember, sendMemberEmail, reportEmailTemplate, buildReportAttachment, refundToWallet, DISPUTE_EMAIL } = require('./turnitin');
 
 // Mounted directly in server.js with express.raw({ type: 'application/json' }),
 // BEFORE the global express.json() body parser, so req.body is the untouched
@@ -74,17 +74,22 @@ module.exports = async function writenixWebhook(req, res) {
                 'turnitin_ready'
             );
 
+            // Attach the actual PDF so the client has it immediately in their inbox, in addition
+            // to it staying downloadable from the portal at any time later.
+            const attachment = await buildReportAttachment(reportUrl, report.original_filename);
+
             await sendMemberEmail(
                 member.email,
                 member.name,
                 'Your plagiarism/AI report is ready',
                 reportEmailTemplate({
                     heading: `Hi ${member.name}, your report is ready!`,
-                    intro: `Your check for "${report.original_filename}" has finished processing.`,
+                    intro: `Your check for "${report.original_filename}" has finished processing.${attachment ? ' The full report is attached to this email.' : ''}`,
                     bodyLines: [],
-                    ctaText: reportUrl ? 'Download Report' : 'View in Dashboard',
-                    ctaUrl: reportUrl || `${process.env.BASE_URL || 'https://www.homeworkpal.online'}/client#turnitin`
-                })
+                    ctaText: 'View in Dashboard',
+                    ctaUrl: `${process.env.BASE_URL || 'https://www.homeworkpal.online'}/client#turnitin`
+                }),
+                attachment
             );
         } else if (event === 'report.refunded') {
             await pool.query(

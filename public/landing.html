@@ -246,6 +246,33 @@
             color: rgba(255, 255, 255, 0.4);
         }
         
+        .quickpay-currency-toggle {
+            display: inline-flex;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 999px;
+            padding: 3px;
+            margin-bottom: 0.6rem;
+        }
+
+        .qp-currency-btn {
+            padding: 0.35rem 1.1rem;
+            border: none;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            border-radius: 999px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .qp-currency-btn.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
         .quickpay-amount-input {
             position: relative;
         }
@@ -261,7 +288,7 @@
         }
         
         .quickpay-amount-input input {
-            padding-left: 2.25rem;
+            padding-left: 3.25rem;
             font-size: 1.1rem;
             font-weight: 600;
         }
@@ -1814,8 +1841,12 @@
                 </div>
                 <div class="form-group">
                     <label for="qpAmount">Amount to Pay *</label>
+                    <div class="quickpay-currency-toggle">
+                        <button type="button" class="qp-currency-btn" data-currency="KES" onclick="qpSetCurrency('KES')">KES</button>
+                        <button type="button" class="qp-currency-btn active" data-currency="USD" onclick="qpSetCurrency('USD')">USD</button>
+                    </div>
                     <div class="quickpay-amount-input">
-                        <span class="currency" id="qpCurrency">₦</span>
+                        <span class="currency" id="qpCurrency">$</span>
                         <input type="number" id="qpAmount" placeholder="0.00" min="1" step="0.01" required oninput="qpUpdateAgreement()">
                     </div>
                 </div>
@@ -2287,21 +2318,36 @@
         // Quick Pay Functionality
         // ========================================
         let qpPaystackPublicKey = null;
-        let qpPaystackCurrency = 'NGN';
+        let qpPaystackCurrency = 'USD'; // driven by the currency toggle in Step B, not the site-wide default
         const currencySymbols = { NGN: '₦', GHS: '₵', ZAR: 'R', USD: '$', KES: 'KSh' };
 
-        // Load Paystack config
+        // Load Paystack public key (currency is chosen per-payment via the KES/USD toggle)
         async function loadQuickPayConfig() {
             try {
                 const response = await fetch('/api/paystack/config');
                 const config = await response.json();
                 qpPaystackPublicKey = config.publicKey;
-                qpPaystackCurrency = config.currency || 'NGN';
-                document.getElementById('qpCurrency').textContent = currencySymbols[qpPaystackCurrency] || qpPaystackCurrency;
             } catch (error) {
                 console.error('Failed to load Paystack config:', error);
             }
         }
+
+        // Default the currency toggle to KES for Kenyan visitors, USD elsewhere (server-side geo lookup —
+        // see routes/geo.js; client-side third-party geo APIs have repeatedly failed here for non-obvious reasons)
+        function qpSetCurrency(currency) {
+            qpPaystackCurrency = currency;
+            document.querySelectorAll('.qp-currency-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.currency === currency);
+            });
+            const symbolEl = document.getElementById('qpCurrency');
+            if (symbolEl) symbolEl.textContent = currencySymbols[currency] || currency;
+            if (qpVerifiedClient) qpUpdateAgreement();
+        }
+
+        fetch('/api/geo')
+            .then(r => r.json())
+            .then(data => qpSetCurrency(data.countryCode === 'KE' ? 'KES' : 'USD'))
+            .catch(() => qpSetCurrency('USD'));
 
         // Load config on page load
         loadQuickPayConfig();

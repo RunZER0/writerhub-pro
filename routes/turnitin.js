@@ -128,18 +128,44 @@ function reportEmailTemplate({ heading, intro, bodyLines, ctaText, ctaUrl }) {
     `;
 }
 
-async function sendMemberEmail(email, name, subject, html) {
+async function sendMemberEmail(email, name, subject, html, attachment) {
     try {
         const sendSmtpEmail = new Brevo.SendSmtpEmail();
         sendSmtpEmail.sender = { name: 'HomeworkPal', email: process.env.SENDER_EMAIL || 'noreply@homeworkpal.com' };
         sendSmtpEmail.to = [{ email, name }];
         sendSmtpEmail.subject = subject;
         sendSmtpEmail.htmlContent = html;
+        if (attachment) {
+            sendSmtpEmail.attachment = [attachment]; // { content: base64String, name: 'filename.pdf' }
+        }
         await brevoApi.sendTransacEmail(sendSmtpEmail);
         return true;
     } catch (error) {
         console.error('Failed to send report email:', error?.body || error.message);
         return false;
+    }
+}
+
+// Fetches the report PDF so it can ride along as an email attachment. Brevo's transactional
+// API caps total message size around 10MB, so this skips attaching (falls back to the portal
+// link only) if the file is unexpectedly large rather than risking the whole send failing.
+async function buildReportAttachment(reportUrl, originalFilename) {
+    if (!reportUrl) return null;
+    try {
+        const response = await fetch(reportUrl);
+        if (!response.ok) return null;
+
+        const buffer = Buffer.from(await response.arrayBuffer());
+        if (buffer.length > 9 * 1024 * 1024) {
+            console.error(`Report PDF too large to attach (${buffer.length} bytes), sending link-only email`);
+            return null;
+        }
+
+        const baseName = originalFilename.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'report';
+        return { content: buffer.toString('base64'), name: `${baseName} - Report.pdf` };
+    } catch (error) {
+        console.error('Failed to fetch report PDF for email attachment:', error.message);
+        return null;
     }
 }
 
@@ -389,5 +415,6 @@ module.exports = router;
 module.exports.notifyMember = notifyMember;
 module.exports.reportEmailTemplate = reportEmailTemplate;
 module.exports.sendMemberEmail = sendMemberEmail;
+module.exports.buildReportAttachment = buildReportAttachment;
 module.exports.refundToWallet = refundToWallet;
 module.exports.DISPUTE_EMAIL = DISPUTE_EMAIL;
