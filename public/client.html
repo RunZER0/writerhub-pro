@@ -3751,13 +3751,16 @@
             return geoDetectionPromise;
         }
 
-        // Real market USD->KES rate, for display only. Tier/total_spent tracking itself always
-        // normalizes on our own fixed pricing rate ($8/page) rather than this — see routes/client.js.
-        const USD_TO_KES_DISPLAY_RATE = 129;
+        // HomeworkPal's own KES rate (250 KES = $8/page, i.e. 31.25 KES per $1) — deliberately
+        // NOT the real market FX rate. total_spent is stored in USD by normalizing every order
+        // through that same $8/page rate (see routes/client.js), so converting it back with this
+        // same rate reconstructs the actual KES amount a Kenyan client paid. Using the real market
+        // rate here would show a number the client never actually paid, which is misleading, not helpful.
+        const HOMEWORKPAL_KES_RATE = 31.25;
         function formatUsdAmount(usdAmount) {
             return detectGeoCountry().then(countryCode =>
                 countryCode === 'KE'
-                    ? `KSh ${Math.round(usdAmount * USD_TO_KES_DISPLAY_RATE).toLocaleString()}`
+                    ? `KSh ${Math.round(usdAmount * HOMEWORKPAL_KES_RATE).toLocaleString()}`
                     : `$${usdAmount.toFixed(0)}`
             );
         }
