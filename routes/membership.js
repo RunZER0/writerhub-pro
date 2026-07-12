@@ -582,63 +582,61 @@ router.get('/profile', authenticateMember, async (req, res) => {
 });
 
 // Update member stats (called after order completion - internal use)
+// Shared by the /update-stats route below and called directly (function call, not HTTP) from
+// routes/client.js after a paid order is created, so there's one source of truth for tier math.
+// orderAmountUsd must already be normalized to USD — membership_tiers thresholds are USD-denominated,
+// so a KES-priced order needs to be converted using our own fixed per-page rate before calling this,
+// not a live market FX rate (see routes/client.js for why).
+async function updateMemberStats(email, orderAmountUsd) {
+    if (!email) return { updated: false };
+
+    const emailLower = email.toLowerCase().trim();
+
+    const member = await pool.query('SELECT * FROM client_members WHERE email = $1', [emailLower]);
+    if (member.rows.length === 0) {
+        return { updated: false, reason: 'Not a member' };
+    }
+
+    const m = member.rows[0];
+    const newOrderCount = m.total_orders + 1;
+    const newTotalSpent = parseFloat(m.total_spent || 0) + parseFloat(orderAmountUsd || 0);
+
+    const newTier = await pool.query(`
+        SELECT * FROM membership_tiers
+        WHERE min_orders <= $1 AND min_spent <= $2
+        ORDER BY discount_percent DESC
+        LIMIT 1
+    `, [newOrderCount, newTotalSpent]);
+
+    const tierName = newTier.rows[0]?.name || 'basic';
+    const discount = newTier.rows[0]?.discount_percent || 5;
+
+    // Auto-verify members who have completed orders (they've proven they're real customers)
+    const shouldAutoVerify = newOrderCount >= 1;
+
+    await pool.query(`
+        UPDATE client_members
+        SET total_orders = $1, total_spent = $2, membership_tier = $3, discount_percent = $4,
+            is_verified = CASE WHEN $6 THEN TRUE ELSE is_verified END
+        WHERE id = $5
+    `, [newOrderCount, newTotalSpent, tierName, discount, m.id, shouldAutoVerify]);
+
+    return {
+        updated: true,
+        newTier: tierName,
+        newDiscount: parseFloat(discount),
+        upgraded: tierName !== m.membership_tier,
+        totalOrders: newOrderCount,
+        totalSpent: newTotalSpent,
+        autoVerified: shouldAutoVerify && !m.is_verified
+    };
+}
+
 router.post('/update-stats', async (req, res) => {
     try {
         const { email, orderAmount } = req.body;
-        
-        if (!email) {
-            return res.json({ updated: false });
-        }
-        
-        const emailLower = email.toLowerCase().trim();
-        
-        // Get current member
-        const member = await pool.query(
-            'SELECT * FROM client_members WHERE email = $1',
-            [emailLower]
-        );
-        
-        if (member.rows.length === 0) {
-            return res.json({ updated: false, reason: 'Not a member' });
-        }
-        
-        const m = member.rows[0];
-        const newOrderCount = m.total_orders + 1;
-        const newTotalSpent = parseFloat(m.total_spent || 0) + parseFloat(orderAmount || 0);
-        
-        // Check for tier upgrade
-        const newTier = await pool.query(`
-            SELECT * FROM membership_tiers
-            WHERE min_orders <= $1 AND min_spent <= $2
-            ORDER BY discount_percent DESC
-            LIMIT 1
-        `, [newOrderCount, newTotalSpent]);
-        
-        const tierName = newTier.rows[0]?.name || 'basic';
-        const discount = newTier.rows[0]?.discount_percent || 5;
-        
-        // Auto-verify members who have completed orders (they've proven they're real customers)
-        const shouldAutoVerify = newOrderCount >= 1;
-        
-        // Update member (auto-verify if they have orders)
-        await pool.query(`
-            UPDATE client_members
-            SET total_orders = $1, total_spent = $2, membership_tier = $3, discount_percent = $4,
-                is_verified = CASE WHEN $6 THEN TRUE ELSE is_verified END
-            WHERE id = $5
-        `, [newOrderCount, newTotalSpent, tierName, discount, m.id, shouldAutoVerify]);
-        
-        const upgraded = tierName !== m.membership_tier;
-        
-        res.json({
-            updated: true,
-            newTier: tierName,
-            newDiscount: parseFloat(discount),
-            upgraded,
-            totalOrders: newOrderCount,
-            totalSpent: newTotalSpent,
-            autoVerified: shouldAutoVerify && !m.is_verified
-        });
+        const result = await updateMemberStats(email, orderAmount);
+        res.json(result);
     } catch (error) {
         console.error('Update member stats error:', error);
         res.status(500).json({ error: 'Failed to update stats' });
@@ -775,3 +773,4 @@ router.get('/admin/list', async (req, res) => {
 });
 
 module.exports = router;
+module.exports.updateMemberStats = updateMemberStats;

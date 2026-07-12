@@ -5,6 +5,7 @@ const path = require('path');
 const fs = require('fs');
 const { pool } = require('../db');
 const webpush = require('web-push');
+const { updateMemberStats } = require('./membership');
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -49,7 +50,10 @@ router.post('/submit', upload.array('files', 5), async (req, res) => {
             client_name,
             client_email,
             client_phone,
-            referral_code
+            referral_code,
+            payment_amount,
+            currency,
+            pages
         } = req.body;
 
         // Validate required fields
@@ -103,6 +107,24 @@ router.post('/submit', upload.array('files', 5), async (req, res) => {
 
         // Notify all admins
         await notifyAdminsNewAssignment(assignmentId, title, domain, client_name, client_email);
+
+        // Update membership total_spent/tier tracking. membership_tiers thresholds are
+        // USD-denominated, so a KES-priced order is normalized using our own fixed per-page
+        // rate ($8/page, matching the unified pricing model), not a live market FX rate —
+        // that keeps tier progression consistent regardless of which currency a client paid in.
+        // No-ops harmlessly if the email doesn't belong to a registered member.
+        if (client_email && payment_amount) {
+            try {
+                const pageCount = parseInt(pages) || null;
+                const isKes = (currency || '').toLowerCase() === 'kes';
+                const usdEquivalent = pageCount
+                    ? pageCount * 8
+                    : (isKes ? parseFloat(payment_amount) / 31.25 : parseFloat(payment_amount));
+                await updateMemberStats(client_email, usdEquivalent);
+            } catch (statsError) {
+                console.error('Error updating membership stats:', statsError.message);
+            }
+        }
 
         res.json({
             success: true,

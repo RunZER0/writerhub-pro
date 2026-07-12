@@ -3751,6 +3751,22 @@
             return geoDetectionPromise;
         }
 
+        // Real market USD->KES rate, for display only. Tier/total_spent tracking itself always
+        // normalizes on our own fixed pricing rate ($8/page) rather than this — see routes/client.js.
+        const USD_TO_KES_DISPLAY_RATE = 129;
+        function formatUsdAmount(usdAmount) {
+            return detectGeoCountry().then(countryCode =>
+                countryCode === 'KE'
+                    ? `KSh ${Math.round(usdAmount * USD_TO_KES_DISPLAY_RATE).toLocaleString()}`
+                    : `$${usdAmount.toFixed(0)}`
+            );
+        }
+        function renderPortalSpent(totalSpentUsd) {
+            const el = document.getElementById('portalSpent');
+            if (!el) return;
+            formatUsdAmount(totalSpentUsd).then(text => { el.textContent = text; });
+        }
+
         // ========== PLAGIARISM/AI CHECK (TURNITIN) ==========
 
         let turnitinPricing = { kes: 200, usd: 2, walletCredits: 0 };
@@ -4507,7 +4523,11 @@
                 formData.append('client_phone', data.clientPhone || '');
                 formData.append('payment_reference', reference);
                 formData.append('payment_amount', data.finalPrice);
-                
+                if (data.assignmentType === 'standard') {
+                    formData.append('pages', data.pages || 1);
+                    formData.append('currency', unifiedPricingCurrency);
+                }
+
                 if (referralCode) {
                     formData.append('referral_code', referralCode);
                 }
@@ -5107,7 +5127,7 @@
                     : `<span style="text-decoration: line-through; opacity: 0.5;">${member.discount_percent}%</span> <span style="color: #f59e0b;">0%</span>`;
                     
                 document.getElementById('portalOrders').textContent = member.total_orders || 0;
-                document.getElementById('portalSpent').textContent = `$${parseFloat(member.total_spent || 0).toFixed(0)}`;
+                renderPortalSpent(parseFloat(member.total_spent || 0));
                 
                 // Calculate orders to next tier
                 const ordersToNext = calculateOrdersToNextTier(member);
@@ -5229,7 +5249,9 @@
                 document.getElementById('nextTierLabel').textContent = 'Max Tier!';
                 document.getElementById('tierProgressBar').style.width = '100%';
                 document.getElementById('ordersProgress').textContent = `${currentOrders} orders`;
-                document.getElementById('spentProgress').textContent = `$${currentSpent.toFixed(0)} spent`;
+                formatUsdAmount(currentSpent).then(text => {
+                    document.getElementById('spentProgress').textContent = `${text} spent`;
+                });
                 return;
             }
             
@@ -5245,7 +5267,9 @@
             
             document.getElementById('tierProgressBar').style.width = `${Math.min(progress, 100)}%`;
             document.getElementById('ordersProgress').textContent = `${currentOrders}/${req.orders} orders`;
-            document.getElementById('spentProgress').textContent = `$${currentSpent.toFixed(0)}/$${req.spent}`;
+            Promise.all([formatUsdAmount(currentSpent), formatUsdAmount(req.spent)]).then(([current, target]) => {
+                document.getElementById('spentProgress').textContent = `${current}/${target}`;
+            });
         }
 
         function updatePortalPerks(tier, isVerified = true) {
