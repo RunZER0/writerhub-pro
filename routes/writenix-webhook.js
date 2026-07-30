@@ -1,5 +1,5 @@
-const crypto = require('crypto');
 const { pool } = require('../db');
+const writenixClient = require('../writenix/client');
 const { notifyMember, sendMemberEmail, reportEmailTemplate, buildReportAttachment, refundToWallet } = require('./turnitin');
 
 // Mounted directly in server.js with express.raw({ type: 'application/json' }),
@@ -9,28 +9,17 @@ const { notifyMember, sendMemberEmail, reportEmailTemplate, buildReportAttachmen
 module.exports = async function writenixWebhook(req, res) {
     try {
         const signature = req.headers['x-writenix-signature'];
-        const secret = process.env.WRITENIX_WEBHOOK_SECRET;
+        const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
 
-        if (!signature || !secret) {
+        if (!signature || !process.env.WRITENIX_WEBHOOK_SECRET) {
             return res.status(401).json({ error: 'Missing signature' });
         }
-
-        const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(JSON.stringify(req.body));
-        const computed = crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
-
-        const signatureBuffer = Buffer.from(signature);
-        const computedBuffer = Buffer.from(computed);
-        if (signatureBuffer.length !== computedBuffer.length || !crypto.timingSafeEqual(signatureBuffer, computedBuffer)) {
+        if (!writenixClient.verifyWebhookSignature(signature, rawBody)) {
             return res.status(403).json({ error: 'Invalid signature' });
         }
 
         const payload = JSON.parse(rawBody.toString('utf8'));
-        const event = payload.event;
-
-        // Per Writenix's documented webhook payload, the match field is report_id. Older
-        // fallback field names are kept defensively in case a payload variant ever omits it.
-        const writenixRef = payload.report_id || payload.document_id || payload.reference || payload.id
-            || payload.data?.report_id || payload.data?.document_id || payload.data?.reference || payload.data?.id;
+        const { event, writenixRef, similarityReportUrl, aiReportUrl } = writenixClient.parseWebhookPayload(payload);
 
         if (!writenixRef) {
             console.error('Writenix webhook missing a matchable reference:', JSON.stringify(payload));
@@ -54,12 +43,6 @@ module.exports = async function writenixWebhook(req, res) {
         const member = { name: report.member_name, email: report.member_email };
 
         if (event === 'report.completed') {
-            // Documented shape: payload.files.report_1 = similarity report, report_2 = AI report —
-            // two separate downloadable files, not one URL with numeric score fields.
-            const files = payload.files || payload.data?.files || {};
-            const similarityReportUrl = files.report_1 || null;
-            const aiReportUrl = files.report_2 || null;
-
             await pool.query(
                 `UPDATE writenix_reports
                  SET status = 'completed', similarity_report_url = $1, ai_report_url = $2,

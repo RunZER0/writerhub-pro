@@ -3,10 +3,10 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { Readable } = require('stream');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
 const { isAdminBypassEmail } = require('../utils/admin-emails');
+const writenixClient = require('../writenix/client');
 
 const Brevo = require('@getbrevo/brevo');
 const brevoApi = new Brevo.TransactionalEmailsApi();
@@ -69,15 +69,6 @@ const upload = multer({
         }
     }
 });
-
-// Writenix's own docs: Cloudflare in front of their API challenges requests that look like
-// generic backend HTTP clients. They explicitly recommend a realistic browser User-Agent plus
-// Accept: application/json to avoid that.
-const WRITENIX_REQUEST_HEADERS = {
-    'X-Api-Key': process.env.WRITENIX_API_KEY,
-    'Accept': 'application/json',
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-};
 
 // ---- Helpers ----
 async function verifyPaystackTransaction(reference) {
@@ -166,10 +157,9 @@ async function sendMemberEmail(email, name, subject, html, attachments) {
 async function buildReportAttachment(reportUrl, originalFilename, suffix) {
     if (!reportUrl) return null;
     try {
-        const response = await fetch(reportUrl);
-        if (!response.ok) return null;
+        const buffer = await writenixClient.downloadReportBuffer(reportUrl);
+        if (!buffer) return null;
 
-        const buffer = Buffer.from(await response.arrayBuffer());
         if (buffer.length > 4 * 1024 * 1024) {
             console.error(`${suffix} too large to attach (${buffer.length} bytes), sending link-only email`);
             return null;
@@ -324,22 +314,7 @@ router.post('/submit', authenticateMember, (req, res, next) => {
         // Forward to Writenix
         try {
             const fileBuffer = fs.readFileSync(uploadedFilePath);
-            const formData = new FormData();
-            formData.append('file', new Blob([fileBuffer]), req.file.originalname);
-
-            const writenixResponse = await fetch('https://app.writenix.com/api/v1/documents/process', {
-                method: 'POST',
-                headers: WRITENIX_REQUEST_HEADERS,
-                body: formData
-            });
-
-            if (!writenixResponse.ok) {
-                const errBody = await writenixResponse.text().catch(() => '');
-                throw new Error(`Writenix returned ${writenixResponse.status}: ${errBody}`);
-            }
-
-            const writenixData = await writenixResponse.json().catch(() => ({}));
-            const writenixReference = writenixData.report_id || writenixData.reference || writenixData.document_id || writenixData.id || null;
+            const { writenixReference } = await writenixClient.submitDocument(fileBuffer, req.file.originalname);
 
             await pool.query(
                 'UPDATE writenix_reports SET writenix_reference = $1 WHERE id = $2',
@@ -416,23 +391,11 @@ router.get('/download/:id/:type', authenticateMember, async (req, res) => {
         }
 
         const suffix = type === 'similarity' ? 'Similarity Report' : 'AI Report';
+        const baseName = report.original_filename.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'report';
 
-        try {
-            const upstream = await fetch(sourceUrl);
-            if (!upstream.ok || !upstream.body) {
-                throw new Error(`Upstream returned ${upstream.status}`);
-            }
-
-            const baseName = report.original_filename.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'report';
-            const contentType = upstream.headers.get('content-type') || 'application/pdf';
-
-            res.setHeader('Content-Type', contentType);
-            res.setHeader('Content-Disposition', `attachment; filename="${baseName} - ${suffix}.pdf"`);
-
-            Readable.fromWeb(upstream.body).pipe(res);
-        } catch (proxyError) {
+        const streamed = await writenixClient.streamReportToResponse(sourceUrl, res, `${baseName} - ${suffix}.pdf`);
+        if (!streamed) {
             // Fall back to a plain redirect rather than leaving the user stuck if the proxy fetch fails
-            console.error('Report proxy download failed, falling back to redirect:', proxyError.message);
             res.redirect(sourceUrl);
         }
     } catch (error) {
