@@ -1082,7 +1082,7 @@
             white-space: nowrap;
         }
         .timeline-meta { font-size: 0.75rem; color: rgba(255,255,255,0.4); }
-        .timeline-action { flex-shrink: 0; }
+        .timeline-action { flex-shrink: 0; display: flex; gap: 0.5rem; align-items: center; }
         .timeline-status-text { font-size: 0.78rem; font-weight: 700; }
         .timeline-status-text.processing { color: #60a5fa; }
         .timeline-status-text.pending { color: #fbbf24; }
@@ -3350,8 +3350,8 @@
                     <div class="scanlab-dropzone" id="turnitinDropzone">
                         <div class="scanlab-dropzone-icon"><i class="fas fa-file-arrow-up"></i></div>
                         <p class="scanlab-dropzone-title">Drop your document here</p>
-                        <p class="scanlab-dropzone-sub">or click to browse — PDF or Word, up to 20MB</p>
-                        <input type="file" id="turnitinFileInput" accept=".pdf,.doc,.docx" style="display: none;">
+                        <p class="scanlab-dropzone-sub">or click to browse — PDF or Word (.docx), up to 10MB</p>
+                        <input type="file" id="turnitinFileInput" accept=".pdf,.docx" style="display: none;">
                     </div>
                     <div class="scanlab-selected-file" id="turnitinSelectedFile"></div>
 
@@ -3865,14 +3865,14 @@
         }
 
         function setTurnitinFile(file) {
-            const allowed = ['.pdf', '.doc', '.docx'];
+            const allowed = ['.pdf', '.docx'];
             const ext = file.name.slice(file.name.lastIndexOf('.')).toLowerCase();
             if (!allowed.includes(ext)) {
-                showToast('error', 'Only PDF and Word documents are accepted');
+                showToast('error', 'Only PDF and Word (.docx) documents are accepted');
                 return;
             }
-            if (file.size > 20 * 1024 * 1024) {
-                showToast('error', 'File is too large (max 20MB)');
+            if (file.size > 10 * 1024 * 1024) {
+                showToast('error', 'File is too large (max 10MB)');
                 return;
             }
 
@@ -4058,19 +4058,27 @@
             body.innerHTML = reports.map(r => {
                 const status = statusLabels[r.status] || { text: r.status, dot: '', cls: '' };
                 const date = new Date(r.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                const scoreParts = [];
-                if (r.status === 'completed' && r.similarity_score != null) scoreParts.push(`${r.similarity_score}% similarity`);
-                if (r.status === 'completed' && r.ai_score != null) scoreParts.push(`${r.ai_score}% AI`);
-                const scoreNote = scoreParts.length ? ` · ${scoreParts.join(' · ')}` : '';
-                const action = r.status === 'completed'
-                    ? `<a href="/api/turnitin/download/${r.id}" target="_blank" class="timeline-download"><i class="fas fa-download"></i> Download</a>`
-                    : `<span class="timeline-status-text ${status.cls}">${status.text}</span>`;
+
+                let action;
+                if (r.status === 'completed' && (r.hasSimilarityReport || r.hasAiReport)) {
+                    const links = [];
+                    if (r.hasSimilarityReport) {
+                        links.push(`<a href="/api/turnitin/download/${r.id}/similarity" target="_blank" class="timeline-download"><i class="fas fa-download"></i> Similarity</a>`);
+                    }
+                    if (r.hasAiReport) {
+                        links.push(`<a href="/api/turnitin/download/${r.id}/ai" target="_blank" class="timeline-download"><i class="fas fa-download"></i> AI Report</a>`);
+                    }
+                    action = links.join('');
+                } else {
+                    action = `<span class="timeline-status-text ${status.cls}">${status.text}</span>`;
+                }
+
                 return `
                     <div class="timeline-row">
                         <div class="timeline-dot ${status.dot}"></div>
                         <div class="timeline-content">
                             <div class="timeline-filename">${r.original_filename}</div>
-                            <div class="timeline-meta">${date}${scoreNote}</div>
+                            <div class="timeline-meta">${date}</div>
                         </div>
                         <div class="timeline-action">${action}</div>
                     </div>

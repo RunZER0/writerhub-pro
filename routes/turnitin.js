@@ -53,19 +53,31 @@ const storage = multer.diskStorage({
     }
 });
 
+// Writenix only validates PDF/DOCX up to 10MB (their docs are explicit — .doc and anything
+// larger gets rejected with a 422 on their end), so we match those limits exactly here rather
+// than accepting files we already know they'll bounce.
 const upload = multer({
     storage,
-    limits: { fileSize: 20 * 1024 * 1024 }, // 20MB
+    limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
     fileFilter: (req, file, cb) => {
-        const allowedTypes = ['.pdf', '.doc', '.docx'];
+        const allowedTypes = ['.pdf', '.docx'];
         const ext = path.extname(file.originalname).toLowerCase();
         if (allowedTypes.includes(ext)) {
             cb(null, true);
         } else {
-            cb(new Error('Only PDF and Word documents (.pdf, .doc, .docx) are accepted'));
+            cb(new Error('Only PDF and Word (.docx) documents are accepted'));
         }
     }
 });
+
+// Writenix's own docs: Cloudflare in front of their API challenges requests that look like
+// generic backend HTTP clients. They explicitly recommend a realistic browser User-Agent plus
+// Accept: application/json to avoid that.
+const WRITENIX_REQUEST_HEADERS = {
+    'X-Api-Key': process.env.WRITENIX_API_KEY,
+    'Accept': 'application/json',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+};
 
 // ---- Helpers ----
 async function verifyPaystackTransaction(reference) {
@@ -128,15 +140,16 @@ function reportEmailTemplate({ heading, intro, bodyLines, ctaText, ctaUrl }) {
     `;
 }
 
-async function sendMemberEmail(email, name, subject, html, attachment) {
+// attachments: array of { content: base64String, name: 'filename.pdf' }, or omit/pass [] for none.
+async function sendMemberEmail(email, name, subject, html, attachments) {
     try {
         const sendSmtpEmail = new Brevo.SendSmtpEmail();
         sendSmtpEmail.sender = { name: 'HomeworkPal', email: process.env.SENDER_EMAIL || 'noreply@homeworkpal.com' };
         sendSmtpEmail.to = [{ email, name }];
         sendSmtpEmail.subject = subject;
         sendSmtpEmail.htmlContent = html;
-        if (attachment) {
-            sendSmtpEmail.attachment = [attachment]; // { content: base64String, name: 'filename.pdf' }
+        if (attachments && attachments.length > 0) {
+            sendSmtpEmail.attachment = attachments;
         }
         await brevoApi.sendTransacEmail(sendSmtpEmail);
         return true;
@@ -146,25 +159,26 @@ async function sendMemberEmail(email, name, subject, html, attachment) {
     }
 }
 
-// Fetches the report PDF so it can ride along as an email attachment. Brevo's transactional
-// API caps total message size around 10MB, so this skips attaching (falls back to the portal
-// link only) if the file is unexpectedly large rather than risking the whole send failing.
-async function buildReportAttachment(reportUrl, originalFilename) {
+// Fetches a report file (similarity or AI) so it can ride along as an email attachment. Brevo's
+// transactional API caps total message size around 10MB combined, so this skips attaching
+// (falls back to the portal link only) if the file is unexpectedly large rather than risking
+// the whole send failing.
+async function buildReportAttachment(reportUrl, originalFilename, suffix) {
     if (!reportUrl) return null;
     try {
         const response = await fetch(reportUrl);
         if (!response.ok) return null;
 
         const buffer = Buffer.from(await response.arrayBuffer());
-        if (buffer.length > 9 * 1024 * 1024) {
-            console.error(`Report PDF too large to attach (${buffer.length} bytes), sending link-only email`);
+        if (buffer.length > 4 * 1024 * 1024) {
+            console.error(`${suffix} too large to attach (${buffer.length} bytes), sending link-only email`);
             return null;
         }
 
         const baseName = originalFilename.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9 _-]/g, '').trim() || 'report';
-        return { content: buffer.toString('base64'), name: `${baseName} - Report.pdf` };
+        return { content: buffer.toString('base64'), name: `${baseName} - ${suffix}.pdf` };
     } catch (error) {
-        console.error('Failed to fetch report PDF for email attachment:', error.message);
+        console.error(`Failed to fetch ${suffix} for email attachment:`, error.message);
         return null;
     }
 }
@@ -315,7 +329,7 @@ router.post('/submit', authenticateMember, (req, res, next) => {
 
             const writenixResponse = await fetch('https://app.writenix.com/api/v1/documents/process', {
                 method: 'POST',
-                headers: { 'X-Api-Key': process.env.WRITENIX_API_KEY },
+                headers: WRITENIX_REQUEST_HEADERS,
                 body: formData
             });
 
@@ -325,7 +339,7 @@ router.post('/submit', authenticateMember, (req, res, next) => {
             }
 
             const writenixData = await writenixResponse.json().catch(() => ({}));
-            const writenixReference = writenixData.reference || writenixData.document_id || writenixData.id || null;
+            const writenixReference = writenixData.report_id || writenixData.reference || writenixData.document_id || writenixData.id || null;
 
             await pool.query(
                 'UPDATE writenix_reports SET writenix_reference = $1 WHERE id = $2',
@@ -358,13 +372,19 @@ router.post('/submit', authenticateMember, (req, res, next) => {
 router.get('/my-reports', authenticateMember, async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT id, original_filename, status, similarity_score, ai_score, created_at, completed_at
+            `SELECT id, original_filename, status, similarity_report_url, ai_report_url, created_at, completed_at
              FROM writenix_reports
              WHERE member_id = $1
              ORDER BY created_at DESC`,
             [req.member.memberId]
         );
-        res.json({ reports: result.rows });
+        res.json({
+            reports: result.rows.map(r => ({
+                ...r,
+                hasSimilarityReport: !!r.similarity_report_url,
+                hasAiReport: !!r.ai_report_url
+            }))
+        });
     } catch (error) {
         console.error('Error fetching reports:', error);
         res.status(500).json({ error: 'Failed to fetch reports' });
@@ -373,22 +393,32 @@ router.get('/my-reports', authenticateMember, async (req, res) => {
 
 // Download a completed report — proxied (not redirected) so it downloads with a friendly
 // filename and never exposes Writenix's underlying (possibly signed/expiring) URL to the client.
-router.get('/download/:id', authenticateMember, async (req, res) => {
+// Writenix sends back two separate report files (similarity + AI detection), so :type picks which one.
+router.get('/download/:id/:type', authenticateMember, async (req, res) => {
     try {
+        const { id, type } = req.params;
+        if (type !== 'similarity' && type !== 'ai') {
+            return res.status(400).json({ error: 'Invalid report type' });
+        }
+
         const result = await pool.query(
             'SELECT * FROM writenix_reports WHERE id = $1 AND member_id = $2',
-            [req.params.id, req.member.memberId]
+            [id, req.member.memberId]
         );
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Report not found' });
         }
         const report = result.rows[0];
-        if (report.status !== 'completed' || !report.report_url) {
+        const sourceUrl = type === 'similarity' ? report.similarity_report_url : report.ai_report_url;
+
+        if (report.status !== 'completed' || !sourceUrl) {
             return res.status(400).json({ error: 'Report is not ready yet' });
         }
 
+        const suffix = type === 'similarity' ? 'Similarity Report' : 'AI Report';
+
         try {
-            const upstream = await fetch(report.report_url);
+            const upstream = await fetch(sourceUrl);
             if (!upstream.ok || !upstream.body) {
                 throw new Error(`Upstream returned ${upstream.status}`);
             }
@@ -397,13 +427,13 @@ router.get('/download/:id', authenticateMember, async (req, res) => {
             const contentType = upstream.headers.get('content-type') || 'application/pdf';
 
             res.setHeader('Content-Type', contentType);
-            res.setHeader('Content-Disposition', `attachment; filename="${baseName} - Report.pdf"`);
+            res.setHeader('Content-Disposition', `attachment; filename="${baseName} - ${suffix}.pdf"`);
 
             Readable.fromWeb(upstream.body).pipe(res);
         } catch (proxyError) {
             // Fall back to a plain redirect rather than leaving the user stuck if the proxy fetch fails
             console.error('Report proxy download failed, falling back to redirect:', proxyError.message);
-            res.redirect(report.report_url);
+            res.redirect(sourceUrl);
         }
     } catch (error) {
         console.error('Error downloading report:', error);

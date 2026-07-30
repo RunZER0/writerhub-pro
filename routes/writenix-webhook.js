@@ -1,6 +1,6 @@
 const crypto = require('crypto');
 const { pool } = require('../db');
-const { notifyMember, sendMemberEmail, reportEmailTemplate, buildReportAttachment, refundToWallet, DISPUTE_EMAIL } = require('./turnitin');
+const { notifyMember, sendMemberEmail, reportEmailTemplate, buildReportAttachment, refundToWallet } = require('./turnitin');
 
 // Mounted directly in server.js with express.raw({ type: 'application/json' }),
 // BEFORE the global express.json() body parser, so req.body is the untouched
@@ -27,9 +27,10 @@ module.exports = async function writenixWebhook(req, res) {
         const payload = JSON.parse(rawBody.toString('utf8'));
         const event = payload.event;
 
-        // Writenix's exact identifier field isn't pinned down in their public docs snippet,
-        // so match defensively against whatever they actually send.
-        const writenixRef = payload.document_id || payload.reference || payload.id || payload.data?.document_id || payload.data?.reference || payload.data?.id;
+        // Per Writenix's documented webhook payload, the match field is report_id. Older
+        // fallback field names are kept defensively in case a payload variant ever omits it.
+        const writenixRef = payload.report_id || payload.document_id || payload.reference || payload.id
+            || payload.data?.report_id || payload.data?.document_id || payload.data?.reference || payload.data?.id;
 
         if (!writenixRef) {
             console.error('Writenix webhook missing a matchable reference:', JSON.stringify(payload));
@@ -53,17 +54,18 @@ module.exports = async function writenixWebhook(req, res) {
         const member = { name: report.member_name, email: report.member_email };
 
         if (event === 'report.completed') {
-            const data = payload.data || payload;
-            const reportUrl = data.report_url || data.download_url || data.file_url || null;
-            const similarityScore = data.similarity_score ?? data.similarity ?? null;
-            const aiScore = data.ai_score ?? data.ai_similarity ?? null;
+            // Documented shape: payload.files.report_1 = similarity report, report_2 = AI report —
+            // two separate downloadable files, not one URL with numeric score fields.
+            const files = payload.files || payload.data?.files || {};
+            const similarityReportUrl = files.report_1 || null;
+            const aiReportUrl = files.report_2 || null;
 
             await pool.query(
                 `UPDATE writenix_reports
-                 SET status = 'completed', report_url = $1, similarity_score = $2, ai_score = $3,
-                     webhook_payload = $4, completed_at = NOW()
-                 WHERE id = $5`,
-                [reportUrl, similarityScore, aiScore, JSON.stringify(payload), report.id]
+                 SET status = 'completed', similarity_report_url = $1, ai_report_url = $2,
+                     webhook_payload = $3, completed_at = NOW()
+                 WHERE id = $4`,
+                [similarityReportUrl, aiReportUrl, JSON.stringify(payload), report.id]
             );
 
             await notifyMember(
@@ -74,9 +76,12 @@ module.exports = async function writenixWebhook(req, res) {
                 'turnitin_ready'
             );
 
-            // Attach the actual PDF so the client has it immediately in their inbox, in addition
-            // to it staying downloadable from the portal at any time later.
-            const attachment = await buildReportAttachment(reportUrl, report.original_filename);
+            // Attach both report files so the client has them immediately in their inbox, in
+            // addition to staying downloadable from the portal at any time later.
+            const attachments = (await Promise.all([
+                buildReportAttachment(similarityReportUrl, report.original_filename, 'Similarity Report'),
+                buildReportAttachment(aiReportUrl, report.original_filename, 'AI Report')
+            ])).filter(Boolean);
 
             await sendMemberEmail(
                 member.email,
@@ -84,19 +89,23 @@ module.exports = async function writenixWebhook(req, res) {
                 'Your plagiarism/AI report is ready',
                 reportEmailTemplate({
                     heading: `Hi ${member.name}, your report is ready!`,
-                    intro: `Your check for "${report.original_filename}" has finished processing.${attachment ? ' The full report is attached to this email.' : ''}`,
+                    intro: `Your check for "${report.original_filename}" has finished processing.${attachments.length ? ' The full report(s) are attached to this email.' : ''}`,
                     bodyLines: [],
                     ctaText: 'View in Dashboard',
                     ctaUrl: `${process.env.BASE_URL || 'https://www.homeworkpal.online'}/client#turnitin`
                 }),
-                attachment
+                attachments
             );
-        } else if (event === 'report.refunded') {
+        } else if (event === 'report.refunded' || event === 'report.cancelled') {
+            const reason = event === 'report.cancelled'
+                ? 'processing was cancelled'
+                : 'the file was rejected during moderation';
+
             await pool.query(
                 `UPDATE writenix_reports SET status = 'refunded', webhook_payload = $1 WHERE id = $2`,
                 [JSON.stringify(payload), report.id]
             );
-            await refundToWallet(report.id, report.member_id, member, 'the file was rejected during moderation');
+            await refundToWallet(report.id, report.member_id, member, reason);
         } else {
             console.log(`Unhandled Writenix webhook event: ${event}`);
         }
