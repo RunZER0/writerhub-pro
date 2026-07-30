@@ -25,8 +25,15 @@ const BASE_URL = 'https://app.writenix.com/api/v1';
 function buildRequestHeaders() {
     return {
         'X-Api-Key': process.env.WRITENIX_API_KEY,
-        'Accept': 'application/json',
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        'Accept': 'application/json, text/plain, */*',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+        'sec-ch-ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
+        'sec-ch-ua-mobile': '?0',
+        'sec-ch-ua-platform': '"Windows"',
+        'sec-fetch-dest': 'empty',
+        'sec-fetch-mode': 'cors',
+        'sec-fetch-site': 'same-site',
+        'Accept-Language': 'en-US,en;q=0.9'
     };
 }
 
@@ -50,6 +57,12 @@ async function submitDocument(fileBuffer, originalFilename) {
 
     if (!response.ok) {
         const errBody = await response.text().catch(() => '');
+        if (response.status === 403) {
+            throw new Error(`Writenix request blocked by Cloudflare (403). Ensure server IP or bypass rules are enabled: ${errBody.slice(0, 200)}`);
+        }
+        if (response.status === 402) {
+            throw new Error(`Writenix account is out of report slots (402). Please recharge your account at app.writenix.com.`);
+        }
         throw new Error(`Writenix returned ${response.status}: ${errBody}`);
     }
 
