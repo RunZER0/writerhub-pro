@@ -3882,6 +3882,9 @@
                 ? `${(file.size / (1024 * 1024)).toFixed(1)} MB`
                 : `${Math.max(1, Math.round(file.size / 1024))} KB`;
 
+            // Replace the dropzone with the file chip — a picked file shouldn't leave the big
+            // empty "drop here" box sitting there with the chip just tacked on below it.
+            document.getElementById('turnitinDropzone').style.display = 'none';
             document.getElementById('turnitinSelectedFile').innerHTML = `
                 <div class="scanlab-file-chip">
                     <div class="file-icon-wrap"><i class="fas ${isPdf ? 'fa-file-pdf' : 'fa-file-word'}"></i></div>
@@ -3895,10 +3898,19 @@
             updateTurnitinSubmitButton();
         }
 
-        function clearTurnitinFile() {
+        // Resets the raw file-selection state only — does NOT touch dropzone visibility, since
+        // performTurnitinSubmit() calls this mid-scan when the dropzone must stay hidden
+        // (resetTurnitinUploadUI() is what brings it back once scanning is actually done).
+        function resetTurnitinFileState() {
             turnitinSelectedFile = null;
             document.getElementById('turnitinSelectedFile').innerHTML = '';
             document.getElementById('turnitinFileInput').value = '';
+        }
+
+        // User-facing "remove" (X) on the file chip — also brings the dropzone back so they can pick again.
+        function clearTurnitinFile() {
+            resetTurnitinFileState();
+            document.getElementById('turnitinDropzone').style.display = 'block';
             updateTurnitinSubmitButton();
         }
 
@@ -4006,7 +4018,7 @@
 
                 statusEl.innerHTML = 'Submitted — awaiting scan<span class="dots"></span>';
                 showToast('success', "Document submitted! We'll email you when it's ready.");
-                clearTurnitinFile();
+                resetTurnitinFileState();
                 loadTurnitinPricing();
                 loadTurnitinReports();
                 startTurnitinPolling();
