@@ -14,7 +14,7 @@
 const crypto = require('crypto');
 const { Readable } = require('stream');
 
-const BASE_URL = 'https://app.writenix.com/api/v1';
+const BASE_URL = process.env.WRITENIX_BASE_URL || 'https://app.writenix.com/api/v1';
 
 // Writenix's own docs recommend a realistic browser User-Agent + Accept: application/json
 // to avoid their Cloudflare bot protection. In practice this has NOT been sufficient by

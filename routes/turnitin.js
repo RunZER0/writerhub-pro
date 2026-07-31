@@ -17,10 +17,13 @@ const TURNITIN_PRICE_USD = 2;
 const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 const DISPUTE_EMAIL = 'valdaceai@gmail.com';
 
-// ---- Auth (client_members JWT, same shape as routes/membership.js) ----
+// ---- Auth (client_members JWT or admin/staff JWT) ----
 function authenticateMember(req, res, next) {
     const authHeader = req.headers['authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
+    let token = authHeader && authHeader.split(' ')[1];
+    if (!token && req.query.token) {
+        token = req.query.token;
+    }
 
     if (!token) {
         return res.status(401).json({ error: 'Authentication required' });
@@ -28,11 +31,15 @@ function authenticateMember(req, res, next) {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'homework-pal-secret');
-        if (decoded.type !== 'client_member') {
-            return res.status(403).json({ error: 'Invalid token type' });
+        if (decoded.type === 'client_member' || decoded.memberId) {
+            req.member = decoded;
+            return next();
         }
-        req.member = decoded;
-        next();
+        if (decoded.userId || decoded.role === 'admin') {
+            req.member = { memberId: decoded.userId, role: decoded.role, isAdmin: true };
+            return next();
+        }
+        return res.status(403).json({ error: 'Invalid token type' });
     } catch (error) {
         return res.status(401).json({ error: 'Invalid or expired token' });
     }
@@ -376,10 +383,9 @@ router.get('/download/:id/:type', authenticateMember, async (req, res) => {
             return res.status(400).json({ error: 'Invalid report type' });
         }
 
-        const result = await pool.query(
-            'SELECT * FROM writenix_reports WHERE id = $1 AND member_id = $2',
-            [id, req.member.memberId]
-        );
+        const result = req.member.isAdmin
+            ? await pool.query('SELECT * FROM writenix_reports WHERE id = $1', [id])
+            : await pool.query('SELECT * FROM writenix_reports WHERE id = $1 AND member_id = $2', [id, req.member.memberId]);
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'Report not found' });
         }

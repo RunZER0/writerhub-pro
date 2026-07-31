@@ -335,15 +335,16 @@
         .pricing-eyebrow {
             display: inline-flex;
             align-items: center;
-            gap: 0.4rem;
-            padding: 0.35rem 0.9rem;
-            border-radius: 999px;
-            background: rgba(16, 185, 129, 0.1);
+            gap: 0.5rem;
+            padding: 0.35rem 0.85rem;
+            border-radius: 4px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(52, 211, 153, 0.3);
             color: #34d399;
             font-size: 0.72rem;
             font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 0.6px;
+            letter-spacing: 1.2px;
             margin-bottom: 1.5rem;
         }
 
@@ -384,16 +385,16 @@
             display: inline-flex;
             align-items: center;
             gap: 0.6rem;
-            padding: 1rem 2.5rem;
-            background: linear-gradient(135deg, #6366f1, #8b5cf6);
-            border: none;
-            border-radius: 999px;
+            padding: 0.9rem 2.2rem;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
             color: white;
             font-weight: 700;
             font-size: 0.95rem;
             cursor: pointer;
-            transition: all 0.3s;
-            box-shadow: 0 10px 30px rgba(99, 102, 241, 0.3);
+            transition: all 0.25s;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.25);
         }
 
         .pricing-hero-cta:hover {
@@ -836,20 +837,20 @@
             align-items: flex-end;
         }
         .scanlab-tag {
-            padding: 0.4rem 0.9rem;
-            border-radius: 999px;
+            padding: 0.35rem 0.85rem;
+            border-radius: 4px;
             font-size: 0.8rem;
             font-weight: 700;
             white-space: nowrap;
         }
         .scanlab-tag.price {
-            background: rgba(99, 102, 241, 0.12);
-            border: 1px solid rgba(99, 102, 241, 0.3);
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.35);
             color: #a5b4fc;
         }
         .scanlab-tag.wallet {
-            background: rgba(16, 185, 129, 0.12);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.35);
             color: #34d399;
         }
 
@@ -1090,14 +1091,20 @@
             display: inline-flex;
             align-items: center;
             gap: 0.4rem;
-            padding: 0.4rem 0.9rem;
-            border-radius: 999px;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.3);
+            padding: 0.4rem 0.85rem;
+            border-radius: 6px;
+            background: rgba(16, 185, 129, 0.08);
+            border: 1px solid rgba(16, 185, 129, 0.35);
             color: #34d399;
             font-size: 0.78rem;
             font-weight: 700;
             text-decoration: none;
+            transition: all 0.2s ease;
+        }
+        .timeline-download:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(52, 211, 153, 0.5);
+            transform: translateY(-1px);
         }
 
         /* Price Breakdown Box */
@@ -2668,7 +2675,7 @@
         <!-- Pricing Tab -->
         <div class="tab-content active" id="pricing-tab">
             <div class="pricing-hero">
-                <span class="pricing-eyebrow"><i class="fas fa-wand-magic-sparkles"></i> We've unified our prices</span>
+                <span class="pricing-eyebrow"><i class="fas fa-layer-group"></i> Unified Pricing</span>
                 <h1 class="pricing-hero-title">One simple price,<br>per page.</h1>
                 <div class="pricing-hero-amount" id="unifiedPriceRange">
                     $7 – $9
@@ -3333,8 +3340,6 @@
                 <div id="turnitinMain" style="display: none;">
                     <div class="scanlab-header">
                         <div class="scanlab-header-icon">
-                            <div class="scanlab-pulse-ring"></div>
-                            <div class="scanlab-pulse-ring delay"></div>
                             <i class="fas fa-shield-halved"></i>
                         </div>
                         <div class="scanlab-header-text">
@@ -4073,12 +4078,14 @@
 
                 let action;
                 if (r.status === 'completed' && (r.hasSimilarityReport || r.hasAiReport)) {
+                    const token = (typeof getMemberToken === 'function' ? getMemberToken() : null) || localStorage.getItem('memberToken') || localStorage.getItem('token') || '';
+                    const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
                     const links = [];
                     if (r.hasSimilarityReport) {
-                        links.push(`<a href="/api/turnitin/download/${r.id}/similarity" target="_blank" class="timeline-download"><i class="fas fa-download"></i> Similarity</a>`);
+                        links.push(`<a href="/api/turnitin/download/${r.id}/similarity${tokenParam}" target="_blank" class="timeline-download"><i class="fas fa-download"></i> Similarity</a>`);
                     }
                     if (r.hasAiReport) {
-                        links.push(`<a href="/api/turnitin/download/${r.id}/ai" target="_blank" class="timeline-download"><i class="fas fa-download"></i> AI Report</a>`);
+                        links.push(`<a href="/api/turnitin/download/${r.id}/ai${tokenParam}" target="_blank" class="timeline-download"><i class="fas fa-download"></i> AI Report</a>`);
                     }
                     action = links.join('');
                 } else {
