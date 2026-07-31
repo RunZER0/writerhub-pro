@@ -1068,12 +1068,12 @@
         }
         .timeline-dot.processing {
             background: #3b82f6;
-            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
-            animation: timelinePulse 1.5s ease-in-out infinite;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+            animation: timelinePulse 1.2s ease-in-out infinite;
         }
-        .timeline-dot.completed { background: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15); }
-        .timeline-dot.pending { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.15); }
-        @keyframes timelinePulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .timeline-dot.completed { background: #10b981; box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.2); }
+        .timeline-dot.pending { background: #f59e0b; box-shadow: 0 0 0 4px rgba(245, 158, 11, 0.2); }
+        @keyframes timelinePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.85); } }
         .timeline-content { flex: 1; min-width: 0; }
         .timeline-filename {
             font-weight: 600;
@@ -1087,6 +1087,35 @@
         .timeline-status-text { font-size: 0.78rem; font-weight: 700; }
         .timeline-status-text.processing { color: #60a5fa; }
         .timeline-status-text.pending { color: #fbbf24; }
+
+        /* Animated ScanLab Processing Badge */
+        .scanlab-processing-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            padding: 0.35rem 0.8rem;
+            border-radius: 6px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(96, 165, 250, 0.35);
+            color: #60a5fa;
+            font-size: 0.78rem;
+            font-weight: 700;
+            animation: scanlabGlow 2s ease-in-out infinite;
+        }
+        @keyframes scanlabGlow {
+            0%, 100% { box-shadow: 0 0 6px rgba(59, 130, 246, 0.15); border-color: rgba(96, 165, 250, 0.3); }
+            50% { box-shadow: 0 0 14px rgba(96, 165, 250, 0.4); border-color: rgba(96, 165, 250, 0.6); }
+        }
+        .scanlab-dots span {
+            display: inline-block;
+            animation: scanlabDotBlink 1.4s infinite fill-mode: both;
+        }
+        .scanlab-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .scanlab-dots span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes scanlabDotBlink {
+            0%, 80%, 100% { opacity: 0.2; }
+            40% { opacity: 1; }
+        }
         .timeline-download {
             display: inline-flex;
             align-items: center;
@@ -4044,13 +4073,32 @@
             updateTurnitinSubmitButton();
         }
 
+        let knownTurnitinStatusMap = {};
+
         async function loadTurnitinReports() {
             try {
-                const token = localStorage.getItem('memberToken');
+                const token = (typeof getMemberToken === 'function' ? getMemberToken() : null) || localStorage.getItem('memberToken') || localStorage.getItem('token');
                 const res = await fetch('/api/turnitin/my-reports', { headers: { 'Authorization': `Bearer ${token}` } });
                 if (!res.ok) return;
                 const data = await res.json();
-                renderTurnitinReports(data.reports || []);
+                const reports = data.reports || [];
+
+                // Toast notification when a report finishes scanning live
+                reports.forEach(r => {
+                    if (knownTurnitinStatusMap[r.id] === 'processing' && r.status === 'completed') {
+                        showToast('success', `🎉 Report for "${r.original_filename}" is ready!`);
+                        if (typeof loadTurnitinPricing === 'function') loadTurnitinPricing();
+                    }
+                    knownTurnitinStatusMap[r.id] = r.status;
+                });
+
+                renderTurnitinReports(reports);
+
+                // Auto-trigger polling if any report is actively scanning
+                const hasProcessing = reports.some(r => r.status === 'processing');
+                if (hasProcessing && !turnitinPollTimer) {
+                    startTurnitinPolling();
+                }
             } catch (error) {
                 console.error('Failed to load reports:', error);
             }
@@ -4088,6 +4136,13 @@
                         links.push(`<a href="/api/turnitin/download/${r.id}/ai${tokenParam}" target="_blank" class="timeline-download"><i class="fas fa-download"></i> AI Report</a>`);
                     }
                     action = links.join('');
+                } else if (r.status === 'processing') {
+                    action = `
+                        <span class="scanlab-processing-badge">
+                            <i class="fas fa-microchip fa-spin"></i> Scanning AI &amp; Similarity
+                            <span class="scanlab-dots"><span>.</span><span>.</span><span>.</span></span>
+                        </span>
+                    `;
                 } else {
                     action = `<span class="timeline-status-text ${status.cls}">${status.text}</span>`;
                 }
@@ -4111,19 +4166,16 @@
             turnitinPollTimer = setInterval(async () => {
                 ticks++;
                 try {
-                    const token = localStorage.getItem('memberToken');
-                    const res = await fetch('/api/turnitin/my-reports', { headers: { 'Authorization': `Bearer ${token}` } });
-                    const data = await res.json();
-                    renderTurnitinReports(data.reports || []);
-                    const stillProcessing = (data.reports || []).some(r => r.status === 'processing');
-                    if (!stillProcessing || ticks > 24) {
+                    await loadTurnitinReports();
+                    const hasProcessing = Object.values(knownTurnitinStatusMap).some(s => s === 'processing');
+                    if (!hasProcessing || ticks > 75) { // Poll every 4s for up to 5 minutes
                         clearInterval(turnitinPollTimer);
                         turnitinPollTimer = null;
                     }
                 } catch (error) {
                     console.error('Turnitin polling error:', error);
                 }
-            }, 5000);
+            }, 4000);
         }
 
         // Unified pricing — one package, currency resolved via geo detection
