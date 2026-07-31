@@ -3350,6 +3350,43 @@
                             </button>
                         </div>
                     </div>
+
+                    <!-- Admin Users & Credit Manager Panel (Visible to Admins) -->
+                    <div id="adminUsersPanel" style="display: none; margin-top: 2rem; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 16px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                            <div>
+                                <h3 style="margin: 0; color: #a5b4fc; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                                    <i class="fas fa-users-gear" style="color: #6366f1;"></i> System Users &amp; Report Slots Manager
+                                </h3>
+                                <p style="margin: 0.25rem 0 0 0; font-size: 0.82rem; color: rgba(255,255,255,0.6);">
+                                    Unified overview of registered members, QuickPay guests, and staff with real-time scan credit (+/-) controls.
+                                </p>
+                            </div>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <input type="text" id="adminUserSearchInput" placeholder="Search by name or email..." oninput="filterAdminUsersTable()" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.45rem 0.85rem; color: white; font-size: 0.85rem; width: 220px;">
+                                <button type="button" onclick="loadAdminUsersList()" style="background: rgba(99, 102, 241, 0.25); border: 1px solid rgba(99, 102, 241, 0.45); color: #818cf8; border-radius: 8px; padding: 0.45rem 0.85rem; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
+                                    <i class="fas fa-sync"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        <div style="overflow-x: auto;">
+                            <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px;">
+                                        <th style="padding: 0.6rem 0.75rem;">User</th>
+                                        <th style="padding: 0.6rem 0.75rem;">Type / Status</th>
+                                        <th style="padding: 0.6rem 0.75rem;">Activity</th>
+                                        <th style="padding: 0.6rem 0.75rem;">Report Slots</th>
+                                        <th style="padding: 0.6rem 0.75rem;">Manage Slots (+/-)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminUsersTableBody">
+                                    <tr><td colspan="5" style="text-align: center; color: rgba(255,255,255,0.4); padding: 1.5rem;">Loading system users...</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -3392,6 +3429,28 @@
                     <button class="scanlab-submit" id="turnitinSubmitBtn" onclick="submitTurnitinCheck()" disabled>
                         <i class="fas fa-lock"></i> <span id="turnitinSubmitLabel">Select a file first</span>
                     </button>
+
+                    <!-- Bulk Scan Slots Package Section -->
+                    <div class="scanlab-bulk-packages" style="margin: 1.5rem 0; padding: 1.25rem; background: rgba(99, 102, 241, 0.06); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <div>
+                                <h4 style="margin: 0; color: #a5b4fc; font-size: 0.95rem; font-weight: 700;">
+                                    <i class="fas fa-layer-group" style="margin-right: 0.4rem;"></i> Save with Bulk Scan Bundles
+                                </h4>
+                                <p style="margin: 0.2rem 0 0 0; font-size: 0.78rem; color: rgba(255,255,255,0.6);">Pre-purchase report check slots to store in your wallet &amp; use anytime!</p>
+                            </div>
+                        </div>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+                            <button type="button" onclick="buyScanSlots(5)" style="background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.35); border-radius: 8px; padding: 0.75rem; text-align: center; color: white; cursor: pointer; transition: all 0.2s;">
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #34d399;">5 Scan Slots</div>
+                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 0.2rem;" id="bulkSlot5Price">$9 (Save 10%)</div>
+                            </button>
+                            <button type="button" onclick="buyScanSlots(10)" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.4); border-radius: 8px; padding: 0.75rem; text-align: center; color: white; cursor: pointer; transition: all 0.2s;">
+                                <div style="font-weight: 700; font-size: 0.9rem; color: #818cf8;">10 Scan Slots</div>
+                                <div style="font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-top: 0.2rem;" id="bulkSlot10Price">$16 (Save 20%)</div>
+                            </button>
+                        </div>
+                    </div>
 
                     <!-- Scanning / loading state -->
                     <div id="turnitinScanningState" class="scanlab-scanning" style="display: none;">
@@ -5227,9 +5286,180 @@
                 // Show portal, hide auth
                 document.getElementById('memberAuthSection').style.display = 'none';
                 document.getElementById('memberPortal').classList.add('active');
-                
+
+                // Check for admin role/email and show Admin Users & Credit Manager Panel
+                const adminEmails = ['vikkicleo@gmail.com', 'valdaceai@gmail.com', 'cleovikkie@gmail.com'];
+                if (adminEmails.includes((member.email || '').toLowerCase()) || member.isAdmin) {
+                    const adminPanel = document.getElementById('adminUsersPanel');
+                    if (adminPanel) {
+                        adminPanel.style.display = 'block';
+                        loadAdminUsersList();
+                    }
+                }
+
             } catch (error) {
                 console.error('Error loading profile:', error);
+            }
+        }
+
+        // ========== BULK SCAN SLOT PURCHASING ==========
+        async function buyScanSlots(count) {
+            const token = localStorage.getItem('memberToken');
+            if (!token) {
+                showToast('warning', 'Please sign in to purchase scan slots');
+                showTab('membership');
+                return;
+            }
+            if (!paystackPublicKey) {
+                showToast('error', 'Payment system not configured');
+                return;
+            }
+
+            const isKes = turnitinCurrency === 'KES';
+            const amountUsd = count === 5 ? 9 : 16;
+            const amountKes = count === 5 ? 900 : 1600;
+            const amount = isKes ? amountKes : amountUsd;
+            const ref = 'SLOT-' + count + '-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
+
+            const paystackPop = new PaystackPop();
+            try {
+                await paystackPop.checkout({
+                    key: paystackPublicKey,
+                    email: currentMemberData?.email || localStorage.getItem('memberEmail'),
+                    amount: Math.round(amount * 100),
+                    currency: turnitinCurrency,
+                    ref: ref,
+                    onSuccess: async function(response) {
+                        try {
+                            const res = await fetch('/api/turnitin/buy-slots', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${token}`
+                                },
+                                body: JSON.stringify({ paystackReference: response.reference, slotCount: count })
+                            });
+                            const data = await res.json();
+                            if (res.ok && data.success) {
+                                showToast('success', `🎉 ${count} Scan Slots added to your account!`);
+                                loadTurnitinPricing();
+                            } else {
+                                showToast('error', data.error || 'Failed to credit slots');
+                            }
+                        } catch (e) {
+                            showToast('error', 'Error processing slot purchase');
+                        }
+                    }
+                });
+            } catch (err) {
+                showToast('error', 'Payment initialization failed');
+            }
+        }
+
+        // ========== ADMIN SYSTEM USERS & CREDIT MANAGER ==========
+        let adminAllUsersData = [];
+
+        async function loadAdminUsersList() {
+            const adminPanel = document.getElementById('adminUsersPanel');
+            if (!adminPanel) return;
+
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/membership/admin/list', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                adminAllUsersData = data.members || [];
+                renderAdminUsersTable(adminAllUsersData);
+            } catch (err) {
+                console.error('Failed to load admin users:', err);
+            }
+        }
+
+        function renderAdminUsersTable(users) {
+            const tbody = document.getElementById('adminUsersTableBody');
+            if (!tbody) return;
+
+            if (users.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: rgba(255,255,255,0.4); padding: 1.5rem;">No system users found</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => {
+                const safeKey = u.email.replace(/[^a-zA-Z0-9]/g, '_');
+                const isStaffOrAdmin = u.scanCredits === 9999 || u.userType.includes('Staff');
+                return `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
+                        <td style="padding: 0.75rem;">
+                            <div style="font-weight: 600; font-size: 0.88rem; color: white;">${u.name}</div>
+                            <div style="font-size: 0.78rem; color: rgba(255,255,255,0.5);">${u.email}</div>
+                        </td>
+                        <td style="padding: 0.75rem;">
+                            <span style="display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: ${u.userType.includes('QuickPay') ? 'rgba(245, 158, 11, 0.15)' : u.userType.includes('Staff') ? 'rgba(139, 92, 246, 0.15)' : 'rgba(16, 185, 129, 0.15)'}; color: ${u.userType.includes('QuickPay') ? '#f59e0b' : u.userType.includes('Staff') ? '#a78bfa' : '#34d399'}; border: 1px solid rgba(255,255,255,0.1);">
+                                ${u.userType}
+                            </span>
+                        </td>
+                        <td style="padding: 0.75rem; font-size: 0.82rem; color: rgba(255,255,255,0.8);">
+                            ${u.orders} orders ($${u.totalSpent.toFixed(0)})
+                        </td>
+                        <td style="padding: 0.75rem;">
+                            <span id="creditCount_${safeKey}" style="font-weight: 700; color: #60a5fa; font-size: 0.95rem;">
+                                ${isStaffOrAdmin ? 'Unlimited (Admin)' : `${u.scanCredits} slots`}
+                            </span>
+                        </td>
+                        <td style="padding: 0.75rem;">
+                            ${isStaffOrAdmin ? '<span style="color: rgba(255,255,255,0.4); font-size: 0.8rem;">Admin Exempt</span>' : `
+                                <div style="display: flex; gap: 0.35rem; align-items: center;">
+                                    <input type="number" id="deltaInput_${safeKey}" value="1" min="1" style="width: 50px; padding: 0.25rem 0.4rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white; text-align: center; font-size: 0.8rem;">
+                                    <button type="button" onclick="adjustUserCredits('${u.email}', 1)" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: 700;">+ Add</button>
+                                    <button type="button" onclick="adjustUserCredits('${u.email}', -1)" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: 700;">- Deduct</button>
+                                </div>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterAdminUsersTable() {
+            const query = (document.getElementById('adminUserSearchInput')?.value || '').toLowerCase().trim();
+            if (!query) {
+                renderAdminUsersTable(adminAllUsersData);
+                return;
+            }
+            const filtered = adminAllUsersData.filter(u =>
+                u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query) || u.userType.toLowerCase().includes(query)
+            );
+            renderAdminUsersTable(filtered);
+        }
+
+        async function adjustUserCredits(email, sign) {
+            const safeKey = email.replace(/[^a-zA-Z0-9]/g, '_');
+            const input = document.getElementById(`deltaInput_${safeKey}`);
+            const count = parseInt(input?.value) || 1;
+            const delta = count * sign;
+
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/membership/admin/adjust-credits', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ email, delta })
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast('success', `Updated scan slots for ${email}: ${data.newCredits} slots`);
+                    const label = document.getElementById(`creditCount_${safeKey}`);
+                    if (label) label.textContent = `${data.newCredits} slots`;
+                } else {
+                    showToast('error', data.error || 'Failed to adjust credits');
+                }
+            } catch (err) {
+                showToast('error', 'Error adjusting user credits');
             }
         }
         

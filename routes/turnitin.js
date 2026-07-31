@@ -410,6 +410,58 @@ router.get('/download/:id/:type', authenticateMember, async (req, res) => {
     }
 });
 
+// Bulk slot purchase (5 slots or 10 slots)
+router.post('/buy-slots', authenticateMember, async (req, res) => {
+    try {
+        const { paystackReference, slotCount } = req.body;
+        if (!paystackReference || !slotCount) {
+            return res.status(400).json({ error: 'Payment reference and slot count required' });
+        }
+
+        const slots = parseInt(slotCount, 10);
+        if (![5, 10].includes(slots)) {
+            return res.status(400).json({ error: 'Invalid slot count package' });
+        }
+
+        const alreadyUsed = await pool.query(
+            'SELECT id FROM writenix_reports WHERE paystack_reference = $1',
+            [paystackReference]
+        );
+        if (alreadyUsed.rows.length > 0) {
+            return res.status(400).json({ error: 'This payment reference has already been processed' });
+        }
+
+        const transaction = await verifyPaystackTransaction(paystackReference);
+        if (!transaction || transaction.status !== 'success') {
+            return res.status(400).json({ error: 'Payment verification failed' });
+        }
+
+        const updateRes = await pool.query(`
+            UPDATE client_members
+            SET turnitin_wallet_credits = turnitin_wallet_credits + $1
+            WHERE id = $2
+            RETURNING turnitin_wallet_credits
+        `, [slots, req.member.memberId]);
+
+        await notifyMember(
+            req.member.memberId,
+            'Scan Slots Purchased!',
+            `Successfully added ${slots} plagiarism/AI check slots to your wallet!`,
+            '/client#turnitin',
+            'success'
+        );
+
+        res.json({
+            success: true,
+            slotsAdded: slots,
+            totalCredits: updateRes.rows[0]?.turnitin_wallet_credits || slots
+        });
+    } catch (error) {
+        console.error('Buy slots error:', error);
+        res.status(500).json({ error: 'Failed to complete slot purchase' });
+    }
+});
+
 module.exports = router;
 module.exports.notifyMember = notifyMember;
 module.exports.reportEmailTemplate = reportEmailTemplate;

@@ -730,45 +730,157 @@ router.put('/notifications/read-all', authenticateMember, async (req, res) => {
 
 // ============ ADMIN ENDPOINTS ============
 
-// Get all members (admin view)
+// Get all users in the system (client members, quickpay guests, and staff)
 router.get('/admin/list', async (req, res) => {
     try {
-        const result = await pool.query(`
+        // 1. Registered Client Members
+        const membersResult = await pool.query(`
             SELECT 
                 id, email, name, phone, membership_tier, discount_percent,
-                total_orders, total_spent, is_verified, status, created_at
+                total_orders, total_spent, is_verified, status, turnitin_wallet_credits, created_at
             FROM client_members
             ORDER BY created_at DESC
         `);
-        
-        // Calculate stats
-        const members = result.rows;
+
+        // 2. QuickPay Clients who don't have a registered member account
+        const quickpayResult = await pool.query(`
+            SELECT 
+                q.id, q.email, q.name, q.client_code, q.is_verified, q.status, q.created_at,
+                COALESCE(SUM(i.amount), 0) AS total_spent,
+                COUNT(i.id) AS total_orders
+            FROM quickpay_clients q
+            LEFT JOIN quickpay_invoices i ON q.client_code = i.client_code AND i.payment_status = 'paid'
+            WHERE LOWER(q.email) NOT IN (SELECT LOWER(email) FROM client_members WHERE email IS NOT NULL)
+            GROUP BY q.id, q.email, q.name, q.client_code, q.is_verified, q.status, q.created_at
+            ORDER BY q.created_at DESC
+        `);
+
+        // 3. Staff / Admin Users
+        const staffResult = await pool.query(`
+            SELECT id, name, email, role, status, created_at
+            FROM users
+            ORDER BY created_at DESC
+        `);
+
+        const members = membersResult.rows.map(m => ({
+            id: m.id,
+            email: m.email,
+            name: m.name || m.email.split('@')[0],
+            phone: m.phone || '',
+            tier: m.membership_tier || 'basic',
+            discount: parseFloat(m.discount_percent || 0),
+            orders: parseInt(m.total_orders || 0),
+            totalSpent: parseFloat(m.total_spent || 0),
+            verified: m.is_verified,
+            status: m.status || 'active',
+            scanCredits: parseInt(m.turnitin_wallet_credits || 0),
+            userType: 'Registered Member',
+            joinedAt: m.created_at
+        }));
+
+        const quickpayUsers = quickpayResult.rows.map(q => ({
+            id: `qp_${q.id}`,
+            email: q.email,
+            name: q.name || q.client_code,
+            phone: '',
+            tier: 'QuickPay Guest',
+            discount: 0,
+            orders: parseInt(q.total_orders || 0),
+            totalSpent: parseFloat(q.total_spent || 0),
+            verified: q.is_verified,
+            status: q.status || 'active',
+            scanCredits: 0,
+            userType: 'QuickPay Guest',
+            joinedAt: q.created_at
+        }));
+
+        const staffUsers = staffResult.rows.map(s => ({
+            id: `staff_${s.id}`,
+            email: s.email,
+            name: s.name,
+            phone: '',
+            tier: (s.role || 'staff').toUpperCase(),
+            discount: 0,
+            orders: 0,
+            totalSpent: 0,
+            verified: true,
+            status: s.status || 'active',
+            scanCredits: 9999,
+            userType: `Staff (${s.role})`,
+            joinedAt: s.created_at
+        }));
+
+        const allUsers = [...members, ...quickpayUsers, ...staffUsers];
+
         const stats = {
-            total: members.length,
-            basic: members.filter(m => m.membership_tier === 'basic').length,
-            silver: members.filter(m => m.membership_tier === 'silver').length,
-            goldPlus: members.filter(m => ['gold', 'platinum'].includes(m.membership_tier)).length
+            total: allUsers.length,
+            registeredMembers: members.length,
+            quickpayGuests: quickpayUsers.length,
+            staff: staffUsers.length
         };
-        
+
         res.json({
-            members: members.map(m => ({
-                id: m.id,
-                email: m.email,
-                name: m.name,
-                phone: m.phone,
-                tier: m.membership_tier,
-                discount: parseFloat(m.discount_percent),
-                orders: m.total_orders || 0,
-                totalSpent: parseFloat(m.total_spent || 0),
-                verified: m.is_verified,
-                status: m.status,
-                joinedAt: m.created_at
-            })),
+            members: allUsers,
             stats
         });
     } catch (error) {
         console.error('Get members list error:', error);
         res.status(500).json({ error: 'Failed to fetch members' });
+    }
+});
+
+// Admin endpoint to add or subtract report scan credits for a user
+router.post('/admin/adjust-credits', async (req, res) => {
+    try {
+        const { email, delta } = req.body;
+        if (!email || typeof delta !== 'number') {
+            return res.status(400).json({ error: 'Email and valid delta number required' });
+        }
+
+        const emailLower = email.toLowerCase().trim();
+
+        // Check if member exists in client_members
+        let memberRes = await pool.query('SELECT id, email, turnitin_wallet_credits FROM client_members WHERE LOWER(email) = $1', [emailLower]);
+
+        if (memberRes.rows.length === 0) {
+            // Check if user exists in quickpay_clients, if so create a client_members entry for them
+            const qpRes = await pool.query('SELECT name, email FROM quickpay_clients WHERE LOWER(email) = $1', [emailLower]);
+            if (qpRes.rows.length > 0) {
+                const qp = qpRes.rows[0];
+                memberRes = await pool.query(`
+                    INSERT INTO client_members (email, name, password_hash, is_verified, turnitin_wallet_credits)
+                    VALUES ($1, $2, 'quickpay-guest-no-password', TRUE, 0)
+                    RETURNING id, email, turnitin_wallet_credits
+                `, [emailLower, qp.name]);
+            } else {
+                return res.status(404).json({ error: 'User not found in the system' });
+            }
+        }
+
+        const member = memberRes.rows[0];
+        const updateRes = await pool.query(`
+            UPDATE client_members
+            SET turnitin_wallet_credits = GREATEST(0, turnitin_wallet_credits + $1)
+            WHERE id = $2
+            RETURNING turnitin_wallet_credits
+        `, [delta, member.id]);
+
+        const newCredits = updateRes.rows[0].turnitin_wallet_credits;
+
+        const message = delta > 0
+            ? `Admin added ${delta} plagiarism/AI report check slot(s) to your account!`
+            : `Admin adjusted your plagiarism/AI report check slots (${delta}).`;
+
+        await pool.query(
+            `INSERT INTO member_notifications (member_id, title, message, type)
+             VALUES ($1, $2, $3, $4)`,
+            [member.id, 'Report Credits Adjusted', message, 'info']
+        );
+
+        res.json({ success: true, email: emailLower, newCredits });
+    } catch (error) {
+        console.error('Adjust credits error:', error);
+        res.status(500).json({ error: 'Failed to adjust report credits' });
     }
 });
 
