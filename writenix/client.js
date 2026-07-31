@@ -14,7 +14,17 @@
 const crypto = require('crypto');
 const { Readable } = require('stream');
 
-const BASE_URL = process.env.WRITENIX_BASE_URL || 'https://app.writenix.com/api/v1';
+function getBaseUrl() {
+    let url = (process.env.WRITENIX_BASE_URL || 'https://app.writenix.com/api/v1').trim().replace(/\/+$/, '');
+    if (!url.endsWith('/api/v1')) {
+        if (url.endsWith('/api')) {
+            url += '/v1';
+        } else {
+            url += '/api/v1';
+        }
+    }
+    return url;
+}
 
 // Writenix's own docs recommend a realistic browser User-Agent + Accept: application/json
 // to avoid their Cloudflare bot protection. In practice this has NOT been sufficient by
@@ -49,7 +59,8 @@ async function submitDocument(fileBuffer, originalFilename) {
     const formData = new FormData();
     formData.append('file', new Blob([fileBuffer]), originalFilename);
 
-    const response = await fetch(`${BASE_URL}/documents/process`, {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/documents/process`, {
         method: 'POST',
         headers: buildRequestHeaders(),
         body: formData
