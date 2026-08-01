@@ -19,7 +19,7 @@ module.exports = async function writenixWebhook(req, res) {
         }
 
         const payload = JSON.parse(rawBody.toString('utf8'));
-        const { event, writenixRef, similarityReportUrl, aiReportUrl } = writenixClient.parseWebhookPayload(payload);
+        const { event, writenixRef, similarityReportUrl, aiReportUrl, similarityScore, aiScore } = writenixClient.parseWebhookPayload(payload);
 
         if (!writenixRef) {
             console.error('Writenix webhook missing a matchable reference:', JSON.stringify(payload));
@@ -46,9 +46,10 @@ module.exports = async function writenixWebhook(req, res) {
             await pool.query(
                 `UPDATE writenix_reports
                  SET status = 'completed', similarity_report_url = $1, ai_report_url = $2,
-                     webhook_payload = $3, completed_at = NOW()
-                 WHERE id = $4`,
-                [similarityReportUrl, aiReportUrl, JSON.stringify(payload), report.id]
+                     similarity_score = $3, ai_score = $4,
+                     webhook_payload = $5, completed_at = NOW()
+                 WHERE id = $6`,
+                [similarityReportUrl, aiReportUrl, similarityScore, aiScore, JSON.stringify(payload), report.id]
             );
 
             await notifyMember(

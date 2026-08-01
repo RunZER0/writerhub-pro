@@ -108,7 +108,7 @@ function verifyWebhookSignature(signature, rawBody) {
  * payload variant ever omits the primary one - this has already changed once between
  * their docs revisions.
  * @param {object} payload - already JSON.parse()'d webhook body
- * @returns {{ event: string, writenixRef: string|null, similarityReportUrl: string|null, aiReportUrl: string|null }}
+ * @returns {{ event: string, writenixRef: string|null, similarityReportUrl: string|null, aiReportUrl: string|null, similarityScore: number|string|null, aiScore: number|string|null }}
  */
 function parseWebhookPayload(payload) {
     const event = payload.event;
@@ -119,8 +119,11 @@ function parseWebhookPayload(payload) {
     const files = payload.files || payload.data?.files || {};
     const similarityReportUrl = files.report_1 || null;
     const aiReportUrl = files.report_2 || null;
+    
+    const similarityScore = payload.plagiarism_score || payload.data?.plagiarism_score || null;
+    const aiScore = payload.ai_score || payload.data?.ai_score || null;
 
-    return { event, writenixRef, similarityReportUrl, aiReportUrl };
+    return { event, writenixRef, similarityReportUrl, aiReportUrl, similarityScore, aiScore };
 }
 
 /**

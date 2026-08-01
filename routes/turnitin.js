@@ -354,7 +354,7 @@ router.post('/submit', authenticateMember, (req, res, next) => {
 router.get('/my-reports', authenticateMember, async (req, res) => {
     try {
         const result = await pool.query(
-            `SELECT id, original_filename, status, similarity_report_url, ai_report_url, created_at, completed_at
+            `SELECT id, original_filename, status, similarity_report_url, ai_report_url, similarity_score, ai_score, created_at, completed_at
              FROM writenix_reports
              WHERE member_id = $1
              ORDER BY created_at DESC`,

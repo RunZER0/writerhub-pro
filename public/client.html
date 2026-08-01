@@ -4189,10 +4189,12 @@
                     const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
                     const links = [];
                     if (r.hasSimilarityReport) {
-                        links.push(`<a href="/api/turnitin/download/${r.id}/similarity${tokenParam}" target="_blank" class="timeline-download"><i class="fas fa-download"></i> Similarity</a>`);
+                        const simText = r.similarity_score != null ? `Similarity (${Math.round(r.similarity_score)}%)` : 'Similarity';
+                        links.push(`<a href="/api/turnitin/download/${r.id}/similarity${tokenParam}" target="_blank" class="timeline-download"><i class="fas fa-download"></i> ${simText}</a>`);
                     }
                     if (r.hasAiReport) {
-                        links.push(`<a href="/api/turnitin/download/${r.id}/ai${tokenParam}" target="_blank" class="timeline-download"><i class="fas fa-download"></i> AI Report</a>`);
+                        const aiText = r.ai_score != null ? `AI Report (${Math.round(r.ai_score)}%)` : 'AI Report';
+                        links.push(`<a href="/api/turnitin/download/${r.id}/ai${tokenParam}" target="_blank" class="timeline-download"><i class="fas fa-download"></i> ${aiText}</a>`);
                     }
                     action = links.join('');
                 } else if (r.status === 'processing') {
