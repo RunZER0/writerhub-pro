@@ -2718,7 +2718,50 @@
 
             <div class="pricing-divider"></div>
 
-            <div class="pricing-perks">
+            <!-- New AI Humanization Pricing using Ruled List and Typographic Hierarchy (No Cards) -->
+            <div style="max-width: 720px; margin: 3rem auto;">
+                <h2 style="font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 0.5rem; color: #f8fafc;">AI Humanization</h2>
+                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1.5rem;">Word-based scaling</div>
+                
+                <div style="display: flex; flex-direction: column; width: 100%;">
+                    <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #334155;">
+                        <span style="font-weight: 600; color: #e2e8f0;">First 500 words</span>
+                        <span style="font-weight: 500; color: #e2e8f0;">KSh 200</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #334155;">
+                        <span style="font-weight: 600; color: #e2e8f0;">Each additional 500 words</span>
+                        <span style="font-weight: 500; color: #e2e8f0;">KSh 100</span>
+                    </div>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; color: #cbd5e1;">EXAMPLES</h3>
+                    <div style="display: flex; flex-direction: column; width: 100%;">
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
+                            <span style="color: #94a3b8;">500 words</span>
+                            <span style="font-weight: 500; color: #94a3b8;">KSh 200</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
+                            <span style="color: #94a3b8;">1,000 words</span>
+                            <span style="font-weight: 500; color: #94a3b8;">KSh 300</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
+                            <span style="color: #94a3b8;">1,500 words</span>
+                            <span style="font-weight: 500; color: #94a3b8;">KSh 400</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
+                            <span style="color: #94a3b8;">2,000 words</span>
+                            <span style="font-weight: 500; color: #94a3b8;">KSh 500</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
+                            <span style="color: #94a3b8;">3,000 words</span>
+                            <span style="font-weight: 500; color: #94a3b8;">KSh 700</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pricing-divider"></div>            <div class="pricing-perks">
                 <div class="perk">
                     <i class="fas fa-shield-halved"></i>
                     <div><strong>Plagiarism-free</strong><span>100% original, every time</span></div>
@@ -3432,6 +3475,9 @@
                                 <button type="button" onclick="loadStuckReports()" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; border-radius: 8px; padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
                                     <i class="fas fa-rotate"></i> Load Stuck
                                 </button>
+                                <button type="button" onclick="autoRecoverStuckReports()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #6ee7b7; border-radius: 8px; padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="fas fa-wand-magic-sparkles"></i> Auto-Recover All
+                                </button>
                                 <button type="button" onclick="viewWebhookLogs()" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.4); color: #a5b4fc; border-radius: 8px; padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; margin-left: auto;">
                                     <i class="fas fa-terminal"></i> View Webhook Logs
                                 </button>
@@ -4055,8 +4101,8 @@
             const isKes = turnitinCurrency === 'KES';
             const slot5El = document.getElementById('bulkSlot5Price');
             const slot10El = document.getElementById('bulkSlot10Price');
-            if (slot5El) slot5El.textContent = isKes ? 'KSh 900 (Save 10%)' : '$9 (Save 10%)';
-            if (slot10El) slot10El.textContent = isKes ? 'KSh 1600 (Save 20%)' : '$16 (Save 20%)';
+            if (slot5El) slot5El.textContent = isKes ? 'KSh 950 (Save 5%)' : '$9 (Save 10%)';
+            if (slot10El) slot10El.textContent = isKes ? 'KSh 1800 (Save 10%)' : '$16 (Save 20%)';
         }
 
         async function loadTurnitinPricing() {
@@ -4397,15 +4443,12 @@
                     action = `<span class="timeline-status-text ${status.cls}">${status.text}</span>`;
                 }
 
-                const simBadge = r.similarity_score != null ? ` &bull; <span style="color: #ef4444; font-weight: 600;">Sim: ${Math.round(r.similarity_score)}%</span>` : '';
-                const aiBadge = r.ai_score != null ? ` &bull; <span style="color: #8b5cf6; font-weight: 600;">AI: ${Math.round(r.ai_score)}%</span>` : '';
-
                 return `
                     <div class="timeline-row">
                         <div class="timeline-dot ${status.dot}"></div>
                         <div class="timeline-content">
                             <div class="timeline-filename">${r.original_filename}</div>
-                            <div class="timeline-meta">${date}${simBadge}${aiBadge}</div>
+                            <div class="timeline-meta">${date}</div>
                         </div>
                         <div class="timeline-action">${action}</div>
                     </div>
@@ -5511,7 +5554,7 @@
 
             const isKes = turnitinCurrency === 'KES';
             const amountUsd = count === 5 ? 9 : 16;
-            const amountKes = count === 5 ? 900 : 1600;
+            const amountKes = count === 5 ? 950 : 1800;
             const amount = isKes ? amountKes : amountUsd;
             const ref = 'SLOT-' + count + '-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 5).toUpperCase();
 
@@ -5739,6 +5782,34 @@
                 }
             } catch (err) {
                 showToast('error', 'Error completing report');
+            }
+        }
+
+        async function autoRecoverStuckReports() {
+            const btn = document.querySelector('button[onclick="autoRecoverStuckReports()"]');
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Recovering...';
+            btn.disabled = true;
+
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/turnitin/admin/auto-recover-stuck', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showToast('success', `Recovered ${data.recovered}, failed/refunded ${data.failed} reports`);
+                    loadStuckReports();
+                } else {
+                    showToast('error', data.error || 'Failed to auto-recover reports');
+                }
+            } catch (err) {
+                showToast('error', 'Error auto-recovering reports');
+            } finally {
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
             }
         }
 

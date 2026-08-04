@@ -464,6 +464,88 @@ router.post('/admin/complete-report', authenticateMember, async (req, res) => {
     }
 });
 
+// Admin: Auto-recover all stuck reports by querying Writenix API
+router.post('/admin/auto-recover-stuck', authenticateMember, async (req, res) => {
+    try {
+        const memberResult = await pool.query('SELECT email FROM client_members WHERE id = $1', [req.member.memberId]);
+        if (memberResult.rows.length === 0) return res.status(404).json({ error: 'Member not found' });
+        if (!isAdminBypassEmail(memberResult.rows[0].email)) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        // Fetch reports stuck in processing for more than 15 minutes
+        const stuckResult = await pool.query(
+            `SELECT wr.*, cm.name as member_name, cm.email as member_email
+             FROM writenix_reports wr
+             JOIN client_members cm ON wr.member_id = cm.id
+             WHERE wr.status = 'processing' AND wr.created_at < NOW() - INTERVAL '15 minutes'`
+        );
+
+        let recovered = 0;
+        let failed = 0;
+
+        for (const report of stuckResult.rows) {
+            let statusObj = null;
+            let apiFailed = false;
+
+            if (report.writenix_reference) {
+                try {
+                    statusObj = await writenixClient.getReportStatus(report.writenix_reference);
+                } catch (err) {
+                    console.error(`Auto-recover API error for report ${report.id}:`, err.message);
+                    apiFailed = true;
+                }
+            } else {
+                apiFailed = true;
+            }
+
+            const rawData = statusObj?.raw || {};
+            const files = rawData.files || rawData.data?.files || {};
+            const similarityReportUrl = files.report_1 || null;
+            const aiReportUrl = files.report_2 || null;
+
+            if (statusObj?.status === 'completed' || statusObj?.status === 'success' || (similarityReportUrl || aiReportUrl)) {
+                // Recovered!
+                const similarityScore = rawData.plagiarism_score || rawData.data?.plagiarism_score || null;
+                const aiScore = rawData.ai_score || rawData.data?.ai_score || null;
+
+                await pool.query(
+                    `UPDATE writenix_reports
+                     SET status = 'completed',
+                         similarity_report_url = $1, ai_report_url = $2,
+                         similarity_score = $3, ai_score = $4,
+                         completed_at = NOW()
+                     WHERE id = $5`,
+                    [similarityReportUrl, aiReportUrl, similarityScore, aiScore, report.id]
+                );
+
+                await notifyMember(report.member_id, 'Your report is ready', `Your check for "${report.original_filename}" is complete.`, '/client#turnitin', 'turnitin_ready');
+                await sendMemberEmail(report.member_email, report.member_name, 'Your plagiarism/AI report is ready',
+                    reportEmailTemplate({
+                        heading: `Hi ${report.member_name}, your report is ready!`,
+                        intro: `Your check for "${report.original_filename}" has finished processing.`,
+                        bodyLines: [],
+                        ctaText: 'View in Dashboard',
+                        ctaUrl: `${process.env.BASE_URL || 'https://www.homeworkpal.online'}/client#turnitin`
+                    })
+                );
+                recovered++;
+            } else if (apiFailed || statusObj?.status === 'failed' || statusObj?.status === 'error') {
+                // Mark as failed and refund
+                await pool.query(`UPDATE writenix_reports SET status = 'refunded' WHERE id = $1`, [report.id]);
+                const member = { name: report.member_name, email: report.member_email };
+                await refundToWallet(report.id, report.member_id, member, 'processing was stuck and could not be recovered');
+                failed++;
+            }
+        }
+
+        res.json({ success: true, recovered, failed });
+    } catch (error) {
+        console.error('Admin auto-recover error:', error);
+        res.status(500).json({ error: 'Auto-recovery failed' });
+    }
+});
+
 // Admin: list all processing reports (for diagnosing stuck jobs)
 router.get('/admin/stuck-reports', authenticateMember, async (req, res) => {
     try {

@@ -83,6 +83,29 @@ async function submitDocument(fileBuffer, originalFilename) {
 }
 
 /**
+ * Fetch the current status of a document from Writenix.
+ * Useful for recovering reports where the webhook was missed.
+ * @param {string} writenixReference
+ * @returns {Promise<{ status: string, raw: object }>}
+ * @throws if the request fails (e.g. 404 if not found)
+ */
+async function getReportStatus(writenixReference) {
+    const baseUrl = getBaseUrl();
+    const response = await fetch(`${baseUrl}/documents/${writenixReference}`, {
+        method: 'GET',
+        headers: buildRequestHeaders()
+    });
+
+    if (!response.ok) {
+        const errBody = await response.text().catch(() => '');
+        throw new Error(`Writenix GET returned ${response.status}: ${errBody}`);
+    }
+
+    const data = await response.json().catch(() => ({}));
+    return { status: data.status || data.state || 'unknown', raw: data };
+}
+
+/**
  * Verify the X-Writenix-Signature header on an incoming webhook.
  * @param {string} signature - value of the X-Writenix-Signature header
  * @param {Buffer} rawBody - untouched raw request body (must be the actual Buffer,
@@ -169,5 +192,6 @@ module.exports = {
     verifyWebhookSignature,
     parseWebhookPayload,
     downloadReportBuffer,
-    streamReportToResponse
+    streamReportToResponse,
+    getReportStatus
 };
