@@ -1787,22 +1787,25 @@
 
             <!-- Step A: Client Code gate -->
             <div id="qpStepCode" class="quickpay-form">
-                <p class="quickpay-explainer">
-                    To keep Quick Pay safe for everyone, every payment needs a verified <strong>Client Code</strong>.
-                    Already have one? Enter it below. New here? <a onclick="qpToggleSignup()" style="cursor:pointer; color:#10b981; font-weight:600; text-decoration:underline;">Sign up</a> to get one in seconds.<br>
-                    <a onclick="qpToggleResendCode()" style="cursor:pointer; color:#10b981; font-size: 0.9em; margin-top: 5px; display: inline-block; font-weight:600; text-decoration:underline;">Lost your Client Code?</a>
-                </p>
+                <!-- Screen 1: Code Entry -->
+                <div id="qpCodeEntry">
+                    <p class="quickpay-explainer">
+                        To keep Quick Pay safe for everyone, every payment needs a verified <strong>Client Code</strong>.
+                        Already have one? Enter it below. New here? <a onclick="qpToggleSignup()" style="cursor:pointer; color:#10b981; font-weight:600; text-decoration:underline;">Sign up</a> to get one in seconds.<br>
+                        <a onclick="qpToggleResendCode()" style="cursor:pointer; color:#10b981; font-size: 0.9em; margin-top: 5px; display: inline-block; font-weight:600; text-decoration:underline;">Lost your Client Code?</a>
+                    </p>
 
-                <div class="form-group">
-                    <label for="qpCodeInput">Your Client Code</label>
-                    <input type="text" id="qpCodeInput" placeholder="e.g. AB1234" autocomplete="off" maxlength="6" style="text-transform: uppercase; letter-spacing: 2px;">
+                    <div class="form-group">
+                        <label for="qpCodeInput">Your Client Code</label>
+                        <input type="text" id="qpCodeInput" placeholder="e.g. AB1234" autocomplete="off" maxlength="6" style="text-transform: uppercase; letter-spacing: 2px;">
+                    </div>
+                    <div id="qpCodeError" class="quickpay-code-error" style="display: none;"></div>
+                    <button type="button" class="quickpay-submit" id="qpValidateBtn" onclick="qpValidateCode()">
+                        <i class="fas fa-arrow-right"></i> Continue
+                    </button>
                 </div>
-                <div id="qpCodeError" class="quickpay-code-error" style="display: none;"></div>
-                <button type="button" class="quickpay-submit" id="qpValidateBtn" onclick="qpValidateCode()">
-                    <i class="fas fa-arrow-right"></i> Continue
-                </button>
 
-                <!-- Inline sign-up -->
+                <!-- Screen 2: Inline sign-up -->
                 <div id="qpSignupPanel" class="quickpay-signup-panel" style="display: none;">
                     <div class="quickpay-divider">Get a Client Code</div>
                     <div class="form-group">
@@ -1817,10 +1820,13 @@
                         <i class="fas fa-paper-plane"></i> Get My Client Code
                     </button>
                     <div id="qpSignupResult" class="quickpay-signup-result" style="display: none;"></div>
+                    <div style="text-align:center; margin-top:1rem;">
+                        <a onclick="qpShowCodeEntry()" style="cursor:pointer; color:var(--text-muted); font-size:0.9em; text-decoration:underline;">&larr; Back to Client Code entry</a>
+                    </div>
                 </div>
 
-                <!-- Inline resend code -->
-                <div id="qpResendPanel" class="quickpay-signup-panel" style="display: none; margin-top: 1rem;">
+                <!-- Screen 3: Inline resend code -->
+                <div id="qpResendPanel" class="quickpay-signup-panel" style="display: none;">
                     <div class="quickpay-divider">Recover Client Code</div>
                     <div class="form-group">
                         <label for="qpResendEmail">Registered Email Address *</label>
@@ -1830,6 +1836,9 @@
                         <i class="fas fa-paper-plane"></i> Resend My Code
                     </button>
                     <div id="qpResendResult" class="quickpay-signup-result" style="display: none;"></div>
+                    <div style="text-align:center; margin-top:1rem;">
+                        <a onclick="qpShowCodeEntry()" style="cursor:pointer; color:var(--text-muted); font-size:0.9em; text-decoration:underline;">&larr; Back to Client Code entry</a>
+                    </div>
                 </div>
             </div>
 
@@ -2489,15 +2498,22 @@
             }
         }
 
+        function qpShowCodeEntry() {
+            document.getElementById('qpCodeEntry').style.display = 'block';
+            document.getElementById('qpSignupPanel').style.display = 'none';
+            document.getElementById('qpResendPanel').style.display = 'none';
+        }
+
+        function qpToggleSignup() {
+            document.getElementById('qpCodeEntry').style.display = 'none';
+            document.getElementById('qpSignupPanel').style.display = 'block';
+            document.getElementById('qpResendPanel').style.display = 'none';
+        }
+
         function qpToggleResendCode() {
-            const panel = document.getElementById('qpResendPanel');
-            const signupPanel = document.getElementById('qpSignupPanel');
-            if (panel.style.display === 'none') {
-                panel.style.display = 'block';
-                signupPanel.style.display = 'none'; // hide the other panel
-            } else {
-                panel.style.display = 'none';
-            }
+            document.getElementById('qpCodeEntry').style.display = 'none';
+            document.getElementById('qpResendPanel').style.display = 'block';
+            document.getElementById('qpSignupPanel').style.display = 'none';
         }
 
         async function qpSubmitResendCode() {
