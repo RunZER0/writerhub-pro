@@ -418,7 +418,7 @@ router.post('/resend-code', async (req, res) => {
             return res.status(500).json({ error: 'Failed to send the email. Please try again later.' });
         }
 
-        res.json({ success: true, message: 'We\\'ve emailed your Client Code to you!' });
+        res.json({ success: true, message: "We've emailed your Client Code to you!" });
     } catch (error) {
         console.error('QuickPay resend code error:', error);
         res.status(500).json({ error: 'Failed to resend code' });

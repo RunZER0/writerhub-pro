@@ -1790,7 +1790,7 @@
                 <p class="quickpay-explainer">
                     To keep Quick Pay safe for everyone, every payment needs a verified <strong>Client Code</strong>.
                     Already have one? Enter it below. New here? <a onclick="qpToggleSignup()" style="cursor:pointer; color:var(--primary-light);">Sign up</a> to get one in seconds.<br>
-                    <a onclick="qpResendCode()" style="cursor:pointer; color:var(--text-muted); font-size: 0.9em; margin-top: 5px; display: inline-block;">Lost your Client Code?</a>
+                    <a onclick="qpToggleResendCode()" style="cursor:pointer; color:var(--text-muted); font-size: 0.9em; margin-top: 5px; display: inline-block;">Lost your Client Code?</a>
                 </p>
 
                 <div class="form-group">
@@ -1817,6 +1817,19 @@
                         <i class="fas fa-paper-plane"></i> Get My Client Code
                     </button>
                     <div id="qpSignupResult" class="quickpay-signup-result" style="display: none;"></div>
+                </div>
+
+                <!-- Inline resend code -->
+                <div id="qpResendPanel" class="quickpay-signup-panel" style="display: none; margin-top: 1rem;">
+                    <div class="quickpay-divider">Recover Client Code</div>
+                    <div class="form-group">
+                        <label for="qpResendEmail">Registered Email Address *</label>
+                        <input type="email" id="qpResendEmail" placeholder="your@email.com">
+                    </div>
+                    <button type="button" class="quickpay-submit secondary" id="qpResendBtn" onclick="qpSubmitResendCode()">
+                        <i class="fas fa-paper-plane"></i> Resend My Code
+                    </button>
+                    <div id="qpResendResult" class="quickpay-signup-result" style="display: none;"></div>
                 </div>
             </div>
 
@@ -2476,9 +2489,31 @@
             }
         }
 
-        async function qpResendCode() {
-            const email = prompt("Enter your verified email address:");
-            if (!email) return;
+        function qpToggleResendCode() {
+            const panel = document.getElementById('qpResendPanel');
+            const signupPanel = document.getElementById('qpSignupPanel');
+            if (panel.style.display === 'none') {
+                panel.style.display = 'block';
+                signupPanel.style.display = 'none'; // hide the other panel
+            } else {
+                panel.style.display = 'none';
+            }
+        }
+
+        async function qpSubmitResendCode() {
+            const email = document.getElementById('qpResendEmail').value.trim();
+            const resultBox = document.getElementById('qpResendResult');
+            const btn = document.getElementById('qpResendBtn');
+            resultBox.style.display = 'none';
+
+            if (!email) {
+                resultBox.innerHTML = 'Please enter your email.';
+                resultBox.style.display = 'block';
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
             try {
                 const res = await fetch('/api/quickpay/resend-code', {
@@ -2488,14 +2523,20 @@
                 });
                 const data = await res.json();
                 
+                resultBox.style.display = 'block';
                 if (data.success) {
-                    showQuickPayToast('success', data.message);
+                    resultBox.innerHTML = data.message;
+                    document.getElementById('qpResendEmail').value = '';
                 } else {
-                    showQuickPayToast('error', data.error || 'Failed to resend Client Code.');
+                    resultBox.innerHTML = data.error || 'Failed to resend Client Code.';
                 }
             } catch (error) {
                 console.error('QuickPay resend code error:', error);
-                showQuickPayToast('error', 'Something went wrong. Please try again.');
+                resultBox.style.display = 'block';
+                resultBox.innerHTML = 'Something went wrong. Please try again.';
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-paper-plane"></i> Resend My Code';
             }
         }
 
