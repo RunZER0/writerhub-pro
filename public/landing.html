@@ -1707,14 +1707,7 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
-    <section class="cta-section">
-        <h2>Ready to Ace Your Assignments?</h2>
-        <p>Join thousands of students who trust HomeworkPal for their academic success.</p>
-        <a href="/client" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;">
-            <i class="fas fa-rocket"></i> Get Started Now
-        </a>
-    </section>
+
 
     <!-- PWA Install Banner -->
     <div id="pwaInstallBanner" class="pwa-install-banner" style="display: none;">
@@ -1796,7 +1789,8 @@
             <div id="qpStepCode" class="quickpay-form">
                 <p class="quickpay-explainer">
                     To keep Quick Pay safe for everyone, every payment needs a verified <strong>Client Code</strong>.
-                    Already have one? Enter it below. New here? <a onclick="qpToggleSignup()">Sign up</a> to get one in seconds.
+                    Already have one? Enter it below. New here? <a onclick="qpToggleSignup()" style="cursor:pointer; color:var(--primary-light);">Sign up</a> to get one in seconds.<br>
+                    <a onclick="qpResendCode()" style="cursor:pointer; color:var(--text-muted); font-size: 0.9em; margin-top: 5px; display: inline-block;">Lost your Client Code?</a>
                 </p>
 
                 <div class="form-group">
@@ -2479,6 +2473,29 @@
             } finally {
                 btn.disabled = false;
                 btn.innerHTML = '<i class="fas fa-paper-plane"></i> Get My Client Code';
+            }
+        }
+
+        async function qpResendCode() {
+            const email = prompt("Enter your verified email address:");
+            if (!email) return;
+
+            try {
+                const res = await fetch('/api/quickpay/resend-code', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                
+                if (data.success) {
+                    showQuickPayToast('success', data.message);
+                } else {
+                    showQuickPayToast('error', data.error || 'Failed to resend Client Code.');
+                }
+            } catch (error) {
+                console.error('QuickPay resend code error:', error);
+                showQuickPayToast('error', 'Something went wrong. Please try again.');
             }
         }
 

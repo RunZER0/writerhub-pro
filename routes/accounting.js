@@ -9,31 +9,66 @@ router.get('/', authenticate, isAdmin, async (req, res) => {
         const { startDate, endDate } = req.query;
         
         let query = `
-            SELECT 
-                af.*,
-                a.title,
-                a.domain,
-                a.status as assignment_status,
-                u.name as writer_name,
-                a.created_at as assignment_date,
-                (af.client_paid - af.writer_cost - af.other_costs) as profit
-            FROM assignment_finances af
-            JOIN assignments a ON af.assignment_id = a.id
-            LEFT JOIN users u ON a.writer_id = u.id AND u.role = 'writer'
+            SELECT * FROM (
+                SELECT 
+                    af.id,
+                    af.assignment_id,
+                    af.client_paid,
+                    af.writer_cost,
+                    af.other_costs,
+                    af.payment_status,
+                    af.payment_method,
+                    af.payment_reference,
+                    af.notes,
+                    af.created_at,
+                    af.updated_at,
+                    a.title,
+                    a.domain,
+                    a.status as assignment_status,
+                    u.name as writer_name,
+                    a.created_at as assignment_date,
+                    (af.client_paid - af.writer_cost - af.other_costs) as profit
+                FROM assignment_finances af
+                JOIN assignments a ON af.assignment_id = a.id
+                LEFT JOIN users u ON a.writer_id = u.id AND u.role = 'writer'
+                
+                UNION ALL
+                
+                SELECT 
+                    qi.id,
+                    NULL as assignment_id,
+                    qi.amount as client_paid,
+                    0 as writer_cost,
+                    0 as other_costs,
+                    qi.payment_status,
+                    'quickpay' as payment_method,
+                    qi.invoice_number as payment_reference,
+                    'QuickPay Invoice' as notes,
+                    qi.created_at,
+                    qi.created_at as updated_at,
+                    qi.work_paid_for as title,
+                    'Report/QuickPay' as domain,
+                    'completed' as assignment_status,
+                    'System' as writer_name,
+                    qi.created_at as assignment_date,
+                    qi.amount as profit
+                FROM quickpay_invoices qi
+                WHERE qi.payment_status = 'paid'
+            ) combined_finances
             WHERE 1=1
         `;
         const params = [];
 
         if (startDate) {
             params.push(startDate);
-            query += ` AND DATE(a.created_at) >= $${params.length}`;
+            query += ` AND DATE(assignment_date) >= $${params.length}`;
         }
         if (endDate) {
             params.push(endDate);
-            query += ` AND DATE(a.created_at) <= $${params.length}`;
+            query += ` AND DATE(assignment_date) <= $${params.length}`;
         }
 
-        query += ` ORDER BY a.created_at DESC`;
+        query += ` ORDER BY assignment_date DESC`;
 
         const result = await pool.query(query, params);
         res.json(result.rows);
@@ -48,43 +83,85 @@ router.get('/summary', authenticate, isAdmin, async (req, res) => {
     try {
         const { startDate, endDate } = req.query;
 
-        let dateFilter = '';
+        let dateFilterAf = '';
+        let dateFilterQi = '';
         const params = [];
 
         if (startDate) {
             params.push(startDate);
-            dateFilter += ` AND DATE(a.created_at) >= $${params.length}`;
+            dateFilterAf += ` AND DATE(a.created_at) >= $${params.length}`;
+            dateFilterQi += ` AND DATE(qi.created_at) >= $${params.length}`;
         }
         if (endDate) {
             params.push(endDate);
-            dateFilter += ` AND DATE(a.created_at) <= $${params.length}`;
+            dateFilterAf += ` AND DATE(a.created_at) <= $${params.length}`;
+            dateFilterQi += ` AND DATE(qi.created_at) <= $${params.length}`;
         }
 
         const summaryResult = await pool.query(`
             SELECT 
-                COALESCE(SUM(af.client_paid), 0) as total_revenue,
-                COALESCE(SUM(af.writer_cost), 0) as total_writer_costs,
-                COALESCE(SUM(af.other_costs), 0) as total_other_costs,
-                COALESCE(SUM(af.client_paid - af.writer_cost - af.other_costs), 0) as total_profit,
-                COUNT(*) as total_orders,
-                COUNT(CASE WHEN af.payment_status = 'paid' THEN 1 END) as paid_orders,
-                COUNT(CASE WHEN af.payment_status = 'pending' THEN 1 END) as pending_orders
-            FROM assignment_finances af
-            JOIN assignments a ON af.assignment_id = a.id
-            WHERE 1=1 ${dateFilter}
+                SUM(revenue) as total_revenue,
+                SUM(writer_costs) as total_writer_costs,
+                SUM(other_costs) as total_other_costs,
+                SUM(profit) as total_profit,
+                SUM(total_orders) as total_orders,
+                SUM(paid_orders) as paid_orders,
+                SUM(pending_orders) as pending_orders
+            FROM (
+                SELECT 
+                    COALESCE(SUM(af.client_paid), 0) as revenue,
+                    COALESCE(SUM(af.writer_cost), 0) as writer_costs,
+                    COALESCE(SUM(af.other_costs), 0) as other_costs,
+                    COALESCE(SUM(af.client_paid - af.writer_cost - af.other_costs), 0) as profit,
+                    COUNT(*) as total_orders,
+                    COUNT(CASE WHEN af.payment_status = 'paid' THEN 1 END) as paid_orders,
+                    COUNT(CASE WHEN af.payment_status = 'pending' THEN 1 END) as pending_orders
+                FROM assignment_finances af
+                JOIN assignments a ON af.assignment_id = a.id
+                WHERE 1=1 ${dateFilterAf}
+                
+                UNION ALL
+                
+                SELECT 
+                    COALESCE(SUM(qi.amount), 0) as revenue,
+                    0 as writer_costs,
+                    0 as other_costs,
+                    COALESCE(SUM(qi.amount), 0) as profit,
+                    COUNT(*) as total_orders,
+                    COUNT(*) as paid_orders,
+                    0 as pending_orders
+                FROM quickpay_invoices qi
+                WHERE qi.payment_status = 'paid' ${dateFilterQi}
+            ) combined
         `, params);
 
         // Get monthly breakdown for charts
         const monthlyResult = await pool.query(`
-            SELECT 
-                DATE_TRUNC('month', a.created_at) as month,
-                COALESCE(SUM(af.client_paid), 0) as revenue,
-                COALESCE(SUM(af.writer_cost + af.other_costs), 0) as costs,
-                COALESCE(SUM(af.client_paid - af.writer_cost - af.other_costs), 0) as profit
-            FROM assignment_finances af
-            JOIN assignments a ON af.assignment_id = a.id
-            WHERE a.created_at >= NOW() - INTERVAL '12 months'
-            GROUP BY DATE_TRUNC('month', a.created_at)
+            SELECT month, 
+                   SUM(revenue) as revenue, 
+                   SUM(costs) as costs, 
+                   SUM(profit) as profit 
+            FROM (
+                SELECT 
+                    DATE_TRUNC('month', a.created_at) as month,
+                    COALESCE(af.client_paid, 0) as revenue,
+                    COALESCE(af.writer_cost + af.other_costs, 0) as costs,
+                    COALESCE(af.client_paid - af.writer_cost - af.other_costs, 0) as profit
+                FROM assignment_finances af
+                JOIN assignments a ON af.assignment_id = a.id
+                WHERE a.created_at >= NOW() - INTERVAL '12 months'
+                
+                UNION ALL
+                
+                SELECT 
+                    DATE_TRUNC('month', qi.created_at) as month,
+                    COALESCE(qi.amount, 0) as revenue,
+                    0 as costs,
+                    COALESCE(qi.amount, 0) as profit
+                FROM quickpay_invoices qi
+                WHERE qi.payment_status = 'paid' AND qi.created_at >= NOW() - INTERVAL '12 months'
+            ) combined
+            GROUP BY month
             ORDER BY month
         `);
 

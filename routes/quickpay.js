@@ -387,6 +387,44 @@ router.get('/code/:code', async (req, res) => {
     }
 });
 
+// Resend a lost Client Code by email
+router.post('/resend-code', async (req, res) => {
+    try {
+        const email = (req.body.email || '').trim().toLowerCase();
+        if (!email) {
+            return res.status(400).json({ error: 'Please provide an email address' });
+        }
+
+        const result = await pool.query(
+            `SELECT name, email, client_code FROM quickpay_clients WHERE LOWER(email) = $1 AND is_verified = TRUE`,
+            [email]
+        );
+
+        if (result.rows.length === 0) {
+            // Return success even if not found to prevent email enumeration, but you can also return error.
+            // Based on prompt "If not found, return a polite error", I will return an error.
+            return res.status(404).json({ error: 'We couldn\\'t find a Client Code for this email.' });
+        }
+
+        const client = result.rows[0];
+
+        const codeEmailSent = await sendBrevoEmail(
+            client.email, client.name,
+            'Your Recovered HomeworkPal Client Code',
+            clientCodeEmailHtml(client.name, client.client_code)
+        );
+
+        if (!codeEmailSent) {
+            return res.status(500).json({ error: 'Failed to send the email. Please try again later.' });
+        }
+
+        res.json({ success: true, message: 'We\\'ve emailed your Client Code to you!' });
+    } catch (error) {
+        console.error('QuickPay resend code error:', error);
+        res.status(500).json({ error: 'Failed to resend code' });
+    }
+});
+
 // Generate + send the invoice/agreement BEFORE payment happens
 router.post('/invoice', async (req, res) => {
     try {
