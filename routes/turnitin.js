@@ -410,6 +410,117 @@ router.get('/download/:id/:type', authenticateMember, async (req, res) => {
     }
 });
 
+// Admin: manually resolve a stuck report (for when Writenix webhook doesn't arrive).
+// Paste the report URLs from the Writenix dashboard directly.
+router.post('/admin/complete-report', authenticateMember, async (req, res) => {
+    try {
+        // Only allow admin emails
+        const memberResult = await pool.query('SELECT email FROM client_members WHERE id = $1', [req.member.memberId]);
+        if (memberResult.rows.length === 0) return res.status(404).json({ error: 'Member not found' });
+        if (!isAdminBypassEmail(memberResult.rows[0].email)) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        const { reportId, similarityUrl, aiUrl, similarityScore, aiScore } = req.body;
+        if (!reportId) return res.status(400).json({ error: 'reportId required' });
+
+        const existing = await pool.query('SELECT * FROM writenix_reports WHERE id = $1', [reportId]);
+        if (existing.rows.length === 0) return res.status(404).json({ error: 'Report not found' });
+
+        await pool.query(
+            `UPDATE writenix_reports
+             SET status = 'completed',
+                 similarity_report_url = COALESCE($1, similarity_report_url),
+                 ai_report_url = COALESCE($2, ai_report_url),
+                 similarity_score = COALESCE($3, similarity_score),
+                 ai_score = COALESCE($4, ai_score),
+                 completed_at = COALESCE(completed_at, NOW())
+             WHERE id = $5`,
+            [similarityUrl || null, aiUrl || null, similarityScore || null, aiScore || null, reportId]
+        );
+
+        // Notify the member
+        const report = existing.rows[0];
+        const memberData = await pool.query('SELECT name, email FROM client_members WHERE id = $1', [report.member_id]);
+        if (memberData.rows.length > 0) {
+            const m = memberData.rows[0];
+            await notifyMember(report.member_id, 'Your report is ready', `Your check for "${report.original_filename}" is complete.`, '/client#turnitin', 'turnitin_ready');
+            await sendMemberEmail(m.email, m.name, 'Your plagiarism/AI report is ready',
+                reportEmailTemplate({
+                    heading: `Hi ${m.name}, your report is ready!`,
+                    intro: `Your check for "${report.original_filename}" has finished processing.`,
+                    bodyLines: [],
+                    ctaText: 'View in Dashboard',
+                    ctaUrl: `${process.env.BASE_URL || 'https://www.homeworkpal.online'}/client#turnitin`
+                })
+            );
+        }
+
+        console.log(`[ADMIN] Manually completed report ${reportId} by admin ${memberResult.rows[0].email}`);
+        res.json({ success: true, reportId });
+    } catch (error) {
+        console.error('Admin complete-report error:', error);
+        res.status(500).json({ error: 'Failed to complete report' });
+    }
+});
+
+// Admin: list all processing reports (for diagnosing stuck jobs)
+router.get('/admin/stuck-reports', authenticateMember, async (req, res) => {
+    try {
+        const memberResult = await pool.query('SELECT email FROM client_members WHERE id = $1', [req.member.memberId]);
+        if (memberResult.rows.length === 0) return res.status(404).json({ error: 'Member not found' });
+        if (!isAdminBypassEmail(memberResult.rows[0].email)) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        const result = await pool.query(
+            `SELECT wr.id, wr.original_filename, wr.writenix_reference, wr.status, wr.created_at,
+                    cm.name as member_name, cm.email as member_email
+             FROM writenix_reports wr
+             JOIN client_members cm ON wr.member_id = cm.id
+             WHERE wr.status = 'processing'
+             ORDER BY wr.created_at DESC`
+        );
+
+        res.json({ stuckReports: result.rows });
+    } catch (error) {
+        console.error('Admin stuck-reports error:', error);
+        res.status(500).json({ error: 'Failed to fetch stuck reports' });
+    }
+});
+
+// Admin: view raw webhook logs for debugging
+router.get('/admin/webhook-logs', authenticateMember, async (req, res) => {
+    try {
+        const memberResult = await pool.query('SELECT email FROM client_members WHERE id = $1', [req.member.memberId]);
+        if (memberResult.rows.length === 0) return res.status(404).json({ error: 'Member not found' });
+        if (!isAdminBypassEmail(memberResult.rows[0].email)) {
+            return res.status(403).json({ error: 'Admin access required' });
+        }
+
+        const fs = require('fs');
+        const path = require('path');
+        const logFile = path.join(__dirname, '..', 'webhook-debug.log');
+
+        if (!fs.existsSync(logFile)) {
+            return res.json({ logs: 'No webhook logs found yet. Upload a document to trigger one.' });
+        }
+
+        // Read last 50KB to prevent massive responses if file grows
+        const stat = fs.statSync(logFile);
+        const readSize = Math.min(stat.size, 50 * 1024);
+        const buffer = Buffer.alloc(readSize);
+        const fd = fs.openSync(logFile, 'r');
+        fs.readSync(fd, buffer, 0, readSize, stat.size - readSize);
+        fs.closeSync(fd);
+
+        res.json({ logs: buffer.toString('utf8') });
+    } catch (error) {
+        console.error('Admin webhook-logs error:', error);
+        res.status(500).json({ error: 'Failed to fetch logs' });
+    }
+});
+
 // Bulk slot purchase (5 slots or 10 slots)
 router.post('/buy-slots', authenticateMember, async (req, res) => {
     try {

@@ -36,9 +36,10 @@ app.set('trust proxy', true);
 // Middleware
 app.use(cors());
 
-// Writenix webhook needs the untouched raw body for HMAC signature verification,
-// so it must be mounted BEFORE the global express.json() parser below.
-app.post('/api/writenix-webhook', express.raw({ type: 'application/json' }), require('./routes/writenix-webhook'));
+// Writenix webhook needs the untouched raw body for HMAC signature verification.
+// Using type: '*/*' so the raw Buffer is captured regardless of whatever Content-Type
+// Writenix sends (their CDN/Cloudflare layer may alter the header slightly).
+app.post('/api/writenix-webhook', express.raw({ type: '*/*' }), require('./routes/writenix-webhook'));
 
 app.use(express.json());
 

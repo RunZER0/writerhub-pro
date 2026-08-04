@@ -8,6 +8,12 @@ const router = express.Router();
 // gives us visibility via our own logs if a provider ever misbehaves again.
 router.get('/', async (req, res) => {
     try {
+        // First try Cloudflare header (if we are behind CF)
+        const cfCountry = req.headers['cf-ipcountry'];
+        if (cfCountry && cfCountry !== 'XX') { // Cloudflare uses 'XX' for unknown
+            return res.json({ countryCode: cfCountry });
+        }
+
         // req.ip reflects the real visitor IP (via X-Forwarded-For) only because
         // `app.set('trust proxy', true)` is set in server.js — Render sits behind a proxy.
         const ip = req.ip || '';

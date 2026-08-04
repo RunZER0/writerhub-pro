@@ -2740,6 +2740,39 @@
                     <div><strong>On-time delivery</strong><span>Every single deadline</span></div>
                 </div>
             </div>
+
+            <!-- Plagiarism & AI Check Pricing -->
+            <div style="max-width: 680px; margin: 3rem auto 0; padding: 0 1rem;">
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 4px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #a78bfa; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">
+                        <i class="fas fa-shield-halved"></i> Add-on Service
+                    </span>
+                    <h2 style="font-size: 1.6rem; font-weight: 800; margin: 1rem 0 0.5rem;">Plagiarism &amp; AI Detection</h2>
+                    <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">Powered by Turnitin &amp; AI analysis — get a full similarity + AI detection report in minutes.</p>
+                </div>
+                <div style="background: rgba(139, 92, 246, 0.06); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 16px; padding: 1.75rem; display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center;">
+                    <div>
+                        <div style="font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #a78bfa, #8b5cf6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1;" id="pricingTabScanPrice">$2 <span style="font-size: 1rem; font-weight: 500; -webkit-text-fill-color: rgba(255,255,255,0.45);">per report</span></div>
+                        <div style="color: rgba(255,255,255,0.45); font-size: 0.8rem; margin-top: 0.4rem;">or KSh 200 for Kenyan users</div>
+                        <ul style="list-style: none; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                            <li style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.87rem; color: rgba(255,255,255,0.75);"><i class="fas fa-check" style="color: #a78bfa; width: 14px;"></i> Similarity (plagiarism) report</li>
+                            <li style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.87rem; color: rgba(255,255,255,0.75);"><i class="fas fa-check" style="color: #a78bfa; width: 14px;"></i> AI-generated content detection</li>
+                            <li style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.87rem; color: rgba(255,255,255,0.75);"><i class="fas fa-check" style="color: #a78bfa; width: 14px;"></i> Full PDF report emailed to you</li>
+                            <li style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.87rem; color: rgba(255,255,255,0.75);"><i class="fas fa-check" style="color: #a78bfa; width: 14px;"></i> PDF &amp; DOCX supported, up to 10MB</li>
+                        </ul>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 0.75rem; min-width: 160px;">
+                        <button onclick="showTab('turnitin')" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border: none; border-radius: 10px; padding: 0.85rem 1.25rem; color: white; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 15px rgba(139,92,246,0.3);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 25px rgba(139,92,246,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 15px rgba(139,92,246,0.3)'">
+                            <i class="fas fa-shield-halved"></i> Check My Work
+                        </button>
+                        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 0.65rem 0.85rem; text-align: center;">
+                            <div style="font-size: 0.72rem; color: rgba(255,255,255,0.5); margin-bottom: 0.25rem;">Bulk bundles</div>
+                            <div style="font-size: 0.85rem; font-weight: 700; color: #34d399;">5 slots = $9</div>
+                            <div style="font-size: 0.78rem; color: rgba(255,255,255,0.5);">Save 10%</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Submit Tab -->
@@ -3386,6 +3419,40 @@
                                 </tbody>
                             </table>
                         </div>
+
+                        <!-- Stuck Reports Recovery Panel -->
+                        <div style="margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid rgba(239,68,68,0.2);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                                <div>
+                                    <h4 style="margin: 0; color: #fca5a5; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
+                                        <i class="fas fa-triangle-exclamation" style="color: #ef4444;"></i> Stuck Reports Recovery
+                                    </h4>
+                                    <p style="margin: 0.2rem 0 0; font-size: 0.78rem; color: rgba(255,255,255,0.5);">Reports that are stuck on &ldquo;processing&rdquo; even though Writenix has finished. Paste the URLs from the Writenix dashboard to resolve them.</p>
+                                </div>
+                                <button type="button" onclick="loadStuckReports()" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; border-radius: 8px; padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
+                                    <i class="fas fa-rotate"></i> Load Stuck
+                                </button>
+                                <button type="button" onclick="viewWebhookLogs()" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.4); color: #a5b4fc; border-radius: 8px; padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; margin-left: auto;">
+                                    <i class="fas fa-terminal"></i> View Webhook Logs
+                                </button>
+                            </div>
+                            <div id="stuckReportsList" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <p style="color: rgba(255,255,255,0.3); font-size: 0.82rem; text-align: center; padding: 0.5rem 0;">Click &ldquo;Load Stuck&rdquo; to check for unresolved reports.</p>
+                            </div>
+
+                            <!-- Webhook Logs Modal -->
+                            <div id="webhookLogsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
+                                <div style="background: #0f172a; width: 90%; max-width: 800px; max-height: 80vh; border: 1px solid #334155; border-radius: 12px; display: flex; flex-direction: column;">
+                                    <div style="padding: 1rem; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
+                                        <h3 style="margin: 0; color: #e2e8f0; font-size: 1.1rem;"><i class="fas fa-terminal"></i> Webhook Logs</h3>
+                                        <button onclick="document.getElementById('webhookLogsModal').style.display='none'" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">&times;</button>
+                                    </div>
+                                    <div style="padding: 1rem; overflow-y: auto; flex: 1;">
+                                        <pre id="webhookLogsContent" style="margin: 0; background: #020617; padding: 1rem; border-radius: 8px; color: #a5b4fc; font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -3831,16 +3898,92 @@
         }
 
         // ========== SHARED GEO-CURRENCY DETECTION ==========
-        // Single cached /api/geo call shared by the Pricing tab and the Plagiarism Check tab,
-        // so multiple features asking for the visitor's country don't each fire their own request.
+        // Multi-signal approach: timezone + browser language + IP geolocation.
+        // Signals are scored independently so that a single brittle source (e.g. a VPN changing
+        // the IP) doesn't flip a genuine Kenyan user to USD pricing.
+        //
+        // Signal weights:
+        //   timezone  Africa/Nairobi  → +3 pts  (exclusively Kenya — very strong)
+        //   language  sw / en-KE etc  → +2 pts  (Swahili or KE locale)
+        //   IP lookup KE              → +2 pts  (server-side ipwho.is)
+        //
+        // Score ≥ 2  → 'KE'   (at least two independent signals agree)
+        // Score  = 0 → null   (definitely not Kenya)
+        //
+        // Result is cached in localStorage for 24 h so returning visitors get instant currency
+        // without re-running all three checks on every page load.
+
         let geoDetectionPromise = null;
+
+        function _getKenyaScoreFromBrowser() {
+            let score = 0;
+
+            // --- Timezone signal ---
+            try {
+                const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+                // Africa/Nairobi is the only IANA zone in Kenya
+                if (tz === 'Africa/Nairobi') score += 3;
+            } catch (_) {}
+
+            // --- Language/locale signal ---
+            try {
+                const langs = (navigator.languages || [navigator.language || '']).map(l => l.toLowerCase());
+                const isKenyaLang = langs.some(l =>
+                    l === 'sw' || l.startsWith('sw-') ||   // Swahili
+                    l === 'en-ke' ||                        // English (Kenya)
+                    l.startsWith('en-ke')
+                );
+                if (isKenyaLang) score += 2;
+            } catch (_) {}
+
+            return score;
+        }
+
         function detectGeoCountry() {
-            if (!geoDetectionPromise) {
-                geoDetectionPromise = fetch('/api/geo')
-                    .then(r => r.json())
-                    .then(data => data.countryCode)
-                    .catch(() => null);
-            }
+            if (geoDetectionPromise) return geoDetectionPromise;
+
+            geoDetectionPromise = (async () => {
+                // --- Check localStorage cache first (24 h TTL) ---
+                try {
+                    const cached = localStorage.getItem('_hpGeoCache');
+                    if (cached) {
+                        const { code, ts } = JSON.parse(cached);
+                        if (Date.now() - ts < 24 * 60 * 60 * 1000) {
+                            return code; // still fresh
+                        }
+                    }
+                } catch (_) {}
+
+                // --- Score client-side signals immediately (no network needed) ---
+                let score = _getKenyaScoreFromBrowser();
+
+                // If timezone alone is definitive, skip the IP call entirely
+                if (score >= 3) {
+                    try { localStorage.setItem('_hpGeoCache', JSON.stringify({ code: 'KE', ts: Date.now() })); } catch (_) {}
+                    return 'KE';
+                }
+
+                // --- Add IP-based signal (server-side, avoids CORS issues) ---
+                try {
+                    const res = await fetch('/api/geo');
+                    const data = await res.json();
+                    if (data.countryCode === 'KE') score += 2;
+                    // If IP says a completely different country with high confidence, trust it
+                    // for non-Kenya detection only — we never want to push a Kenyan onto USD
+                    // just because their IP resolves abroad (e.g. university VPN / Starlink).
+                    const ipCountry = data.countryCode;
+
+                    const finalCode = score >= 2 ? 'KE' : (score === 0 && ipCountry ? ipCountry : null);
+                    try { localStorage.setItem('_hpGeoCache', JSON.stringify({ code: finalCode, ts: Date.now() })); } catch (_) {}
+                    return finalCode;
+                } catch (_) {
+                    // IP lookup failed — fall back to browser signals only
+                    const finalCode = score >= 2 ? 'KE' : null;
+                    try { localStorage.setItem('_hpGeoCache', JSON.stringify({ code: finalCode, ts: Date.now() })); } catch (_) {}
+                    return finalCode;
+                }
+            })();
+
             return geoDetectionPromise;
         }
 
@@ -3895,7 +4038,25 @@
                 turnitinCurrency = countryCode === 'KE' ? 'KES' : 'USD';
                 updateTurnitinPricePill();
                 updateTurnitinSubmitButton();
+                updateBulkSlotPrices();
+                // Also update the pricing tab scan price display
+                const pricingTabEl = document.getElementById('pricingTabScanPrice');
+                if (pricingTabEl) {
+                    if (countryCode === 'KE') {
+                        pricingTabEl.innerHTML = 'KSh 200 <span style="font-size: 1rem; font-weight: 500; -webkit-text-fill-color: rgba(255,255,255,0.45);">per report</span>';
+                    } else {
+                        pricingTabEl.innerHTML = '$2 <span style="font-size: 1rem; font-weight: 500; -webkit-text-fill-color: rgba(255,255,255,0.45);">per report</span>';
+                    }
+                }
             });
+        }
+
+        function updateBulkSlotPrices() {
+            const isKes = turnitinCurrency === 'KES';
+            const slot5El = document.getElementById('bulkSlot5Price');
+            const slot10El = document.getElementById('bulkSlot10Price');
+            if (slot5El) slot5El.textContent = isKes ? 'KSh 900 (Save 10%)' : '$9 (Save 10%)';
+            if (slot10El) slot10El.textContent = isKes ? 'KSh 1600 (Save 20%)' : '$16 (Save 20%)';
         }
 
         async function loadTurnitinPricing() {
@@ -4113,8 +4274,8 @@
                 showToast('success', "Document submitted! We'll email you when it's ready.");
                 resetTurnitinFileState();
                 loadTurnitinPricing();
+                // loadTurnitinReports handles auto-starting the poll if it finds processing items
                 loadTurnitinReports();
-                startTurnitinPolling();
 
                 setTimeout(resetTurnitinUploadUI, 2500);
             } catch (error) {
@@ -4135,10 +4296,23 @@
         let knownTurnitinStatusMap = {};
 
         async function loadTurnitinReports() {
+            const body = document.getElementById('turnitinReportsBody');
+            // Show a subtle loading state only on the very first call (body is empty)
+            if (body && body.innerHTML.trim() === '') {
+                body.innerHTML = `<p style="color: rgba(255,255,255,0.3); font-size: 0.82rem; text-align: center; padding: 1rem 0;"><i class="fas fa-circle-notch fa-spin" style="margin-right: 0.5rem;"></i>Loading your checks…</p>`;
+            }
             try {
                 const token = (typeof getMemberToken === 'function' ? getMemberToken() : null) || localStorage.getItem('memberToken') || localStorage.getItem('token');
-                const res = await fetch('/api/turnitin/my-reports', { headers: { 'Authorization': `Bearer ${token}` } });
-                if (!res.ok) return;
+                const res = await fetch(`/api/turnitin/my-reports?t=${Date.now()}`, { 
+                    headers: { 
+                        'Authorization': `Bearer ${token}`,
+                        'Cache-Control': 'no-cache, no-store'
+                    } 
+                });
+                if (!res.ok) {
+                    if (body) body.innerHTML = `<p style="color: rgba(255,100,100,0.6); font-size: 0.82rem; text-align: center; padding: 1rem 0;">Could not load reports — please refresh.</p>`;
+                    return;
+                }
                 const data = await res.json();
                 const reports = data.reports || [];
 
@@ -4153,13 +4327,18 @@
 
                 renderTurnitinReports(reports);
 
-                // Auto-trigger polling if any report is actively scanning
+                // Start polling only if there are still processing reports and we're not already polling
                 const hasProcessing = reports.some(r => r.status === 'processing');
                 if (hasProcessing && !turnitinPollTimer) {
                     startTurnitinPolling();
+                } else if (!hasProcessing && turnitinPollTimer) {
+                    // All done — stop the poll
+                    clearInterval(turnitinPollTimer);
+                    turnitinPollTimer = null;
                 }
             } catch (error) {
                 console.error('Failed to load reports:', error);
+                if (body) body.innerHTML = `<p style="color: rgba(255,100,100,0.6); font-size: 0.82rem; text-align: center; padding: 1rem 0;">Could not load reports — please refresh.</p>`;
             }
         }
 
@@ -4178,6 +4357,16 @@
                 refunded: { text: 'Refunded to wallet', dot: 'pending', cls: 'pending' },
                 failed: { text: 'Refunded to wallet', dot: 'pending', cls: 'pending' }
             };
+
+            const scanPhrases = [
+                "Scanning AI & Similarity",
+                "Analyzing text structure",
+                "Checking academic databases",
+                "Comparing against online sources",
+                "Generating detailed report"
+            ];
+            const phraseIndex = Math.floor(Date.now() / 8000) % scanPhrases.length;
+            const currentScanPhrase = scanPhrases[phraseIndex];
 
             body.innerHTML = reports.map(r => {
                 const status = statusLabels[r.status] || { text: r.status, dot: '', cls: '' };
@@ -4200,7 +4389,7 @@
                 } else if (r.status === 'processing') {
                     action = `
                         <span class="scanlab-processing-badge">
-                            <i class="fas fa-microchip fa-spin"></i> Scanning AI &amp; Similarity
+                            <i class="fas fa-microchip fa-spin"></i> ${currentScanPhrase}
                             <span class="scanlab-dots"><span>.</span><span>.</span><span>.</span></span>
                         </span>
                     `;
@@ -4208,12 +4397,15 @@
                     action = `<span class="timeline-status-text ${status.cls}">${status.text}</span>`;
                 }
 
+                const simBadge = r.similarity_score != null ? ` &bull; <span style="color: #ef4444; font-weight: 600;">Sim: ${Math.round(r.similarity_score)}%</span>` : '';
+                const aiBadge = r.ai_score != null ? ` &bull; <span style="color: #8b5cf6; font-weight: 600;">AI: ${Math.round(r.ai_score)}%</span>` : '';
+
                 return `
                     <div class="timeline-row">
                         <div class="timeline-dot ${status.dot}"></div>
                         <div class="timeline-content">
                             <div class="timeline-filename">${r.original_filename}</div>
-                            <div class="timeline-meta">${date}</div>
+                            <div class="timeline-meta">${date}${simBadge}${aiBadge}</div>
                         </div>
                         <div class="timeline-action">${action}</div>
                     </div>
@@ -5465,6 +5657,116 @@
             }
         }
         
+        // -------- Stuck Reports Recovery --------
+        async function loadStuckReports() {
+            const container = document.getElementById('stuckReportsList');
+            if (!container) return;
+            container.innerHTML = `<p style="color: rgba(255,255,255,0.3); font-size: 0.82rem; text-align: center;"><i class="fas fa-circle-notch fa-spin"></i> Loading…</p>`;
+
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/turnitin/admin/stuck-reports', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const reports = data.stuckReports || [];
+
+                if (reports.length === 0) {
+                    container.innerHTML = `<p style="color: #34d399; font-size: 0.85rem; text-align: center; padding: 0.5rem 0;"><i class="fas fa-check-circle"></i> No stuck reports — everything looks good!</p>`;
+                    return;
+                }
+
+                container.innerHTML = reports.map(r => {
+                    const created = new Date(r.created_at).toLocaleString();
+                    const safeId = r.id;
+                    return `
+                        <div id="stuckRow_${safeId}" style="background: rgba(239,68,68,0.07); border: 1px solid rgba(239,68,68,0.25); border-radius: 10px; padding: 1rem 1.25rem;">
+                            <div style="display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 0.75rem;">
+                                <div>
+                                    <div style="font-weight: 700; font-size: 0.9rem;">${r.original_filename}</div>
+                                    <div style="font-size: 0.78rem; color: rgba(255,255,255,0.5);">${r.member_name} &lt;${r.member_email}&gt; &bull; ${created}</div>
+                                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.35); margin-top: 0.2rem;">Writenix ref: <code style="background: rgba(0,0,0,0.3); padding: 0.1rem 0.35rem; border-radius: 4px;">${r.writenix_reference || '(none)'}</code></div>
+                                </div>
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-bottom: 0.6rem;">
+                                <input id="simUrl_${safeId}" type="text" placeholder="Similarity report URL (from Writenix dashboard)" style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 0.5rem 0.75rem; color: white; font-size: 0.8rem; width: 100%; box-sizing: border-box;">
+                                <input id="aiUrl_${safeId}" type="text" placeholder="AI report URL (from Writenix dashboard)" style="background: rgba(0,0,0,0.35); border: 1px solid rgba(255,255,255,0.15); border-radius: 6px; padding: 0.5rem 0.75rem; color: white; font-size: 0.8rem; width: 100%; box-sizing: border-box;">
+                            </div>
+                            <button onclick="adminCompleteReport(${safeId})" style="background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 7px; padding: 0.5rem 1.1rem; color: white; font-weight: 700; font-size: 0.82rem; cursor: pointer; display: flex; align-items: center; gap: 0.4rem;">
+                                <i class="fas fa-check"></i> Mark Complete &amp; Notify Member
+                            </button>
+                        </div>
+                    `;
+                }).join('');
+
+            } catch (err) {
+                container.innerHTML = `<p style="color: #ef4444; font-size: 0.82rem; text-align: center;">Failed to load stuck reports.</p>`;
+            }
+        }
+
+        async function adminCompleteReport(reportId) {
+            const simUrl = document.getElementById(`simUrl_${reportId}`)?.value.trim();
+            const aiUrl  = document.getElementById(`aiUrl_${reportId}`)?.value.trim();
+
+            if (!simUrl && !aiUrl) {
+                showToast('error', 'Paste at least one report URL before marking complete.');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/turnitin/admin/complete-report', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ reportId, similarityUrl: simUrl || null, aiUrl: aiUrl || null })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    // Remove the row from the stuck list and show success
+                    const row = document.getElementById(`stuckRow_${reportId}`);
+                    if (row) {
+                        row.style.transition = 'opacity 0.4s';
+                        row.style.opacity = '0';
+                        setTimeout(() => row.remove(), 400);
+                    }
+                    showToast('success', `Report #${reportId} resolved — member has been notified!`);
+                } else {
+                    showToast('error', data.error || 'Failed to complete report');
+                }
+            } catch (err) {
+                showToast('error', 'Error completing report');
+            }
+        }
+
+        async function viewWebhookLogs() {
+            const modal = document.getElementById('webhookLogsModal');
+            const content = document.getElementById('webhookLogsContent');
+            if (!modal || !content) return;
+            
+            modal.style.display = 'flex';
+            content.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Loading logs...';
+
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/turnitin/admin/webhook-logs', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (res.ok) {
+                    content.textContent = data.logs || 'No logs available.';
+                } else {
+                    content.textContent = `Error: ${data.error || 'Could not load logs.'}`;
+                }
+            } catch (err) {
+                content.textContent = 'Error connecting to server to fetch logs.';
+            }
+        }
+
         // Close unverified banner
         function closeUnverifiedBanner() {
             document.getElementById('unverifiedBanner').style.display = 'none';
