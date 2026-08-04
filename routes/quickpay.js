@@ -403,7 +403,7 @@ router.post('/resend-code', async (req, res) => {
         if (result.rows.length === 0) {
             // Return success even if not found to prevent email enumeration, but you can also return error.
             // Based on prompt "If not found, return a polite error", I will return an error.
-            return res.status(404).json({ error: 'We couldn\\'t find a Client Code for this email.' });
+            return res.status(404).json({ error: "We couldn't find a Client Code for this email." });
         }
 
         const client = result.rows[0];
