@@ -2702,118 +2702,128 @@
         </div>
 
         <!-- Pricing Tab -->
-        <div class="tab-content active" id="pricing-tab">
-            <div class="pricing-hero">
-                <span class="pricing-eyebrow"><i class="fas fa-layer-group"></i> Unified Pricing</span>
-                <h1 class="pricing-hero-title">One simple price,<br>per page.</h1>
-                <div class="pricing-hero-amount" id="unifiedPriceRange">
-                    $7 – $9
-                    <span class="unit">/ page</span>
-                </div>
-                <p class="pricing-hero-note">Final price depends on page count, deadline, and complexity.</p>
-                <button class="pricing-hero-cta" id="unifiedPricingBtn" onclick="selectUnifiedPricing()">
-                    Get Started <i class="fas fa-arrow-right"></i>
-                </button>
-            </div>
-
-            <div class="pricing-divider"></div>
-
-            <!-- New AI Humanization Pricing using Ruled List and Typographic Hierarchy (No Cards) -->
-            <div style="max-width: 720px; margin: 3rem auto;">
-                <h2 style="font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 0.5rem; color: #f8fafc;">AI Humanization</h2>
-                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1.5rem;">Word-based scaling</div>
+        <div class="tab-content active" id="pricing-tab" style="padding: 2rem 1rem;">
+            
+            <!-- 3-Column Services Grid (No Cards, Ruled Lists, Density Banding) -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 4rem; max-width: 1100px; margin: 0 auto 3rem;">
                 
-                <div style="display: flex; flex-direction: column; width: 100%;">
-                    <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #334155;">
-                        <span style="font-weight: 600; color: #e2e8f0;">First 500 words</span>
-                        <span style="font-weight: 500; color: #e2e8f0;">KSh 200</span>
-                    </div>
-                    <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #334155;">
-                        <span style="font-weight: 600; color: #e2e8f0;">Each additional 500 words</span>
-                        <span style="font-weight: 500; color: #e2e8f0;">KSh 100</span>
-                    </div>
-                </div>
-
-                <div style="margin-top: 2rem;">
-                    <h3 style="font-size: 0.85rem; font-weight: 700; margin-bottom: 1rem; color: #cbd5e1;">EXAMPLES</h3>
+                <!-- Column 1: Custom Writing -->
+                <div style="display: flex; flex-direction: column;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 0.5rem; color: #f8fafc;">Custom Writing</h2>
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1.5rem;">Per-page scaling</div>
+                    
                     <div style="display: flex; flex-direction: column; width: 100%;">
-                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
-                            <span style="color: #94a3b8;">500 words</span>
-                            <span style="font-weight: 500; color: #94a3b8;">KSh 200</span>
+                        <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #334155; align-items: baseline;">
+                            <span style="font-weight: 600; color: #e2e8f0; font-size: 1.15rem;">Unified Price</span>
+                            <span style="font-weight: 700; color: #e2e8f0; font-size: 1.5rem;" id="unifiedPriceRange">$7 – $9<span style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin-left: 0.2rem;">/page</span></span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
-                            <span style="color: #94a3b8;">1,000 words</span>
-                            <span style="font-weight: 500; color: #94a3b8;">KSh 300</span>
+                    </div>
+                    
+                    <div style="margin-top: 1.5rem; font-size: 0.85rem; color: #94a3b8; line-height: 1.6; flex-grow: 1;">
+                        Final price depends on page count, deadline, and complexity. Includes title page, references, formatting, and a free plagiarism scan.
+                    </div>
+                    
+                    <button onclick="selectUnifiedPricing()" style="margin-top: 2rem; width: 100%; background: transparent; border: 1px solid #e2e8f0; border-radius: 4px; padding: 0.75rem; color: #e2e8f0; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                        Order Writing
+                    </button>
+                </div>
+
+                <!-- Column 2: AI Humanization -->
+                <div style="display: flex; flex-direction: column;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 0.5rem; color: #f8fafc;">AI Humanization</h2>
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1.5rem;">Word-based scaling</div>
+                    
+                    <div style="display: flex; flex-direction: column; width: 100%;">
+                        <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #334155;">
+                            <span style="font-weight: 600; color: #e2e8f0;">First 500 words</span>
+                            <span style="font-weight: 500; color: #e2e8f0;">KSh 200</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
-                            <span style="color: #94a3b8;">1,500 words</span>
-                            <span style="font-weight: 500; color: #94a3b8;">KSh 400</span>
+                        <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #334155;">
+                            <span style="font-weight: 600; color: #e2e8f0;">Each additional 500 words</span>
+                            <span style="font-weight: 500; color: #e2e8f0;">KSh 100</span>
                         </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
-                            <span style="color: #94a3b8;">2,000 words</span>
-                            <span style="font-weight: 500; color: #94a3b8;">KSh 500</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #1e293b;">
-                            <span style="color: #94a3b8;">3,000 words</span>
-                            <span style="font-weight: 500; color: #94a3b8;">KSh 700</span>
+                    </div>
+
+                    <div style="margin-top: 1.5rem; flex-grow: 1;">
+                        <h3 style="font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em;">Examples</h3>
+                        <div style="display: flex; flex-direction: column; width: 100%;">
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #1e293b;">
+                                <span style="color: #94a3b8; font-size: 0.85rem;">1,000 words</span>
+                                <span style="font-weight: 500; color: #94a3b8; font-size: 0.85rem;">KSh 300</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #1e293b;">
+                                <span style="color: #94a3b8; font-size: 0.85rem;">2,000 words</span>
+                                <span style="font-weight: 500; color: #94a3b8; font-size: 0.85rem;">KSh 500</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #1e293b;">
+                                <span style="color: #94a3b8; font-size: 0.85rem;">3,000 words</span>
+                                <span style="font-weight: 500; color: #94a3b8; font-size: 0.85rem;">KSh 700</span>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="pricing-divider"></div>            <div class="pricing-perks">
-                <div class="perk">
-                    <i class="fas fa-shield-halved"></i>
-                    <div><strong>Plagiarism-free</strong><span>100% original, every time</span></div>
-                </div>
-                <div class="perk">
-                    <i class="fas fa-file-signature"></i>
-                    <div><strong>Any format</strong><span>APA, MLA, Harvard &amp; more</span></div>
-                </div>
-                <div class="perk">
-                    <i class="fas fa-rotate"></i>
-                    <div><strong>Free revisions</strong><span>Until you're satisfied</span></div>
-                </div>
-                <div class="perk">
-                    <i class="fas fa-comments"></i>
-                    <div><strong>Direct support</strong><span>Talk to your writer</span></div>
-                </div>
-                <div class="perk">
-                    <i class="fas fa-clock"></i>
-                    <div><strong>On-time delivery</strong><span>Every single deadline</span></div>
-                </div>
-            </div>
-
-            <!-- Plagiarism & AI Check Pricing -->
-            <div style="max-width: 680px; margin: 3rem auto 0; padding: 0 1rem;">
-                <div style="text-align: center; margin-bottom: 1.5rem;">
-                    <span style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.85rem; border-radius: 4px; background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: #a78bfa; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px;">
-                        <i class="fas fa-shield-halved"></i> Add-on Service
-                    </span>
-                    <h2 style="font-size: 1.6rem; font-weight: 800; margin: 1rem 0 0.5rem;">Plagiarism &amp; AI Detection</h2>
-                    <p style="color: rgba(255,255,255,0.5); font-size: 0.9rem;">Powered by Turnitin &amp; AI analysis — get a full similarity + AI detection report in minutes.</p>
-                </div>
-                <div style="background: rgba(139, 92, 246, 0.06); border: 1px solid rgba(139, 92, 246, 0.25); border-radius: 16px; padding: 1.75rem; display: grid; grid-template-columns: 1fr auto; gap: 1.5rem; align-items: center;">
-                    <div>
-                        <div style="font-size: 2.2rem; font-weight: 800; background: linear-gradient(135deg, #a78bfa, #8b5cf6); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1;" id="pricingTabScanPrice">$2 <span style="font-size: 1rem; font-weight: 500; -webkit-text-fill-color: rgba(255,255,255,0.45);">per report</span></div>
-                        <div style="color: rgba(255,255,255,0.45); font-size: 0.8rem; margin-top: 0.4rem;">or KSh 200 for Kenyan users</div>
-                        <ul style="list-style: none; margin-top: 1rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                            <li style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.87rem; color: rgba(255,255,255,0.75);"><i class="fas fa-check" style="color: #a78bfa; width: 14px;"></i> Similarity (plagiarism) report</li>
-                            <li style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.87rem; color: rgba(255,255,255,0.75);"><i class="fas fa-check" style="color: #a78bfa; width: 14px;"></i> AI-generated content detection</li>
-                            <li style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.87rem; color: rgba(255,255,255,0.75);"><i class="fas fa-check" style="color: #a78bfa; width: 14px;"></i> Full PDF report emailed to you</li>
-                            <li style="display: flex; align-items: center; gap: 0.6rem; font-size: 0.87rem; color: rgba(255,255,255,0.75);"><i class="fas fa-check" style="color: #a78bfa; width: 14px;"></i> PDF &amp; DOCX supported, up to 10MB</li>
-                        </ul>
+                <!-- Column 3: Detection Reports -->
+                <div style="display: flex; flex-direction: column;">
+                    <h2 style="font-size: 1.5rem; font-weight: 800; line-height: 1.1; margin-bottom: 0.5rem; color: #f8fafc;">Detection Reports</h2>
+                    <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 1.5rem;">Add-on service</div>
+                    
+                    <div style="display: flex; flex-direction: column; width: 100%;">
+                        <div style="display: flex; justify-content: space-between; padding: 1rem 0; border-bottom: 1px solid #334155; align-items: baseline;">
+                            <span style="font-weight: 600; color: #e2e8f0; font-size: 1.15rem;">Single Check</span>
+                            <span style="font-weight: 700; color: #e2e8f0; font-size: 1.5rem;" id="pricingTabScanPrice">$2<span style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin-left: 0.2rem;">/report</span></span>
+                        </div>
                     </div>
-                    <div style="display: flex; flex-direction: column; gap: 0.75rem; min-width: 160px;">
-                        <button onclick="showTab('turnitin')" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed); border: none; border-radius: 10px; padding: 0.85rem 1.25rem; color: white; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: all 0.25s; box-shadow: 0 4px 15px rgba(139,92,246,0.3);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 25px rgba(139,92,246,0.45)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 15px rgba(139,92,246,0.3)'">
-                            <i class="fas fa-shield-halved"></i> Check My Work
+
+                    <div style="margin-top: 1.5rem; flex-grow: 1;">
+                        <h3 style="font-size: 0.75rem; font-weight: 700; margin-bottom: 0.75rem; color: #cbd5e1; text-transform: uppercase; letter-spacing: 0.05em;">Includes</h3>
+                        <div style="display: flex; flex-direction: column; width: 100%;">
+                            <div style="padding: 0.5rem 0; border-bottom: 1px solid #1e293b; color: #94a3b8; font-size: 0.85rem; display: flex; gap: 0.5rem; align-items: center;"><i class="fas fa-check" style="color: #64748b; font-size: 0.7rem;"></i> Similarity (plagiarism) score</div>
+                            <div style="padding: 0.5rem 0; border-bottom: 1px solid #1e293b; color: #94a3b8; font-size: 0.85rem; display: flex; gap: 0.5rem; align-items: center;"><i class="fas fa-check" style="color: #64748b; font-size: 0.7rem;"></i> AI-generated content detection</div>
+                            <div style="padding: 0.5rem 0; border-bottom: 1px solid #1e293b; color: #94a3b8; font-size: 0.85rem; display: flex; gap: 0.5rem; align-items: center;"><i class="fas fa-check" style="color: #64748b; font-size: 0.7rem;"></i> Full PDF report emailed instantly</div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 2rem; display: flex; flex-direction: column; gap: 1rem;">
+                        <button onclick="showTab('turnitin')" style="width: 100%; background: #e2e8f0; border: none; border-radius: 4px; padding: 0.75rem; color: #0f172a; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#e2e8f0'">
+                            Check My Work
                         </button>
-                        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 8px; padding: 0.65rem 0.85rem; text-align: center;">
-                            <div style="font-size: 0.72rem; color: rgba(255,255,255,0.5); margin-bottom: 0.25rem;">Bulk bundles</div>
-                            <div style="font-size: 0.85rem; font-weight: 700; color: #34d399;">5 slots = $9</div>
-                            <div style="font-size: 0.78rem; color: rgba(255,255,255,0.5);">Save 10%</div>
+                        
+                        <div style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-top: 1px solid #334155; align-items: center;">
+                            <div>
+                                <div style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; color: #94a3b8; margin-bottom: 0.15rem;">Bulk Options</div>
+                                <div style="font-size: 0.85rem; font-weight: 600; color: #e2e8f0;">5 checks</div>
+                            </div>
+                            <div style="text-align: right;">
+                                <div style="font-size: 0.85rem; font-weight: 600; color: #e2e8f0;">$9</div>
+                                <div style="font-size: 0.75rem; color: #10b981; font-weight: 600;">Save 10%</div>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </div>
+
+            <!-- Compact Perks Row -->
+            <div style="border-top: 1px solid #1e293b; padding-top: 2rem; max-width: 1100px; margin: 0 auto; display: flex; flex-wrap: wrap; justify-content: center; gap: 3rem;">
+                <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="font-weight: 700; font-size: 0.75rem; color: #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Plagiarism-free</div>
+                    <div style="font-size: 0.8rem; color: #94a3b8;">100% original</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="font-weight: 700; font-size: 0.75rem; color: #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Any format</div>
+                    <div style="font-size: 0.8rem; color: #94a3b8;">APA, MLA &amp; more</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="font-weight: 700; font-size: 0.75rem; color: #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Free revisions</div>
+                    <div style="font-size: 0.8rem; color: #94a3b8;">Until satisfied</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="font-weight: 700; font-size: 0.75rem; color: #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">Direct support</div>
+                    <div style="font-size: 0.8rem; color: #94a3b8;">Talk to writer</div>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
+                    <div style="font-weight: 700; font-size: 0.75rem; color: #e2e8f0; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.25rem;">On-time delivery</div>
+                    <div style="font-size: 0.8rem; color: #94a3b8;">Always met</div>
                 </div>
             </div>
         </div>
@@ -4089,9 +4099,9 @@
                 const pricingTabEl = document.getElementById('pricingTabScanPrice');
                 if (pricingTabEl) {
                     if (countryCode === 'KE') {
-                        pricingTabEl.innerHTML = 'KSh 200 <span style="font-size: 1rem; font-weight: 500; -webkit-text-fill-color: rgba(255,255,255,0.45);">per report</span>';
+                        pricingTabEl.innerHTML = 'KSh 200<span style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin-left: 0.2rem;">/report</span>';
                     } else {
-                        pricingTabEl.innerHTML = '$2 <span style="font-size: 1rem; font-weight: 500; -webkit-text-fill-color: rgba(255,255,255,0.45);">per report</span>';
+                        pricingTabEl.innerHTML = '$2<span style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin-left: 0.2rem;">/report</span>';
                     }
                 }
             });
@@ -4500,8 +4510,8 @@
             const rangeEl = document.getElementById('unifiedPriceRange');
             if (rangeEl) {
                 rangeEl.innerHTML = isKes
-                    ? 'KES 250 – 350 <span class="unit">/ page</span>'
-                    : '$7 – $9 <span class="unit">/ page</span>';
+                    ? 'KES 250 – 350<span style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin-left: 0.2rem;">/page</span>'
+                    : '$7 – $9<span style="font-size: 0.9rem; font-weight: 500; color: #94a3b8; margin-left: 0.2rem;">/page</span>';
             }
             // Keep the Submit tab's summary in sync if the user already selected before this resolved
             if (selectedPackageData.name === 'standard') {
