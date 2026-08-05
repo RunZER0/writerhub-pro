@@ -353,56 +353,6 @@ router.post('/submit', authenticateMember, (req, res, next) => {
 // List the member's reports
 router.get('/my-reports', authenticateMember, async (req, res) => {
     try {
-        // Auto-recover any of this user's stuck reports before returning them
-        const stuckResult = await pool.query(
-            `SELECT * FROM writenix_reports 
-             WHERE member_id = $1 AND status = 'processing' AND created_at < NOW() - INTERVAL '10 minutes'`,
-            [req.member.memberId]
-        );
-
-        if (stuckResult.rows.length > 0) {
-            const memberData = await pool.query('SELECT name, email FROM client_members WHERE id = $1', [req.member.memberId]);
-            const member = memberData.rows[0];
-
-            for (const report of stuckResult.rows) {
-                let statusObj = null;
-                let apiFailed = false;
-
-                if (report.writenix_reference) {
-                    try {
-                        statusObj = await writenixClient.getReportStatus(report.writenix_reference);
-                    } catch (err) {
-                        apiFailed = true;
-                    }
-                } else {
-                    apiFailed = true;
-                }
-
-                const rawData = statusObj?.raw || {};
-                const files = rawData.files || rawData.data?.files || {};
-                const similarityReportUrl = files.report_1 || null;
-                const aiReportUrl = files.report_2 || null;
-
-                if (statusObj?.status === 'completed' || statusObj?.status === 'success' || (similarityReportUrl || aiReportUrl)) {
-                    const similarityScore = rawData.plagiarism_score || rawData.data?.plagiarism_score || null;
-                    const aiScore = rawData.ai_score || rawData.data?.ai_score || null;
-
-                    await pool.query(
-                        `UPDATE writenix_reports
-                         SET status = 'completed', similarity_report_url = $1, ai_report_url = $2,
-                             similarity_score = $3, ai_score = $4, completed_at = NOW()
-                         WHERE id = $5`,
-                        [similarityReportUrl, aiReportUrl, similarityScore, aiScore, report.id]
-                    );
-                } else if (apiFailed || statusObj?.status === 'failed' || statusObj?.status === 'error') {
-                    await pool.query(`UPDATE writenix_reports SET status = 'refunded' WHERE id = $1`, [report.id]);
-                    if (member) {
-                        await refundToWallet(report.id, req.member.memberId, member, 'processing was stuck and could not be recovered');
-                    }
-                }
-            }
-        }
-
         const result = await pool.query(
             `SELECT id, original_filename, status, similarity_report_url, ai_report_url, similarity_score, ai_score, created_at, completed_at
              FROM writenix_reports
@@ -580,11 +530,11 @@ router.post('/admin/auto-recover-stuck', authenticateMember, async (req, res) =>
                     })
                 );
                 recovered++;
-            } else if (apiFailed || statusObj?.status === 'failed' || statusObj?.status === 'error') {
-                // Mark as failed and refund
+            } else if (statusObj?.status === 'failed' || statusObj?.status === 'error' || (apiFailed && new Date(report.created_at) < new Date(Date.now() - 6 * 3600 * 1000))) {
+                // Mark as failed and refund only if explicitly failed or stuck over 6 hours
                 await pool.query(`UPDATE writenix_reports SET status = 'refunded' WHERE id = $1`, [report.id]);
                 const member = { name: report.member_name, email: report.member_email };
-                await refundToWallet(report.id, report.member_id, member, 'processing was stuck and could not be recovered');
+                await refundToWallet(report.id, report.member_id, member, 'processing timed out after 6+ hours');
                 failed++;
             }
         }

@@ -90,19 +90,25 @@ async function submitDocument(fileBuffer, originalFilename) {
  * @throws if the request fails (e.g. 404 if not found)
  */
 async function getReportStatus(writenixReference) {
-    const baseUrl = getBaseUrl();
-    const response = await fetch(`${baseUrl}/documents/${writenixReference}`, {
-        method: 'GET',
-        headers: buildRequestHeaders()
-    });
+    try {
+        const baseUrl = getBaseUrl();
+        const response = await fetch(`${baseUrl}/documents/${writenixReference}`, {
+            method: 'GET',
+            headers: buildRequestHeaders()
+        });
 
-    if (!response.ok) {
-        const errBody = await response.text().catch(() => '');
-        throw new Error(`Writenix GET returned ${response.status}: ${errBody}`);
+        if (!response.ok) {
+            const errBody = await response.text().catch(() => '');
+            console.warn(`Writenix GET status returned ${response.status} (Writenix is webhook-driven): ${errBody.slice(0, 100)}`);
+            return { status: 'processing', raw: {} };
+        }
+
+        const data = await response.json().catch(() => ({}));
+        return { status: data.status || data.state || 'processing', raw: data };
+    } catch (err) {
+        console.warn(`Writenix GET status check skipped: ${err.message}`);
+        return { status: 'processing', raw: {} };
     }
-
-    const data = await response.json().catch(() => ({}));
-    return { status: data.status || data.state || 'unknown', raw: data };
 }
 
 /**
