@@ -149,8 +149,17 @@ function parseWebhookPayload(payload) {
     const similarityReportUrl = files.report_1 || null;
     const aiReportUrl = files.report_2 || null;
     
-    const similarityScore = payload.plagiarism_score || payload.data?.plagiarism_score || null;
-    const aiScore = payload.ai_score || payload.data?.ai_score || null;
+    const parseScore = (val) => {
+        if (val === null || val === undefined || val === '' || val === 'N/A') return null;
+        const num = Number(val);
+        return Number.isNaN(num) ? null : num;
+    };
+
+    const rawSimScore = payload.plagiarism_score ?? payload.data?.plagiarism_score;
+    const rawAiScore = payload.ai_score ?? payload.data?.ai_score;
+
+    const similarityScore = parseScore(rawSimScore);
+    const aiScore = parseScore(rawAiScore);
 
     return { event, writenixRef, similarityReportUrl, aiReportUrl, similarityScore, aiScore };
 }
