@@ -309,4 +309,98 @@ router.post('/bulk-create', authenticate, isAdmin, async (req, res) => {
     }
 });
 
+// Get all issued client invoices across all channels (QuickPay, Homework Panel, Turnitin)
+router.get('/invoices', authenticate, isAdmin, async (req, res) => {
+    try {
+        const { search, status, type } = req.query;
+
+        // 1. QuickPay Invoices
+        const qp = await pool.query(`
+            SELECT 
+                qi.id,
+                'quickpay' as type,
+                'QuickPay Invoice' as type_label,
+                qi.invoice_number as reference,
+                qi.client_email,
+                qi.client_code,
+                qi.work_paid_for as description,
+                qi.amount,
+                qi.currency,
+                qi.payment_status as status,
+                qi.created_at as date,
+                qi.paid_at
+            FROM quickpay_invoices qi
+            ORDER BY qi.created_at DESC
+        `);
+
+        // 2. Assignment / Homework Invoices
+        const hw = await pool.query(`
+            SELECT 
+                af.id,
+                'assignment' as type,
+                'Homework Assignment' as type_label,
+                COALESCE(a.order_number, CONCAT('HW-', a.id)) as reference,
+                cm.email as client_email,
+                cm.client_code,
+                a.title as description,
+                af.client_paid as amount,
+                'USD' as currency,
+                af.payment_status as status,
+                af.created_at as date,
+                af.payment_date as paid_at
+            FROM assignment_finances af
+            JOIN assignments a ON af.assignment_id = a.id
+            LEFT JOIN client_members cm ON a.client_id = cm.id
+            ORDER BY af.created_at DESC
+        `);
+
+        // 3. Turnitin Check Purchases
+        const wnx = await pool.query(`
+            SELECT 
+                wr.id,
+                'plagiarism' as type,
+                'Plagiarism/AI Scan' as type_label,
+                CONCAT('WNX-', COALESCE(wr.writenix_reference, CAST(wr.id AS VARCHAR))) as reference,
+                cm.email as client_email,
+                cm.client_code,
+                CONCAT('Scan: ', wr.original_filename) as description,
+                COALESCE(wr.amount_charged, CASE WHEN wr.currency = 'KES' THEN 300 ELSE 8 END) as amount,
+                COALESCE(wr.currency, 'USD') as currency,
+                CASE WHEN wr.status = 'completed' THEN 'paid' ELSE wr.status END as status,
+                wr.created_at as date,
+                wr.completed_at as paid_at
+            FROM writenix_reports wr
+            JOIN client_members cm ON wr.member_id = cm.id
+            ORDER BY wr.created_at DESC
+        `);
+
+        let invoices = [...qp.rows, ...hw.rows, ...wnx.rows];
+
+        // Apply filters if provided
+        if (search) {
+            const s = search.toLowerCase();
+            invoices = invoices.filter(i => 
+                (i.reference && i.reference.toLowerCase().includes(s)) ||
+                (i.client_email && i.client_email.toLowerCase().includes(s)) ||
+                (i.client_code && i.client_code.toLowerCase().includes(s)) ||
+                (i.description && i.description.toLowerCase().includes(s))
+            );
+        }
+        if (status) {
+            invoices = invoices.filter(i => i.status.toLowerCase() === status.toLowerCase());
+        }
+        if (type) {
+            invoices = invoices.filter(i => i.type.toLowerCase() === type.toLowerCase());
+        }
+
+        // Sort descending by date
+        invoices.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        res.json({ success: true, count: invoices.length, invoices });
+    } catch (error) {
+        console.error('Get admin invoices error:', error);
+        res.status(500).json({ error: 'Failed to fetch admin invoices' });
+    }
+});
+
 module.exports = router;

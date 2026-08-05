@@ -26,6 +26,7 @@ const paystackRoutes = require('./routes/paystack');
 const turnitinRoutes = require('./routes/turnitin');
 const quickpayRoutes = require('./routes/quickpay');
 const geoRoutes = require('./routes/geo');
+const purchasesRoutes = require('./routes/purchases');
 
 const app = express();
 
@@ -99,6 +100,7 @@ app.use('/api/paystack', paystackRoutes);
 app.use('/api/turnitin', turnitinRoutes);
 app.use('/api/quickpay', quickpayRoutes);
 app.use('/api/geo', geoRoutes);
+app.use('/api/purchases', purchasesRoutes);
 
 // Serve frontend for all other routes (SPA fallback)
 app.get('*', (req, res) => {
