@@ -862,38 +862,84 @@
             cursor: pointer;
             position: relative;
             overflow: hidden;
-            transition: all 0.3s;
+            user-select: none;
+            transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1),
+                        border-color 0.25s ease,
+                        background 0.25s ease,
+                        box-shadow 0.25s ease;
         }
         .scanlab-dropzone::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.08), transparent 60%);
+            background: radial-gradient(circle at 50% 0%, rgba(99, 102, 241, 0.12), transparent 70%);
             pointer-events: none;
+            transition: opacity 0.3s ease;
         }
         .scanlab-dropzone:hover {
             border-color: #6366f1;
-            background: rgba(99, 102, 241, 0.04);
+            background: rgba(99, 102, 241, 0.05);
+            box-shadow: 0 10px 30px -5px rgba(99, 102, 241, 0.2);
+            transform: translateY(-3px);
         }
+        .scanlab-dropzone:active {
+            transform: scale(0.975) translateY(1px);
+            border-color: #818cf8;
+            box-shadow: 0 2px 15px rgba(99, 102, 241, 0.15);
+        }
+        .scanlab-dropzone.is-clicked {
+            animation: scanlabClickRipple 0.5s ease-out;
+        }
+        .scanlab-dropzone.is-clicked .scanlab-dropzone-icon {
+            animation: scanlabIconBounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        @keyframes scanlabClickRipple {
+            0% {
+                transform: scale(0.97);
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.6), inset 0 0 20px rgba(99, 102, 241, 0.25);
+            }
+            40% {
+                transform: scale(1.015);
+                box-shadow: 0 0 35px 8px rgba(99, 102, 241, 0.4), inset 0 0 30px rgba(99, 102, 241, 0.15);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(99, 102, 241, 0);
+            }
+        }
+        @keyframes scanlabIconBounce {
+            0% { transform: translateY(0) scale(1); }
+            35% { transform: translateY(-16px) scale(1.3) rotate(-6deg); color: #818cf8; }
+            70% { transform: translateY(4px) scale(0.92); }
+            100% { transform: translateY(0) scale(1); }
+        }
+
         .scanlab-dropzone-icon {
             width: 56px;
             height: 56px;
             margin: 0 auto 1rem;
             border-radius: 50%;
-            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(139, 92, 246, 0.15));
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.18), rgba(139, 92, 246, 0.18));
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 1.4rem;
             color: #a5b4fc;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.12);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), background 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
             animation: scanlabFloat 3s ease-in-out infinite;
+        }
+        .scanlab-dropzone:hover .scanlab-dropzone-icon {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.3), rgba(139, 92, 246, 0.3));
+            color: #ffffff;
+            box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
         }
         @keyframes scanlabFloat {
             0%, 100% { transform: translateY(0); }
             50% { transform: translateY(-6px); }
         }
-        .scanlab-dropzone-title { font-weight: 700; margin-bottom: 0.3rem; }
-        .scanlab-dropzone-sub { color: rgba(255,255,255,0.4); font-size: 0.82rem; }
+        .scanlab-dropzone-title { font-weight: 700; margin-bottom: 0.3rem; transition: color 0.2s ease; }
+        .scanlab-dropzone-sub { color: rgba(255,255,255,0.4); font-size: 0.82rem; transition: color 0.2s ease; }
 
         @keyframes scanlabFadeUp {
             from { opacity: 0; transform: translateY(6px); }
@@ -4156,7 +4202,15 @@
             const dropzone = document.getElementById('turnitinDropzone');
             const input = document.getElementById('turnitinFileInput');
 
-            dropzone.addEventListener('click', () => input.click());
+            dropzone.addEventListener('click', (e) => {
+                dropzone.classList.remove('is-clicked');
+                void dropzone.offsetWidth; // Force reflow
+                dropzone.classList.add('is-clicked');
+
+                setTimeout(() => {
+                    input.click();
+                }, 80);
+            });
             dropzone.addEventListener('dragover', e => {
                 e.preventDefault();
                 dropzone.style.borderColor = '#6366f1';
