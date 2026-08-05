@@ -4350,13 +4350,17 @@
         }
 
         let knownTurnitinStatusMap = {};
+        let turnitinPollTimer = null;
+        let turnitinPollCount = 0;
 
         async function loadTurnitinReports() {
             const body = document.getElementById('turnitinReportsBody');
-            // Show a subtle loading state only on the very first call (body is empty)
-            if (body && body.innerHTML.trim() === '') {
+            const isInitialLoad = body && (body.children.length === 0 || body.querySelector('.fa-circle-notch'));
+            
+            if (isInitialLoad && body) {
                 body.innerHTML = `<p style="color: rgba(255,255,255,0.3); font-size: 0.82rem; text-align: center; padding: 1rem 0;"><i class="fas fa-circle-notch fa-spin" style="margin-right: 0.5rem;"></i>Loading your checks…</p>`;
             }
+
             try {
                 const token = (typeof getMemberToken === 'function' ? getMemberToken() : null) || localStorage.getItem('memberToken') || localStorage.getItem('token');
                 const res = await fetch(`/api/turnitin/my-reports?t=${Date.now()}`, { 
@@ -4365,10 +4369,14 @@
                         'Cache-Control': 'no-cache, no-store'
                     } 
                 });
+
                 if (!res.ok) {
-                    if (body) body.innerHTML = `<p style="color: rgba(255,100,100,0.6); font-size: 0.82rem; text-align: center; padding: 1rem 0;">Could not load reports — please refresh.</p>`;
+                    if (isInitialLoad && body) {
+                        body.innerHTML = `<p style="color: rgba(255,100,100,0.6); font-size: 0.82rem; text-align: center; padding: 1rem 0;">Could not load reports — please refresh.</p>`;
+                    }
                     return;
                 }
+
                 const data = await res.json();
                 const reports = data.reports || [];
 
@@ -4383,18 +4391,20 @@
 
                 renderTurnitinReports(reports);
 
-                // Start polling only if there are still processing reports and we're not already polling
+                // Start or manage polling dynamically
                 const hasProcessing = reports.some(r => r.status === 'processing');
-                if (hasProcessing && !turnitinPollTimer) {
+                if (hasProcessing) {
                     startTurnitinPolling();
-                } else if (!hasProcessing && turnitinPollTimer) {
-                    // All done — stop the poll
-                    clearInterval(turnitinPollTimer);
+                } else if (turnitinPollTimer) {
+                    clearTimeout(turnitinPollTimer);
                     turnitinPollTimer = null;
+                    turnitinPollCount = 0;
                 }
             } catch (error) {
                 console.error('Failed to load reports:', error);
-                if (body) body.innerHTML = `<p style="color: rgba(255,100,100,0.6); font-size: 0.82rem; text-align: center; padding: 1rem 0;">Could not load reports — please refresh.</p>`;
+                if (isInitialLoad && body) {
+                    body.innerHTML = `<p style="color: rgba(255,100,100,0.6); font-size: 0.82rem; text-align: center; padding: 1rem 0;">Could not load reports — please refresh.</p>`;
+                }
             }
         }
 
@@ -4467,21 +4477,53 @@
         }
 
         function startTurnitinPolling() {
-            if (turnitinPollTimer) clearInterval(turnitinPollTimer);
-            let ticks = 0;
-            turnitinPollTimer = setInterval(async () => {
-                ticks++;
+            if (turnitinPollTimer) clearTimeout(turnitinPollTimer);
+
+            async function scheduleNext() {
                 try {
                     await loadTurnitinReports();
-                    const hasProcessing = Object.values(knownTurnitinStatusMap).some(s => s === 'processing');
-                    if (!hasProcessing || ticks > 75) { // Poll every 4s for up to 5 minutes
-                        clearInterval(turnitinPollTimer);
-                        turnitinPollTimer = null;
-                    }
-                } catch (error) {
-                    console.error('Turnitin polling error:', error);
+                } catch (err) {
+                    console.error('Turnitin polling schedule error:', err);
                 }
-            }, 4000);
+
+                const hasProcessing = Object.values(knownTurnitinStatusMap).some(s => s === 'processing');
+                if (!hasProcessing) {
+                    turnitinPollTimer = null;
+                    turnitinPollCount = 0;
+                    return;
+                }
+
+                turnitinPollCount++;
+                // Adaptive delay: 4s for first 30 checks (~2m), 8s for next 30 (~4m), 15s thereafter non-stop
+                let delay = 4000;
+                if (turnitinPollCount > 60) {
+                    delay = 15000;
+                } else if (turnitinPollCount > 30) {
+                    delay = 8000;
+                }
+
+                turnitinPollTimer = setTimeout(scheduleNext, delay);
+            }
+
+            turnitinPollTimer = setTimeout(scheduleNext, 4000);
+        }
+
+        // Auto-refresh when tab becomes active / gains focus / receives broadcast event
+        document.addEventListener('visibilitychange', () => {
+            if (!document.hidden) loadTurnitinReports();
+        });
+        window.addEventListener('focus', () => {
+            loadTurnitinReports();
+        });
+        if ('BroadcastChannel' in window) {
+            try {
+                const channel = new BroadcastChannel('homeworkpal-updates');
+                channel.onmessage = (event) => {
+                    if (event.data && (event.data.type === 'REFRESH_REPORTS' || event.data.type === 'turnitin_ready')) {
+                        loadTurnitinReports();
+                    }
+                };
+            } catch (e) {}
         }
 
         // Unified pricing — one package, currency resolved via geo detection

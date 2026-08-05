@@ -99,8 +99,15 @@ self.addEventListener('push', (event) => {
   };
 
   event.waitUntil(
-    self.registration.showNotification(data.title, options)
-      .then(() => console.log('[SW] Notification shown'))
+    Promise.all([
+      self.registration.showNotification(data.title, options),
+      Promise.resolve().then(() => {
+        try {
+          const channel = new BroadcastChannel('homeworkpal-updates');
+          channel.postMessage({ type: 'REFRESH_REPORTS', data });
+        } catch (e) {}
+      })
+    ]).then(() => console.log('[SW] Notification shown'))
       .catch(err => console.error('[SW] Failed to show notification:', err))
   );
 });
