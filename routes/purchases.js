@@ -30,11 +30,16 @@ function authenticateMember(req, res, next) {
 router.get('/my-purchases', authenticateMember, async (req, res) => {
     try {
         const memberId = req.member.memberId;
+        // client_members has no client_code column — the QuickPay code lives on
+        // quickpay_clients, matched by email.
         const memberRes = await pool.query(
-            'SELECT name, email, client_code FROM client_members WHERE id = $1',
+            `SELECT cm.name, cm.email, qc.client_code
+             FROM client_members cm
+             LEFT JOIN quickpay_clients qc ON LOWER(qc.email) = LOWER(cm.email)
+             WHERE cm.id = $1`,
             [memberId]
         );
-        
+
         if (memberRes.rows.length === 0) {
             return res.status(404).json({ error: 'Member profile not found' });
         }
@@ -59,16 +64,56 @@ router.get('/my-purchases', authenticateMember, async (req, res) => {
         );
 
         // 3. Fetch Client Orders / Assignment Payments
+        // client_orders is the member-facing order record. Column names here must match the
+        // table as it actually exists (package_type / final_price), not the topic/budget/currency
+        // fields an earlier version of this query assumed — those don't exist and made the whole
+        // endpoint 500.
         const ordersRes = await pool.query(
-            `SELECT co.id, co.order_number, co.topic as title, co.academic_level, co.budget as amount, co.currency, co.payment_status, co.created_at
+            `SELECT co.id, co.order_number, co.package_type, co.pages, co.final_price,
+                    co.payment_status, co.created_at, co.paid_at, a.title
              FROM client_orders co
+             LEFT JOIN assignments a ON co.assignment_id = a.id
              WHERE co.member_id = $1
              ORDER BY co.created_at DESC`,
             [memberId]
         );
 
+        // 4. Fetch Report Slot Bundle purchases
+        let slotRows = [];
+        try {
+            const slotRes = await pool.query(
+                `SELECT id, slot_count, amount, currency, paystack_reference, created_at
+                 FROM slot_purchases
+                 WHERE member_id = $1
+                 ORDER BY created_at DESC`,
+                [memberId]
+            );
+            slotRows = slotRes.rows;
+        } catch (e) {
+            // Table may not exist yet on an un-migrated database
+        }
+
         // Combine into unified purchases array
         const purchases = [];
+
+        slotRows.forEach(s => {
+            purchases.push({
+                id: `slot_${s.id}`,
+                raw_id: s.id,
+                type: 'slot_purchase',
+                type_label: 'Report Slot Bundle',
+                badge_icon: 'fa-layer-group',
+                title: `${s.slot_count} report check slots`,
+                description: `Pre-paid bundle of ${s.slot_count} plagiarism & AI report checks`,
+                reference: `SLOT-${s.id}`,
+                payment_reference: s.paystack_reference || 'N/A',
+                amount: parseFloat(s.amount || 0),
+                currency: s.currency || 'USD',
+                status: 'paid',
+                status_label: 'Paid',
+                date: s.created_at
+            });
+        });
 
         // Map Turnitin
         turnitinRes.rows.forEach(r => {
@@ -121,14 +166,14 @@ router.get('/my-purchases', authenticateMember, async (req, res) => {
                 type_label: 'Homework Order',
                 badge_icon: 'fa-file-invoice',
                 title: o.title || `Order ${o.order_number}`,
-                description: `Assignment Order #${o.order_number} (${o.academic_level || 'Standard'})`,
+                description: `Assignment Order #${o.order_number} (${o.package_type || 'Standard'}${o.pages ? `, ${o.pages} pages` : ''})`,
                 reference: o.order_number || `HW-${o.id}`,
                 payment_reference: 'Card/Mobile',
-                amount: parseFloat(o.amount || 0),
-                currency: o.currency || 'USD',
+                amount: parseFloat(o.final_price || 0),
+                currency: 'USD',
                 status: o.payment_status === 'paid' ? 'paid' : (o.payment_status || 'pending'),
                 status_label: o.payment_status === 'paid' ? 'Paid' : 'Pending',
-                date: o.created_at
+                date: o.paid_at || o.created_at
             });
         });
 
@@ -157,7 +202,10 @@ router.get('/invoice/:type/:id', authenticateMember, async (req, res) => {
         const memberId = req.member.memberId;
 
         const memberRes = await pool.query(
-            'SELECT name, email, client_code FROM client_members WHERE id = $1',
+            `SELECT cm.name, cm.email, qc.client_code
+             FROM client_members cm
+             LEFT JOIN quickpay_clients qc ON LOWER(qc.email) = LOWER(cm.email)
+             WHERE cm.id = $1`,
             [memberId]
         );
         if (memberRes.rows.length === 0) return res.status(404).json({ error: 'Member not found' });
@@ -242,20 +290,23 @@ router.get('/invoice/:type/:id', authenticateMember, async (req, res) => {
 
         } else if (type === 'assignment_order' || type === 'ord') {
             const r = await pool.query(
-                'SELECT * FROM client_orders WHERE id = $1 AND member_id = $2',
+                `SELECT co.*, a.title
+                 FROM client_orders co
+                 LEFT JOIN assignments a ON co.assignment_id = a.id
+                 WHERE co.id = $1 AND co.member_id = $2`,
                 [id, memberId]
             );
             if (r.rows.length === 0) return res.status(404).json({ error: 'Invoice not found' });
             const item = r.rows[0];
-            const amount = parseFloat(item.budget || 0);
+            const amount = parseFloat(item.final_price || 0);
 
             invoiceData = {
                 invoice_number: item.order_number || `INV-HW-${item.id}`,
                 title: 'Homework Assignment Service',
                 date: item.created_at,
-                payment_date: item.created_at,
+                payment_date: item.paid_at || item.created_at,
                 status: item.payment_status === 'paid' ? 'PAID' : 'PENDING',
-                currency: item.currency || 'USD',
+                currency: 'USD',
                 billed_to: {
                     name: member.name,
                     email: member.email,
@@ -263,7 +314,7 @@ router.get('/invoice/:type/:id', authenticateMember, async (req, res) => {
                 },
                 items: [
                     {
-                        description: `Assignment: "${item.topic}" (${item.academic_level || 'Standard'})`,
+                        description: `Assignment: "${item.title || item.order_number}" (${item.package_type || 'Standard'})`,
                         reference: item.order_number || `HW-${item.id}`,
                         qty: 1,
                         unit_price: amount,
@@ -276,6 +327,43 @@ router.get('/invoice/:type/:id', authenticateMember, async (req, res) => {
                 payment_method: 'Online Gateway',
                 payment_reference: 'Card/Mobile'
             };
+        } else if (type === 'slot_purchase' || type === 'slot') {
+            const r = await pool.query(
+                'SELECT * FROM slot_purchases WHERE id = $1 AND member_id = $2',
+                [id, memberId]
+            );
+            if (r.rows.length === 0) return res.status(404).json({ error: 'Invoice not found' });
+            const item = r.rows[0];
+            const amount = parseFloat(item.amount || 0);
+
+            invoiceData = {
+                invoice_number: `INV-SLOT-${item.id}`,
+                title: 'Report Check Slot Bundle',
+                date: item.created_at,
+                payment_date: item.created_at,
+                status: 'PAID',
+                currency: item.currency || 'USD',
+                billed_to: {
+                    name: member.name,
+                    email: member.email,
+                    client_code: member.client_code
+                },
+                items: [
+                    {
+                        description: `${item.slot_count} pre-paid plagiarism & AI report check slots`,
+                        reference: `SLOT-${item.id}`,
+                        qty: item.slot_count,
+                        unit_price: item.slot_count ? amount / item.slot_count : amount,
+                        total: amount
+                    }
+                ],
+                subtotal: amount,
+                tax: 0,
+                total: amount,
+                payment_method: 'Paystack / Card / Mobile Money',
+                payment_reference: item.paystack_reference || 'N/A'
+            };
+
         } else {
             return res.status(400).json({ error: 'Invalid invoice type' });
         }

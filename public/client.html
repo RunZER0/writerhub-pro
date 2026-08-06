@@ -1697,6 +1697,276 @@
             border: 1px solid rgba(255,255,255,0.2) !important;
         }
 
+        /* ===== Membership panel: shared shell used by both the member portal
+               and the owner admin panel that replaces it. ===== */
+        .portal-nav {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+            margin: 1.5rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            padding-bottom: 0.6rem;
+        }
+        .portal-nav-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: rgba(255,255,255,0.55);
+            padding: 0.5rem 0.95rem;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            transition: all 0.18s ease;
+        }
+        .portal-nav-btn:hover { color: #fff; background: rgba(255,255,255,0.05); }
+        .portal-nav-btn.active {
+            color: #a5b4fc;
+            background: rgba(99,102,241,0.14);
+            border-color: rgba(99,102,241,0.35);
+        }
+
+        .portal-section, .admin-section { display: none; }
+        .portal-section.active, .admin-section.active { display: block; animation: panelFade 0.25s ease; }
+        @keyframes panelFade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+        .panel-block {
+            background: rgba(15,23,42,0.55);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 14px;
+            padding: 1.35rem;
+            margin-bottom: 1.25rem;
+        }
+        .panel-block h4 {
+            margin: 0;
+            font-size: 1rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .panel-block h4 i { color: #818cf8; }
+        .panel-muted { color: rgba(255,255,255,0.45); font-size: 0.82rem; margin: 0.3rem 0 0; }
+        .panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 1rem;
+        }
+        .panel-scroll { max-height: 320px; overflow-y: auto; margin-top: 0.85rem; }
+
+        .panel-btn {
+            background: rgba(99,102,241,0.14);
+            border: 1px solid rgba(99,102,241,0.32);
+            color: #a5b4fc;
+            padding: 0.5rem 0.95rem;
+            border-radius: 8px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.45rem;
+            white-space: nowrap;
+            transition: background 0.18s ease;
+        }
+        .panel-btn:hover { background: rgba(99,102,241,0.26); }
+        .panel-btn.primary { background: linear-gradient(135deg,#6366f1,#8b5cf6); border-color: transparent; color: #fff; }
+        .panel-btn.success { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.35); color: #6ee7b7; }
+        .panel-btn.danger  { background: rgba(239,68,68,0.14); border-color: rgba(239,68,68,0.35); color: #fca5a5; }
+
+        .panel-filters { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-bottom: 1rem; }
+        .panel-filters.inline { margin-bottom: 0; }
+        .panel-filters input, .panel-filters select {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 0.55rem 0.9rem;
+            color: #f8fafc;
+            font-size: 0.83rem;
+            outline: none;
+        }
+        .panel-filters input { flex: 1; min-width: 200px; }
+
+        .panel-table-wrap { overflow-x: auto; }
+        .panel-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem; }
+        .panel-table thead tr {
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.45);
+            font-size: 0.72rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .panel-table th { padding: 0.6rem 0.75rem; font-weight: 600; }
+        .panel-table td { padding: 0.75rem; border-bottom: 1px solid rgba(255,255,255,0.05); vertical-align: middle; }
+        .panel-table tbody tr:hover { background: rgba(255,255,255,0.025); }
+        .panel-table tbody tr.clickable { cursor: pointer; }
+
+        .panel-pill {
+            display: inline-block;
+            padding: 0.2rem 0.6rem;
+            border-radius: 999px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .panel-pill.green  { background: rgba(16,185,129,0.15); color: #34d399; }
+        .panel-pill.amber  { background: rgba(245,158,11,0.15); color: #fbbf24; }
+        .panel-pill.red    { background: rgba(239,68,68,0.15); color: #fca5a5; }
+        .panel-pill.violet { background: rgba(139,92,246,0.15); color: #c4b5fd; }
+        .panel-pill.blue   { background: rgba(59,130,246,0.15); color: #93c5fd; }
+
+        /* Slot balance hero */
+        .slot-hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1.25rem;
+            flex-wrap: wrap;
+            background: linear-gradient(135deg, rgba(99,102,241,0.16), rgba(139,92,246,0.08));
+            border: 1px solid rgba(99,102,241,0.28);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+        .slot-hero-label { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.5); }
+        .slot-hero-value { font-size: 2.6rem; font-weight: 800; color: #f8fafc; line-height: 1.1; }
+        .slot-hero-note { font-size: 0.82rem; color: rgba(255,255,255,0.55); margin: 0.4rem 0 0; max-width: 46ch; }
+
+        .slot-bundle-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+        .slot-bundle {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+            text-align: left;
+            transition: all 0.18s ease;
+        }
+        .slot-bundle:hover { transform: translateY(-2px); border-color: rgba(99,102,241,0.45); }
+        .slot-bundle.featured { border-color: rgba(99,102,241,0.4); background: rgba(99,102,241,0.1); }
+        .slot-bundle-count { font-weight: 700; color: #f8fafc; font-size: 0.95rem; }
+        .slot-bundle-price { font-size: 1.3rem; font-weight: 800; color: #a5b4fc; }
+        .slot-bundle-save { font-size: 0.74rem; color: #34d399; font-weight: 600; }
+
+        /* Admin panel */
+        .admin-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+            padding-bottom: 1.25rem;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+        .admin-head-id { display: flex; align-items: center; gap: 0.9rem; }
+        .admin-badge {
+            width: 46px; height: 46px; border-radius: 12px;
+            background: linear-gradient(135deg,#6366f1,#8b5cf6);
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 1.1rem;
+        }
+        .admin-head-id h3 { margin: 0; font-size: 1.25rem; font-weight: 800; color: #f8fafc; }
+        .admin-head-id p { margin: 0.1rem 0 0; font-size: 0.82rem; color: rgba(255,255,255,0.5); }
+        .admin-head-actions { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+            gap: 0.85rem;
+            margin-top: 1.5rem;
+        }
+        .admin-stat {
+            background: rgba(15,23,42,0.6);
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 12px;
+            padding: 1rem 1.1rem;
+        }
+        .admin-stat-value { font-size: 1.65rem; font-weight: 800; color: #f8fafc; line-height: 1.15; }
+        .admin-stat-label { font-size: 0.8rem; color: rgba(255,255,255,0.65); margin-top: 0.15rem; font-weight: 600; }
+        .admin-stat-sub { font-size: 0.72rem; color: rgba(255,255,255,0.38); margin-top: 0.3rem; }
+
+        .slot-controls { display: flex; gap: 0.35rem; align-items: center; }
+        .slot-controls input {
+            width: 58px;
+            padding: 0.3rem 0.4rem;
+            background: rgba(0,0,0,0.35);
+            border: 1px solid rgba(255,255,255,0.18);
+            border-radius: 6px;
+            color: #fff;
+            text-align: center;
+            font-size: 0.8rem;
+        }
+        .slot-controls button {
+            border-radius: 6px;
+            padding: 0.3rem 0.55rem;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .slot-btn-add { background: rgba(16,185,129,0.2); border-color: rgba(16,185,129,0.4); color: #34d399; }
+        .slot-btn-sub { background: rgba(239,68,68,0.2); border-color: rgba(239,68,68,0.4); color: #f87171; }
+        .slot-btn-set { background: rgba(99,102,241,0.2); border-color: rgba(99,102,241,0.4); color: #a5b4fc; }
+
+        .admin-modal {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.78);
+            z-index: 9999;
+            display: flex; align-items: center; justify-content: center;
+            padding: 1rem;
+        }
+        .admin-modal-box {
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 14px;
+            width: 100%;
+            max-width: 780px;
+            max-height: 84vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .admin-modal-head {
+            padding: 1.1rem 1.25rem;
+            border-bottom: 1px solid #1e293b;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+        .admin-modal-head h3 { margin: 0; font-size: 1.05rem; color: #f8fafc; }
+        .admin-modal-head p { margin: 0.2rem 0 0; font-size: 0.8rem; color: rgba(255,255,255,0.45); }
+        .admin-modal-close { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1; }
+        .admin-modal-body { padding: 1.25rem; overflow-y: auto; flex: 1; }
+
+        .report-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.85rem;
+            flex-wrap: wrap;
+            padding: 0.7rem 0.85rem;
+            border: 1px solid rgba(255,255,255,0.07);
+            border-radius: 10px;
+            margin-bottom: 0.5rem;
+            background: rgba(255,255,255,0.02);
+        }
+        .report-row-name { font-weight: 600; color: #f8fafc; font-size: 0.87rem; word-break: break-word; }
+        .report-row-meta { font-size: 0.74rem; color: rgba(255,255,255,0.42); margin-top: 0.15rem; }
+
+        @media (max-width: 640px) {
+            .slot-hero-value { font-size: 2rem; }
+            .admin-head-actions { width: 100%; }
+        }
+
         /* Membership Styles - Blended Design */
         .membership-section {
             max-width: 1100px;
@@ -2716,9 +2986,6 @@
             <div class="tab" data-tab="inquiry">
                 <i class="fas fa-question-circle"></i> Inquiry
             </div>
-            <div class="tab" data-tab="purchases">
-                <i class="fas fa-file-invoice-dollar"></i> Purchases
-            </div>
         </div>
 
         <!-- Pricing Tab -->
@@ -3300,7 +3567,9 @@
                     </div>
                 </div>
 
-                <!-- Member Portal (shown when logged in) -->
+                <!-- ============================================================
+                     MEMBER PORTAL (regular members)
+                     ============================================================ -->
                 <div id="memberPortal" class="member-portal">
                     <!-- Unverified Warning Banner (hidden by default) -->
                     <div id="unverifiedBanner" class="unverified-banner" style="display: none;">
@@ -3322,7 +3591,7 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <!-- Portal Header -->
                     <div class="portal-header">
                         <div class="portal-user">
@@ -3347,76 +3616,173 @@
                         </button>
                     </div>
 
-                    <!-- Stats Grid -->
-                    <div class="portal-stats">
-                        <div class="stat-card">
-                            <div class="stat-value" id="portalDiscount">5%</div>
-                            <div class="stat-label">Your Discount</div>
+                    <!-- Portal section nav -->
+                    <div class="portal-nav" id="portalNav">
+                        <button class="portal-nav-btn active" data-section="overview" onclick="showPortalSection('overview')">
+                            <i class="fas fa-gauge-high"></i> Overview
+                        </button>
+                        <button class="portal-nav-btn" data-section="slots" onclick="showPortalSection('slots')">
+                            <i class="fas fa-shield-halved"></i> Report Slots
+                        </button>
+                        <button class="portal-nav-btn" data-section="purchases" onclick="showPortalSection('purchases')">
+                            <i class="fas fa-file-invoice-dollar"></i> Purchases &amp; Invoices
+                        </button>
+                        <button class="portal-nav-btn" data-section="referral" onclick="showPortalSection('referral')">
+                            <i class="fas fa-users"></i> Referrals
+                        </button>
+                    </div>
+
+                    <!-- ---------- Overview ---------- -->
+                    <div class="portal-section active" id="portalSection-overview">
+                        <div class="portal-stats">
+                            <div class="stat-card">
+                                <div class="stat-value" id="portalDiscount">5%</div>
+                                <div class="stat-label">Your Discount</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="portalOrders">0</div>
+                                <div class="stat-label">Total Orders</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="portalSpent">$0</div>
+                                <div class="stat-label">Total Spent</div>
+                            </div>
+                            <div class="stat-card">
+                                <div class="stat-value" id="portalOrdersToNext">5</div>
+                                <div class="stat-label">Orders to Next Tier</div>
+                            </div>
                         </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="portalOrders">0</div>
-                            <div class="stat-label">Total Orders</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="portalSpent">$0</div>
-                            <div class="stat-label">Total Spent</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value" id="portalOrdersToNext">5</div>
-                            <div class="stat-label">Orders to Next Tier</div>
+
+                        <div class="portal-grid">
+                            <div>
+                                <div class="progress-section">
+                                    <h4><i class="fas fa-chart-line"></i> Tier Progress</h4>
+                                    <div class="tier-progress">
+                                        <div class="progress-header">
+                                            <span class="current" id="currentTierLabel">Basic Member</span>
+                                            <span class="next" id="nextTierLabel">Next: Silver</span>
+                                        </div>
+                                        <div class="progress-bar">
+                                            <div class="progress-fill" id="tierProgressBar" style="width: 0%"></div>
+                                        </div>
+                                        <div class="progress-details">
+                                            <span id="ordersProgress">0/5 orders</span>
+                                            <span id="spentProgress">$0/$100 spent</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="quick-actions-grid">
+                                        <button class="quick-action-btn" onclick="showTab('submit')">
+                                            <i class="fas fa-paper-plane"></i>
+                                            <span>New Order</span>
+                                        </button>
+                                        <button class="quick-action-btn" onclick="showTab('turnitin')">
+                                            <i class="fas fa-shield-halved"></i>
+                                            <span>Check a Document</span>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="portal-perks">
+                                    <h5><i class="fas fa-gift" style="margin-right: 0.5rem; color: #10b981;"></i>Your Perks</h5>
+                                    <div id="portalPerksList">
+                                        <div class="perk-item"><i class="fas fa-check-circle"></i> Early access to new services</div>
+                                        <div class="perk-item"><i class="fas fa-check-circle"></i> Priority email support</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="panel-block">
+                                <h4><i class="fas fa-clock-rotate-left"></i> Recent Activity</h4>
+                                <div id="portalRecentActivity" class="panel-scroll">
+                                    <p class="panel-muted">Loading your recent purchases…</p>
+                                </div>
+                                <button class="panel-btn" onclick="showPortalSection('purchases')" style="margin-top: 0.9rem;">
+                                    <i class="fas fa-file-invoice-dollar"></i> See all purchases
+                                </button>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Portal Grid -->
-                    <div class="portal-grid">
-                        <!-- Left Column -->
-                        <div>
-                            <!-- Progress Section -->
-                            <div class="progress-section">
-                                <h4><i class="fas fa-chart-line"></i> Tier Progress</h4>
-                                
-                                <div class="tier-progress">
-                                    <div class="progress-header">
-                                        <span class="current" id="currentTierLabel">Basic Member</span>
-                                        <span class="next" id="nextTierLabel">Next: Silver</span>
-                                    </div>
-                                    <div class="progress-bar">
-                                        <div class="progress-fill" id="tierProgressBar" style="width: 0%"></div>
-                                    </div>
-                                    <div class="progress-details">
-                                        <span id="ordersProgress">0/5 orders</span>
-                                        <span id="spentProgress">$0/$100 spent</span>
-                                    </div>
-                                </div>
-
-                                <!-- Quick Actions -->
-                                <div class="quick-actions-grid">
-                                    <button class="quick-action-btn" onclick="showTab('submit')">
-                                        <i class="fas fa-paper-plane"></i>
-                                        <span>New Order</span>
-                                    </button>
-                                    <button class="quick-action-btn" onclick="showTab('pricing')">
-                                        <i class="fas fa-tags"></i>
-                                        <span>View Pricing</span>
-                                    </button>
-                                </div>
+                    <!-- ---------- Report Slots ---------- -->
+                    <div class="portal-section" id="portalSection-slots">
+                        <div class="slot-hero">
+                            <div class="slot-hero-main">
+                                <div class="slot-hero-label">Report check slots available</div>
+                                <div class="slot-hero-value" id="portalSlotBalance">0</div>
+                                <p class="slot-hero-note" id="portalSlotNote">
+                                    Each plagiarism &amp; AI report check uses one slot. Out of slots? Pay for a single
+                                    check at checkout, or top up below.
+                                </p>
                             </div>
+                            <button class="panel-btn primary" onclick="showTab('turnitin')">
+                                <i class="fas fa-file-arrow-up"></i> Check a document
+                            </button>
+                        </div>
 
-                            <!-- Perks -->
-                            <div class="portal-perks">
-                                <h5><i class="fas fa-gift" style="margin-right: 0.5rem; color: #10b981;"></i>Your Perks</h5>
-                                <div id="portalPerksList">
-                                    <div class="perk-item"><i class="fas fa-check-circle"></i> Early access to new services</div>
-                                    <div class="perk-item"><i class="fas fa-check-circle"></i> Priority email support</div>
-                                </div>
+                        <div class="panel-block">
+                            <h4><i class="fas fa-layer-group"></i> Recharge your slots</h4>
+                            <p class="panel-muted">Buy in bulk and pay less per check.</p>
+                            <div class="slot-bundle-grid">
+                                <button type="button" class="slot-bundle" onclick="buyScanSlots(5)">
+                                    <span class="slot-bundle-count">5 slots</span>
+                                    <span class="slot-bundle-price" id="portalSlot5Price">$9</span>
+                                    <span class="slot-bundle-save">Save 10%</span>
+                                </button>
+                                <button type="button" class="slot-bundle featured" onclick="buyScanSlots(10)">
+                                    <span class="slot-bundle-count">10 slots</span>
+                                    <span class="slot-bundle-price" id="portalSlot10Price">$16</span>
+                                    <span class="slot-bundle-save">Save 20%</span>
+                                </button>
                             </div>
                         </div>
 
-                        <!-- Right Column - Referral -->
+                        <div class="panel-block">
+                            <h4><i class="fas fa-file-shield"></i> Your report checks</h4>
+                            <div id="portalSlotHistory" class="panel-scroll">
+                                <p class="panel-muted">Loading your checks…</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ---------- Purchases & Invoices ---------- -->
+                    <div class="portal-section" id="portalSection-purchases">
+                        <div class="panel-block">
+                            <div class="panel-head">
+                                <div>
+                                    <h4><i class="fas fa-file-invoice-dollar"></i> Purchases &amp; Invoices</h4>
+                                    <p class="panel-muted">Every order, report check and slot bundle on your account.</p>
+                                </div>
+                                <button class="panel-btn" onclick="loadClientPurchases()">
+                                    <i class="fas fa-rotate"></i> Refresh
+                                </button>
+                            </div>
+
+                            <div class="panel-filters">
+                                <input type="text" id="purchasesSearchInput" onkeyup="filterClientPurchases()" placeholder="Search title, invoice # or reference…">
+                                <select id="purchasesTypeFilter" onchange="filterClientPurchases()">
+                                    <option value="all">All types</option>
+                                    <option value="plagiarism_check">Report checks</option>
+                                    <option value="slot_purchase">Slot bundles</option>
+                                    <option value="quickpay_invoice">QuickPay invoices</option>
+                                    <option value="assignment_order">Homework orders</option>
+                                </select>
+                            </div>
+
+                            <div id="purchasesListContainer" class="panel-table-wrap">
+                                <p class="panel-muted" style="text-align: center; padding: 2rem 0;">
+                                    <i class="fas fa-circle-notch fa-spin"></i> Loading your purchases…
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ---------- Referrals ---------- -->
+                    <div class="portal-section" id="portalSection-referral">
                         <div class="referral-section">
                             <h4><i class="fas fa-users"></i> Your Referral Link</h4>
                             <p>Share your link and earn rewards when friends join!</p>
-                            
+
                             <div class="referral-code-box">
                                 <input type="text" class="referral-code-input" id="memberReferralLink" readonly value="Loading...">
                                 <button class="referral-copy-btn" onclick="copyMemberReferralLink()">
@@ -3432,8 +3798,7 @@
                                     <i class="fas fa-link"></i> Copy Link
                                 </button>
                             </div>
-                            
-                            <!-- Invite Friends Section -->
+
                             <div class="invite-section">
                                 <h4><i class="fas fa-user-plus"></i> Invite Friends</h4>
                                 <p>Send pre-crafted invites to your friends with one click!</p>
@@ -3449,84 +3814,188 @@
                                     </button>
                                 </div>
                             </div>
-                            
-                            <!-- Priority Support -->
+
                             <button class="priority-support-btn" onclick="openPrioritySupport()">
                                 <i class="fab fa-whatsapp"></i> Priority WhatsApp Support
                             </button>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Admin Users & Credit Manager Panel (Visible to Admins) -->
-                    <div id="adminUsersPanel" style="display: none; margin-top: 2rem; background: rgba(15, 23, 42, 0.85); border: 1px solid rgba(99, 102, 241, 0.35); border-radius: 16px; padding: 1.5rem; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem; flex-wrap: wrap; gap: 1rem;">
+                <!-- ============================================================
+                     ADMIN PANEL — replaces the client portal entirely for owner
+                     accounts. Same /client#membership path, different surface.
+                     ============================================================ -->
+                <div id="adminPanel" style="display: none;">
+                    <div class="admin-head">
+                        <div class="admin-head-id">
+                            <div class="admin-badge"><i class="fas fa-shield-halved"></i></div>
                             <div>
-                                <h3 style="margin: 0; color: #a5b4fc; font-size: 1.15rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
-                                    <i class="fas fa-users-gear" style="color: #6366f1;"></i> System Users &amp; Report Slots Manager
-                                </h3>
-                                <p style="margin: 0.25rem 0 0 0; font-size: 0.82rem; color: rgba(255,255,255,0.6);">
-                                    Unified overview of registered members, QuickPay guests, and staff with real-time scan credit (+/-) controls.
+                                <h3>Admin Panel</h3>
+                                <p id="adminHeadEmail">Signed in as owner</p>
+                            </div>
+                        </div>
+                        <div class="admin-head-actions">
+                            <button class="panel-btn" onclick="refreshAdminPanel()">
+                                <i class="fas fa-rotate"></i> Refresh
+                            </button>
+                            <button class="panel-btn danger" onclick="logoutMember()">
+                                <i class="fas fa-sign-out-alt"></i> Sign Out
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Headline numbers -->
+                    <div class="admin-stats" id="adminStatsRow">
+                        <div class="admin-stat">
+                            <div class="admin-stat-value" id="adminStatOrders">–</div>
+                            <div class="admin-stat-label">Total Orders</div>
+                            <div class="admin-stat-sub">Assignments + reports + slots + QuickPay</div>
+                        </div>
+                        <div class="admin-stat">
+                            <div class="admin-stat-value" id="adminStatRevenue">–</div>
+                            <div class="admin-stat-label">Revenue</div>
+                            <div class="admin-stat-sub" id="adminStatRevenueKes">KSh 0</div>
+                        </div>
+                        <div class="admin-stat">
+                            <div class="admin-stat-value" id="adminStatReports">–</div>
+                            <div class="admin-stat-label">Report Checks</div>
+                            <div class="admin-stat-sub" id="adminStatReportsSub">0 processing · 0 refunded</div>
+                        </div>
+                        <div class="admin-stat">
+                            <div class="admin-stat-value" id="adminStatSlots">–</div>
+                            <div class="admin-stat-label">Slots Outstanding</div>
+                            <div class="admin-stat-sub" id="adminStatSlotsSub">0 sold</div>
+                        </div>
+                        <div class="admin-stat">
+                            <div class="admin-stat-value" id="adminStatMembers">–</div>
+                            <div class="admin-stat-label">Members</div>
+                            <div class="admin-stat-sub" id="adminStatMembersSub">0 verified</div>
+                        </div>
+                    </div>
+
+                    <!-- Admin section nav -->
+                    <div class="portal-nav">
+                        <button class="portal-nav-btn active" data-admin-section="users" onclick="showAdminSection('users')">
+                            <i class="fas fa-users-gear"></i> Users &amp; Slots
+                        </button>
+                        <button class="portal-nav-btn" data-admin-section="purchases" onclick="showAdminSection('purchases')">
+                            <i class="fas fa-file-invoice-dollar"></i> Purchases
+                        </button>
+                        <button class="portal-nav-btn" data-admin-section="recovery" onclick="showAdminSection('recovery')">
+                            <i class="fas fa-triangle-exclamation"></i> Report Recovery
+                        </button>
+                    </div>
+
+                    <!-- ---------- Users & Slots ---------- -->
+                    <div class="admin-section active" id="adminSection-users">
+                        <div class="panel-block">
+                            <div class="panel-head">
+                                <div>
+                                    <h4><i class="fas fa-users-gear"></i> Users &amp; Report Slots</h4>
+                                    <p class="panel-muted">Add or remove slots at will. Click a user to see every document they've checked.</p>
+                                </div>
+                                <div class="panel-filters inline">
+                                    <input type="text" id="adminUserSearchInput" oninput="filterAdminUsersTable()" placeholder="Search name, email or type…">
+                                    <button class="panel-btn" onclick="loadAdminUsersList()"><i class="fas fa-rotate"></i></button>
+                                </div>
+                            </div>
+
+                            <div class="panel-table-wrap">
+                                <table class="panel-table">
+                                    <thead>
+                                        <tr>
+                                            <th>User</th>
+                                            <th>Type</th>
+                                            <th>Activity</th>
+                                            <th>Slots</th>
+                                            <th>Manage slots</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="adminUsersTableBody">
+                                        <tr><td colspan="5" class="panel-muted" style="text-align: center; padding: 1.5rem;">Loading users…</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ---------- Purchases ---------- -->
+                    <div class="admin-section" id="adminSection-purchases">
+                        <div class="panel-block">
+                            <div class="panel-head">
+                                <div>
+                                    <h4><i class="fas fa-file-invoice-dollar"></i> All Purchases</h4>
+                                    <p class="panel-muted">Every report check, slot bundle, QuickPay invoice and homework order.</p>
+                                </div>
+                                <button class="panel-btn" onclick="loadAdminPurchases()"><i class="fas fa-rotate"></i> Refresh</button>
+                            </div>
+
+                            <div class="panel-filters">
+                                <input type="text" id="adminPurchasesSearch" oninput="renderAdminPurchases()" placeholder="Search client, title or reference…">
+                                <select id="adminPurchasesType" onchange="renderAdminPurchases()">
+                                    <option value="all">All types</option>
+                                    <option value="plagiarism_check">Report checks</option>
+                                    <option value="slot_purchase">Slot bundles</option>
+                                    <option value="quickpay_invoice">QuickPay invoices</option>
+                                    <option value="assignment_order">Homework orders</option>
+                                </select>
+                            </div>
+
+                            <div id="adminPurchasesContainer" class="panel-table-wrap">
+                                <p class="panel-muted" style="text-align: center; padding: 2rem 0;">
+                                    <i class="fas fa-circle-notch fa-spin"></i> Loading purchases…
                                 </p>
                             </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <input type="text" id="adminUserSearchInput" placeholder="Search by name or email..." oninput="filterAdminUsersTable()" style="background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 0.45rem 0.85rem; color: white; font-size: 0.85rem; width: 220px;">
-                                <button type="button" onclick="loadAdminUsersList()" style="background: rgba(99, 102, 241, 0.25); border: 1px solid rgba(99, 102, 241, 0.45); color: #818cf8; border-radius: 8px; padding: 0.45rem 0.85rem; cursor: pointer; font-size: 0.85rem; font-weight: 600;">
-                                    <i class="fas fa-sync"></i> Refresh
-                                </button>
-                            </div>
                         </div>
+                    </div>
 
-                        <div style="overflow-x: auto;">
-                            <table style="width: 100%; border-collapse: collapse; text-align: left;">
-                                <thead>
-                                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.5); font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px;">
-                                        <th style="padding: 0.6rem 0.75rem;">User</th>
-                                        <th style="padding: 0.6rem 0.75rem;">Type / Status</th>
-                                        <th style="padding: 0.6rem 0.75rem;">Activity</th>
-                                        <th style="padding: 0.6rem 0.75rem;">Report Slots</th>
-                                        <th style="padding: 0.6rem 0.75rem;">Manage Slots (+/-)</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="adminUsersTableBody">
-                                    <tr><td colspan="5" style="text-align: center; color: rgba(255,255,255,0.4); padding: 1.5rem;">Loading system users...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-
-                        <!-- Stuck Reports Recovery Panel -->
-                        <div style="margin-top: 1.75rem; padding-top: 1.5rem; border-top: 1px solid rgba(239,68,68,0.2);">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.75rem;">
+                    <!-- ---------- Report Recovery ---------- -->
+                    <div class="admin-section" id="adminSection-recovery">
+                        <div class="panel-block">
+                            <div class="panel-head">
                                 <div>
-                                    <h4 style="margin: 0; color: #fca5a5; font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 0.5rem;">
-                                        <i class="fas fa-triangle-exclamation" style="color: #ef4444;"></i> Stuck Reports Recovery
-                                    </h4>
-                                    <p style="margin: 0.2rem 0 0; font-size: 0.78rem; color: rgba(255,255,255,0.5);">Reports that are stuck on &ldquo;processing&rdquo; even though Writenix has finished. Paste the URLs from the Writenix dashboard to resolve them.</p>
+                                    <h4><i class="fas fa-triangle-exclamation"></i> Stuck Report Recovery</h4>
+                                    <p class="panel-muted">Reports still "processing" after Writenix has finished. Paste the dashboard URLs to resolve them.</p>
                                 </div>
-                                <button type="button" onclick="loadStuckReports()" style="background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.4); color: #fca5a5; border-radius: 8px; padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
-                                    <i class="fas fa-rotate"></i> Load Stuck
-                                </button>
-                                <button type="button" onclick="autoRecoverStuckReports()" style="background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.4); color: #6ee7b7; border-radius: 8px; padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem;">
-                                    <i class="fas fa-wand-magic-sparkles"></i> Auto-Recover All
-                                </button>
-                                <button type="button" onclick="viewWebhookLogs()" style="background: rgba(99,102,241,0.15); border: 1px solid rgba(99,102,241,0.4); color: #a5b4fc; border-radius: 8px; padding: 0.45rem 0.9rem; cursor: pointer; font-size: 0.82rem; font-weight: 600; display: flex; align-items: center; gap: 0.4rem; margin-left: auto;">
-                                    <i class="fas fa-terminal"></i> View Webhook Logs
-                                </button>
-                            </div>
-                            <div id="stuckReportsList" style="display: flex; flex-direction: column; gap: 0.75rem;">
-                                <p style="color: rgba(255,255,255,0.3); font-size: 0.82rem; text-align: center; padding: 0.5rem 0;">Click &ldquo;Load Stuck&rdquo; to check for unresolved reports.</p>
+                                <div class="panel-filters inline">
+                                    <button class="panel-btn" onclick="loadStuckReports()"><i class="fas fa-rotate"></i> Load stuck</button>
+                                    <button class="panel-btn success" onclick="autoRecoverStuckReports()"><i class="fas fa-wand-magic-sparkles"></i> Auto-recover</button>
+                                    <button class="panel-btn" onclick="viewWebhookLogs()"><i class="fas fa-terminal"></i> Logs</button>
+                                </div>
                             </div>
 
-                            <!-- Webhook Logs Modal -->
-                            <div id="webhookLogsModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 9999; align-items: center; justify-content: center;">
-                                <div style="background: #0f172a; width: 90%; max-width: 800px; max-height: 80vh; border: 1px solid #334155; border-radius: 12px; display: flex; flex-direction: column;">
-                                    <div style="padding: 1rem; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center;">
-                                        <h3 style="margin: 0; color: #e2e8f0; font-size: 1.1rem;"><i class="fas fa-terminal"></i> Webhook Logs</h3>
-                                        <button onclick="document.getElementById('webhookLogsModal').style.display='none'" style="background: none; border: none; color: #94a3b8; font-size: 1.2rem; cursor: pointer;">&times;</button>
-                                    </div>
-                                    <div style="padding: 1rem; overflow-y: auto; flex: 1;">
-                                        <pre id="webhookLogsContent" style="margin: 0; background: #020617; padding: 1rem; border-radius: 8px; color: #a5b4fc; font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"></pre>
-                                    </div>
+                            <div id="stuckReportsList" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <p class="panel-muted" style="text-align: center; padding: 0.5rem 0;">Click "Load stuck" to check for unresolved reports.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- User drill-down modal: every document a user has checked, by name -->
+                    <div id="adminUserModal" class="admin-modal" style="display: none;">
+                        <div class="admin-modal-box">
+                            <div class="admin-modal-head">
+                                <div>
+                                    <h3 id="adminUserModalName">User</h3>
+                                    <p id="adminUserModalMeta">–</p>
                                 </div>
+                                <button class="admin-modal-close" onclick="closeAdminUserModal()">&times;</button>
+                            </div>
+                            <div class="admin-modal-body" id="adminUserModalBody">
+                                <p class="panel-muted">Loading…</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Webhook Logs Modal -->
+                    <div id="webhookLogsModal" class="admin-modal" style="display: none;">
+                        <div class="admin-modal-box">
+                            <div class="admin-modal-head">
+                                <h3><i class="fas fa-terminal"></i> Webhook Logs</h3>
+                                <button class="admin-modal-close" onclick="document.getElementById('webhookLogsModal').style.display='none'">&times;</button>
+                            </div>
+                            <div class="admin-modal-body">
+                                <pre id="webhookLogsContent" style="margin: 0; background: #020617; padding: 1rem; border-radius: 8px; color: #a5b4fc; font-size: 0.8rem; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word;"></pre>
                             </div>
                         </div>
                     </div>
@@ -3557,7 +4026,7 @@
                         </div>
                         <div class="scanlab-tags">
                             <span class="scanlab-tag price" id="turnitinPricePill">Loading price…</span>
-                            <span class="scanlab-tag wallet" id="turnitinWalletPill" style="display: none;"><i class="fas fa-gift"></i> <span id="turnitinWalletCount">0</span> free</span>
+                            <span class="scanlab-tag wallet" id="turnitinWalletPill" style="display: none;"><i class="fas fa-gift"></i> <span id="turnitinWalletCount">0</span> slots</span>
                         </div>
                     </div>
 
@@ -3801,41 +4270,6 @@
             </div>
         </div>
 
-        <!-- Purchases Tab -->
-        <div class="tab-content" id="purchases-tab" style="padding: 1.5rem 0;">
-            <div style="max-width: 1000px; margin: 0 auto;">
-                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1rem; margin-bottom: 2rem;">
-                    <div>
-                        <h2 style="font-size: 1.6rem; font-weight: 800; color: #f8fafc; margin: 0;">Purchases & Invoices</h2>
-                        <p style="color: #94a3b8; font-size: 0.88rem; margin: 0.25rem 0 0;">View your payment history and download official invoices for all checks and services.</p>
-                    </div>
-                    <button onclick="loadClientPurchases()" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); color: #a5b4fc; padding: 0.55rem 1.1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s;" onmouseover="this.style.background='rgba(99, 102, 241, 0.25)'" onmouseout="this.style.background='rgba(99, 102, 241, 0.15)'">
-                        <i class="fas fa-rotate"></i> Refresh
-                    </button>
-                </div>
-
-                <!-- Filter Controls -->
-                <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; margin-bottom: 1.5rem; align-items: center;">
-                    <div style="position: relative; flex: 1; min-width: 220px;">
-                        <i class="fas fa-search" style="position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: #64748b; font-size: 0.85rem;"></i>
-                        <input type="text" id="purchasesSearchInput" onkeyup="filterClientPurchases()" placeholder="Search by title, invoice #, or reference..." style="width: 100%; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 0.6rem 1rem 0.6rem 2.5rem; color: #f8fafc; font-size: 0.85rem; outline: none;">
-                    </div>
-                    <select id="purchasesTypeFilter" onchange="filterClientPurchases()" style="background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 0.6rem 1rem; color: #f8fafc; font-size: 0.85rem; outline: none;">
-                        <option value="all">All Purchase Types</option>
-                        <option value="plagiarism_check">Plagiarism & AI Checks</option>
-                        <option value="quickpay_invoice">QuickPay Invoices</option>
-                        <option value="assignment_order">Homework Assignment Orders</option>
-                    </select>
-                </div>
-
-                <!-- Purchases Container Table -->
-                <div id="purchasesListContainer" style="background: rgba(15, 23, 42, 0.6); border: 1px solid #1e293b; border-radius: 12px; overflow: hidden;">
-                    <p style="color: rgba(255,255,255,0.4); text-align: center; padding: 2rem 0; font-size: 0.85rem;">
-                        <i class="fas fa-circle-notch fa-spin" style="margin-right: 0.5rem;"></i>Loading your purchases & invoices...
-                    </p>
-                </div>
-            </div>
-        </div>
     </main>
 
     <!-- Official Invoice Modal -->
@@ -4088,8 +4522,14 @@
             document.querySelector(`[data-tab="${tabName}"]`)?.classList.add('active');
             document.getElementById(`${tabName}-tab`)?.classList.add('active');
 
-            if (tabName === 'purchases') {
-                loadClientPurchases();
+            // Purchases now live inside the membership panel, so landing on Membership is
+            // what refreshes them (owners get the admin panel's purchases view instead).
+            if (tabName === 'membership' && localStorage.getItem('memberToken')) {
+                if (isOwnerView) {
+                    loadAdminOverview();
+                } else {
+                    loadClientPurchases();
+                }
             }
         }
 
@@ -4253,6 +4693,12 @@
             const slot10El = document.getElementById('bulkSlot10Price');
             if (slot5El) slot5El.textContent = isKes ? 'KSh 950 (Save 5%)' : '$9 (Save 10%)';
             if (slot10El) slot10El.textContent = isKes ? 'KSh 1800 (Save 10%)' : '$16 (Save 20%)';
+
+            // Same bundles, mirrored inside the membership panel's Report Slots section
+            const p5 = document.getElementById('portalSlot5Price');
+            const p10 = document.getElementById('portalSlot10Price');
+            if (p5) p5.textContent = isKes ? 'KSh 950' : '$9';
+            if (p10) p10.textContent = isKes ? 'KSh 1,800' : '$16';
         }
 
         async function loadTurnitinPricing() {
@@ -4264,6 +4710,7 @@
                 updateTurnitinPricePill();
                 updateTurnitinWalletPill();
                 updateTurnitinSubmitButton();
+                updatePortalSlotBalance();
             } catch (error) {
                 console.error('Failed to load turnitin pricing:', error);
             }
@@ -4281,8 +4728,12 @@
             const pill = document.getElementById('turnitinWalletPill');
             const count = document.getElementById('turnitinWalletCount');
             if (!pill || !count) return;
-            if (turnitinPricing.walletCredits > 0) {
-                count.textContent = turnitinPricing.walletCredits;
+            const slots = turnitinPricing.slots ?? turnitinPricing.walletCredits ?? 0;
+            if (turnitinPricing.unlimited || turnitinPricing.isAdmin) {
+                count.textContent = '∞';
+                pill.style.display = 'inline-flex';
+            } else if (slots > 0) {
+                count.textContent = slots;
                 pill.style.display = 'inline-flex';
             } else {
                 pill.style.display = 'none';
@@ -4375,14 +4826,15 @@
                 return;
             }
             btn.disabled = false;
-            if (turnitinPricing.isAdmin) {
-                label.textContent = 'Submit (Admin — Free)';
-            } else if (turnitinPricing.walletCredits > 0) {
-                label.textContent = 'Use 1 Free Check';
+            const slots = turnitinPricing.slots ?? turnitinPricing.walletCredits ?? 0;
+            if (turnitinPricing.unlimited || turnitinPricing.isAdmin) {
+                label.textContent = 'Submit (Owner — Free)';
+            } else if (slots > 0) {
+                label.textContent = `Use 1 Slot — ${slots} left`;
             } else {
                 const amount = turnitinCurrency === 'KES' ? turnitinPricing.kes : turnitinPricing.usd;
                 const symbol = turnitinCurrency === 'KES' ? 'KSh' : '$';
-                label.textContent = `Check Document — ${symbol}${amount}`;
+                label.textContent = `No slots — Pay ${symbol}${amount} for this check`;
             }
         }
 
@@ -4391,8 +4843,12 @@
             const btn = document.getElementById('turnitinSubmitBtn');
             btn.disabled = true;
 
-            if (turnitinPricing.isAdmin || turnitinPricing.walletCredits > 0) {
-                await performTurnitinSubmit({ useWallet: true });
+            // Slots are checked and deducted server-side; we only decide here whether to open
+            // the payment sheet first. If the balance is stale the server replies 402 and
+            // performTurnitinSubmit() falls back to the pay-or-recharge prompt.
+            const slots = turnitinPricing.slots ?? turnitinPricing.walletCredits ?? 0;
+            if (turnitinPricing.unlimited || turnitinPricing.isAdmin || slots > 0) {
+                await performTurnitinSubmit({});
                 return;
             }
 
@@ -4438,9 +4894,9 @@
 
         async function performTurnitinSubmit(extra) {
             const token = localStorage.getItem('memberToken');
+            const fileForRetry = turnitinSelectedFile;
             const formData = new FormData();
             formData.append('file', turnitinSelectedFile);
-            if (extra.useWallet) formData.append('useWallet', 'true');
             if (extra.paystackReference) formData.append('paystackReference', extra.paystackReference);
 
             document.querySelector('#turnitinMain .scanlab-dropzone').style.display = 'none';
@@ -4459,6 +4915,16 @@
                 });
                 const data = await res.json();
 
+                // 402 = no slots left. Offer the two ways forward rather than dead-ending.
+                if (res.status === 402 && data.needsPayment) {
+                    turnitinPricing.slots = 0;
+                    turnitinPricing.walletCredits = 0;
+                    resetTurnitinUploadUI();
+                    setTurnitinFile(fileForRetry);
+                    promptSlotTopUp();
+                    return;
+                }
+
                 if (!res.ok || !data.success) {
                     showToast('error', data.error || 'Something went wrong. Please try again.');
                     resetTurnitinUploadUI();
@@ -4467,7 +4933,9 @@
                 }
 
                 statusEl.innerHTML = 'Submitted — awaiting scan<span class="dots"></span>';
-                showToast('success', "Document submitted! We'll email you when it's ready.");
+                showToast('success', data.usedSlot
+                    ? `Document submitted using 1 slot — ${data.slotsRemaining} left.`
+                    : "Document submitted! We'll email you when it's ready.");
                 resetTurnitinFileState();
                 loadTurnitinPricing();
                 // loadTurnitinReports handles auto-starting the poll if it finds processing items
@@ -4481,7 +4949,75 @@
             }
         }
 
+        // Shown when the server reports the member is out of slots. Two ways forward:
+        // pay for this one check, or recharge a bundle in the membership panel.
+        function promptSlotTopUp() {
+            const symbol = turnitinCurrency === 'KES' ? 'KSh' : '$';
+            const amount = turnitinCurrency === 'KES' ? turnitinPricing.kes : turnitinPricing.usd;
+
+            const existing = document.getElementById('slotTopUpPrompt');
+            if (existing) existing.remove();
+
+            const box = document.createElement('div');
+            box.id = 'slotTopUpPrompt';
+            box.className = 'panel-block';
+            box.style.borderColor = 'rgba(245,158,11,0.35)';
+            box.innerHTML = `
+                <h4 style="color:#fbbf24;"><i class="fas fa-triangle-exclamation" style="color:#f59e0b;"></i> You're out of report slots</h4>
+                <p class="panel-muted">Pay for this single check, or recharge a bundle and keep the change for next time.</p>
+                <div style="display:flex; gap:0.6rem; flex-wrap:wrap; margin-top:1rem;">
+                    <button class="panel-btn primary" onclick="payForSingleCheck()">
+                        <i class="fas fa-credit-card"></i> Pay ${symbol}${amount} for this check
+                    </button>
+                    <button class="panel-btn" onclick="showTab('membership'); showPortalSection('slots');">
+                        <i class="fas fa-layer-group"></i> Recharge slots
+                    </button>
+                </div>
+            `;
+
+            const anchor = document.getElementById('turnitinSubmitBtn');
+            anchor.parentNode.insertBefore(box, anchor.nextSibling);
+            showToast('warning', 'No report slots left — pay for this check or recharge.');
+        }
+
+        // Pay-per-check path taken straight from the out-of-slots prompt.
+        async function payForSingleCheck() {
+            document.getElementById('slotTopUpPrompt')?.remove();
+            if (!turnitinSelectedFile) {
+                showToast('error', 'Please select your document again.');
+                return;
+            }
+            if (!paystackPublicKey) {
+                showToast('error', 'Payment system not configured. Please contact support.');
+                return;
+            }
+
+            const amount = turnitinCurrency === 'KES' ? turnitinPricing.kes : turnitinPricing.usd;
+            const ref = 'TC-' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substring(2, 6).toUpperCase();
+            const paystackPop = new PaystackPop();
+
+            try {
+                await paystackPop.checkout({
+                    key: paystackPublicKey,
+                    email: currentMemberData?.email || localStorage.getItem('memberEmail'),
+                    amount: Math.round(amount * 100),
+                    currency: turnitinCurrency,
+                    ref: ref,
+                    onSuccess: function(response) {
+                        performTurnitinSubmit({ paystackReference: response.reference });
+                    },
+                    onCancel: function() {
+                        updateTurnitinSubmitButton();
+                        showToast('warning', 'Payment cancelled');
+                    }
+                });
+            } catch (error) {
+                showToast('error', 'Payment initialization failed. Please try again.');
+            }
+        }
+
         function resetTurnitinUploadUI() {
+            document.getElementById('slotTopUpPrompt')?.remove();
             document.querySelector('#turnitinMain .scanlab-dropzone').style.display = 'block';
             document.getElementById('turnitinSelectedFile').style.display = 'block';
             document.getElementById('turnitinSubmitBtn').style.display = 'block';
@@ -5715,14 +6251,14 @@
                 document.getElementById('memberAuthSection').style.display = 'none';
                 document.getElementById('memberPortal').classList.add('active');
 
-                // Check for admin role/email and show Admin Users & Credit Manager Panel
-                const adminEmails = ['vikkicleo@gmail.com', 'valdaceai@gmail.com', 'cleovikkie@gmail.com'];
-                if (adminEmails.includes((member.email || '').toLowerCase()) || member.isAdmin) {
-                    const adminPanel = document.getElementById('adminUsersPanel');
-                    if (adminPanel) {
-                        adminPanel.style.display = 'block';
-                        loadAdminUsersList();
-                    }
+                // Owners get the admin panel *instead of* the client portal, on this same
+                // /client#membership path. The server is the authority on who that is —
+                // the front-end never decides admin access on its own.
+                await applyOwnerView(member);
+
+                if (!isOwnerView) {
+                    loadClientPurchases();
+                    loadTurnitinPricing();
                 }
 
             } catch (error) {
@@ -5784,24 +6320,125 @@
             }
         }
 
-        // ========== ADMIN SYSTEM USERS & CREDIT MANAGER ==========
+        // ========================================================================
+        // MEMBERSHIP PANEL — section switching, owner detection, admin panel
+        // ========================================================================
+
+        let isOwnerView = false;
+
+        function showPortalSection(name) {
+            document.querySelectorAll('#memberPortal .portal-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('#portalNav .portal-nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`portalSection-${name}`)?.classList.add('active');
+            document.querySelector(`#portalNav .portal-nav-btn[data-section="${name}"]`)?.classList.add('active');
+
+            if (name === 'purchases') loadClientPurchases();
+            if (name === 'slots') {
+                loadTurnitinPricing();
+                loadPortalSlotHistory();
+            }
+        }
+
+        function showAdminSection(name) {
+            document.querySelectorAll('#adminPanel .admin-section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('#adminPanel .portal-nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`adminSection-${name}`)?.classList.add('active');
+            document.querySelector(`#adminPanel .portal-nav-btn[data-admin-section="${name}"]`)?.classList.add('active');
+
+            if (name === 'purchases') loadAdminPurchases();
+            if (name === 'users') loadAdminUsersList();
+        }
+
+        // Asks the server whether this account is an owner. On yes, the admin panel replaces
+        // the client portal on this same path; on no, nothing about the portal changes.
+        async function applyOwnerView(member) {
+            isOwnerView = false;
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/membership/admin/whoami', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                isOwnerView = res.ok && (await res.json()).isOwner === true;
+            } catch (err) {
+                isOwnerView = false;
+            }
+
+            const portal = document.getElementById('memberPortal');
+            const panel = document.getElementById('adminPanel');
+            const tierRow = document.querySelector('#membership-tab .tier-indicators');
+
+            if (isOwnerView) {
+                portal.classList.remove('active');
+                portal.style.display = 'none';
+                panel.style.display = 'block';
+                if (tierRow) tierRow.style.display = 'none';
+                document.getElementById('adminHeadEmail').textContent = member?.email || 'Signed in as owner';
+                refreshAdminPanel();
+            } else {
+                panel.style.display = 'none';
+                portal.style.display = '';
+                if (tierRow) tierRow.style.display = '';
+            }
+        }
+
+        function refreshAdminPanel() {
+            loadAdminOverview();
+            loadAdminUsersList();
+            loadAdminPurchases();
+        }
+
+        function adminHeaders() {
+            return { 'Authorization': `Bearer ${localStorage.getItem('memberToken')}` };
+        }
+
+        function money(amount, currency) {
+            const symbol = currency === 'KES' ? 'KSh ' : '$';
+            return symbol + Number(amount || 0).toLocaleString(undefined, { maximumFractionDigits: 2 });
+        }
+
+        // -------- Overview stats --------
+        async function loadAdminOverview() {
+            try {
+                const res = await fetch('/api/membership/admin/overview', { headers: adminHeaders() });
+                if (!res.ok) return;
+                const d = await res.json();
+
+                document.getElementById('adminStatOrders').textContent = d.totals.orders.toLocaleString();
+                document.getElementById('adminStatRevenue').textContent = money(d.totals.revenueUsd, 'USD');
+                document.getElementById('adminStatRevenueKes').textContent = `+ ${money(d.totals.revenueKes, 'KES')} collected in KES`;
+
+                document.getElementById('adminStatReports').textContent = d.reports.total.toLocaleString();
+                document.getElementById('adminStatReportsSub').textContent =
+                    `${d.reports.processing} processing · ${d.reports.refunded} refunded`;
+
+                document.getElementById('adminStatSlots').textContent = d.members.outstandingSlots.toLocaleString();
+                document.getElementById('adminStatSlotsSub').textContent = `${d.slots.slotsSold} sold in ${d.slots.purchases} bundles`;
+
+                document.getElementById('adminStatMembers').textContent = d.members.total.toLocaleString();
+                document.getElementById('adminStatMembersSub').textContent = `${d.members.verified} verified`;
+            } catch (err) {
+                console.error('Admin overview error:', err);
+            }
+        }
+
+        // -------- Users & slots --------
         let adminAllUsersData = [];
 
         async function loadAdminUsersList() {
-            const adminPanel = document.getElementById('adminUsersPanel');
-            if (!adminPanel) return;
+            const tbody = document.getElementById('adminUsersTableBody');
+            if (!tbody) return;
 
             try {
-                const token = localStorage.getItem('memberToken');
-                const res = await fetch('/api/membership/admin/list', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                if (!res.ok) return;
+                const res = await fetch('/api/membership/admin/list', { headers: adminHeaders() });
+                if (!res.ok) {
+                    tbody.innerHTML = `<tr><td colspan="5" class="panel-muted" style="text-align:center;padding:1.5rem;">Could not load users.</td></tr>`;
+                    return;
+                }
                 const data = await res.json();
                 adminAllUsersData = data.members || [];
                 renderAdminUsersTable(adminAllUsersData);
             } catch (err) {
-                console.error('Failed to load admin users:', err);
+                tbody.innerHTML = `<tr><td colspan="5" class="panel-muted" style="text-align:center;padding:1.5rem;">Connection error.</td></tr>`;
             }
         }
 
@@ -5809,88 +6446,318 @@
             const tbody = document.getElementById('adminUsersTableBody');
             if (!tbody) return;
 
-            if (users.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: rgba(255,255,255,0.4); padding: 1.5rem;">No system users found</td></tr>`;
+            if (!users.length) {
+                tbody.innerHTML = `<tr><td colspan="5" class="panel-muted" style="text-align:center;padding:1.5rem;">No users found.</td></tr>`;
                 return;
             }
 
             tbody.innerHTML = users.map(u => {
-                const safeKey = u.email.replace(/[^a-zA-Z0-9]/g, '_');
-                const isStaffOrAdmin = u.scanCredits === 9999 || u.userType.includes('Staff');
+                const key = u.email.replace(/[^a-zA-Z0-9]/g, '_');
+                const typeClass = u.unlimited ? 'violet'
+                    : u.userType.includes('QuickPay') ? 'amber'
+                    : u.userType.includes('Staff') ? 'blue' : 'green';
+                const esc = u.email.replace(/'/g, "\\'");
+
+                // Owner accounts are the only unlimited ones — nobody else, staff included.
+                const slotCell = u.unlimited
+                    ? `<span class="panel-pill violet">Unlimited</span>`
+                    : `<span id="slotCount_${key}" style="font-weight:700;color:#60a5fa;">${u.scanCredits}</span>`;
+
+                const controls = u.unlimited
+                    ? `<span class="panel-muted">Owner — exempt</span>`
+                    : `<div class="slot-controls" onclick="event.stopPropagation()">
+                           <input type="number" id="slotDelta_${key}" value="1" min="0">
+                           <button class="slot-btn-add" onclick="adjustUserSlots('${esc}', 1)" title="Add slots">+</button>
+                           <button class="slot-btn-sub" onclick="adjustUserSlots('${esc}', -1)" title="Remove slots">−</button>
+                           <button class="slot-btn-set" onclick="setUserSlots('${esc}')" title="Set exact balance">Set</button>
+                       </div>`;
+
                 return `
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.06);">
-                        <td style="padding: 0.75rem;">
-                            <div style="font-weight: 600; font-size: 0.88rem; color: white;">${u.name}</div>
-                            <div style="font-size: 0.78rem; color: rgba(255,255,255,0.5);">${u.email}</div>
+                    <tr class="clickable" onclick="openAdminUserReports('${esc}')">
+                        <td>
+                            <div style="font-weight:600;color:#fff;">${u.name}</div>
+                            <div style="font-size:0.76rem;color:rgba(255,255,255,0.45);">${u.email}</div>
                         </td>
-                        <td style="padding: 0.75rem;">
-                            <span style="display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; font-weight: 700; background: ${u.userType.includes('QuickPay') ? 'rgba(245, 158, 11, 0.15)' : u.userType.includes('Staff') ? 'rgba(139, 92, 246, 0.15)' : 'rgba(16, 185, 129, 0.15)'}; color: ${u.userType.includes('QuickPay') ? '#f59e0b' : u.userType.includes('Staff') ? '#a78bfa' : '#34d399'}; border: 1px solid rgba(255,255,255,0.1);">
-                                ${u.userType}
-                            </span>
-                        </td>
-                        <td style="padding: 0.75rem; font-size: 0.82rem; color: rgba(255,255,255,0.8);">
-                            ${u.orders} orders ($${u.totalSpent.toFixed(0)})
-                        </td>
-                        <td style="padding: 0.75rem;">
-                            <span id="creditCount_${safeKey}" style="font-weight: 700; color: #60a5fa; font-size: 0.95rem;">
-                                ${isStaffOrAdmin ? 'Unlimited (Admin)' : `${u.scanCredits} slots`}
-                            </span>
-                        </td>
-                        <td style="padding: 0.75rem;">
-                            ${isStaffOrAdmin ? '<span style="color: rgba(255,255,255,0.4); font-size: 0.8rem;">Admin Exempt</span>' : `
-                                <div style="display: flex; gap: 0.35rem; align-items: center;">
-                                    <input type="number" id="deltaInput_${safeKey}" value="1" min="1" style="width: 50px; padding: 0.25rem 0.4rem; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; color: white; text-align: center; font-size: 0.8rem;">
-                                    <button type="button" onclick="adjustUserCredits('${u.email}', 1)" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #34d399; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: 700;">+ Add</button>
-                                    <button type="button" onclick="adjustUserCredits('${u.email}', -1)" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #f87171; padding: 0.25rem 0.5rem; border-radius: 4px; cursor: pointer; font-size: 0.78rem; font-weight: 700;">- Deduct</button>
-                                </div>
-                            `}
-                        </td>
+                        <td><span class="panel-pill ${typeClass}">${u.userType}</span></td>
+                        <td style="color:rgba(255,255,255,0.75);">${u.orders} orders · ${money(u.totalSpent, 'USD')}</td>
+                        <td>${slotCell}</td>
+                        <td>${controls}</td>
                     </tr>
                 `;
             }).join('');
         }
 
         function filterAdminUsersTable() {
-            const query = (document.getElementById('adminUserSearchInput')?.value || '').toLowerCase().trim();
-            if (!query) {
-                renderAdminUsersTable(adminAllUsersData);
-                return;
-            }
-            const filtered = adminAllUsersData.filter(u =>
-                u.name.toLowerCase().includes(query) || u.email.toLowerCase().includes(query) || u.userType.toLowerCase().includes(query)
-            );
-            renderAdminUsersTable(filtered);
+            const q = (document.getElementById('adminUserSearchInput')?.value || '').toLowerCase().trim();
+            if (!q) return renderAdminUsersTable(adminAllUsersData);
+            renderAdminUsersTable(adminAllUsersData.filter(u =>
+                u.name.toLowerCase().includes(q) ||
+                u.email.toLowerCase().includes(q) ||
+                u.userType.toLowerCase().includes(q)
+            ));
         }
 
-        async function adjustUserCredits(email, sign) {
-            const safeKey = email.replace(/[^a-zA-Z0-9]/g, '_');
-            const input = document.getElementById(`deltaInput_${safeKey}`);
-            const count = parseInt(input?.value) || 1;
-            const delta = count * sign;
-
+        async function postSlotChange(url, body, email) {
+            const key = email.replace(/[^a-zA-Z0-9]/g, '_');
             try {
-                const token = localStorage.getItem('memberToken');
-                const res = await fetch('/api/membership/admin/adjust-credits', {
+                const res = await fetch(url, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ email, delta })
+                    headers: { ...adminHeaders(), 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
                 });
                 const data = await res.json();
                 if (res.ok && data.success) {
-                    showToast('success', `Updated scan slots for ${email}: ${data.newCredits} slots`);
-                    const label = document.getElementById(`creditCount_${safeKey}`);
-                    if (label) label.textContent = `${data.newCredits} slots`;
+                    showToast('success', `${email} now has ${data.newCredits} slot(s)`);
+                    const label = document.getElementById(`slotCount_${key}`);
+                    if (label) label.textContent = data.newCredits;
+                    const row = adminAllUsersData.find(u => u.email.toLowerCase() === email.toLowerCase());
+                    if (row) row.scanCredits = data.newCredits;
+                    loadAdminOverview();
                 } else {
-                    showToast('error', data.error || 'Failed to adjust credits');
+                    showToast('error', data.error || 'Failed to update slots');
                 }
             } catch (err) {
-                showToast('error', 'Error adjusting user credits');
+                showToast('error', 'Error updating slots');
             }
         }
-        
+
+        function adjustUserSlots(email, sign) {
+            const key = email.replace(/[^a-zA-Z0-9]/g, '_');
+            const count = parseInt(document.getElementById(`slotDelta_${key}`)?.value, 10) || 1;
+            postSlotChange('/api/membership/admin/adjust-credits', { email, delta: count * sign }, email);
+        }
+
+        function setUserSlots(email) {
+            const key = email.replace(/[^a-zA-Z0-9]/g, '_');
+            const value = parseInt(document.getElementById(`slotDelta_${key}`)?.value, 10);
+            if (!Number.isFinite(value) || value < 0) {
+                showToast('error', 'Enter a slot count of 0 or more first');
+                return;
+            }
+            postSlotChange('/api/membership/admin/set-credits', { email, credits: value }, email);
+        }
+
+        // -------- Per-user report drill-down --------
+        async function openAdminUserReports(email) {
+            const modal = document.getElementById('adminUserModal');
+            const body = document.getElementById('adminUserModalBody');
+            document.getElementById('adminUserModalName').textContent = email;
+            document.getElementById('adminUserModalMeta').textContent = 'Loading…';
+            body.innerHTML = `<p class="panel-muted"><i class="fas fa-circle-notch fa-spin"></i> Loading report checks…</p>`;
+            modal.style.display = 'flex';
+
+            try {
+                const res = await fetch(`/api/membership/admin/user-reports?email=${encodeURIComponent(email)}`, {
+                    headers: adminHeaders()
+                });
+                const data = await res.json();
+
+                if (!res.ok) {
+                    body.innerHTML = `<p class="panel-muted">${data.error || 'Could not load this user.'}</p>`;
+                    return;
+                }
+
+                if (!data.member) {
+                    document.getElementById('adminUserModalMeta').textContent = email;
+                    body.innerHTML = `<p class="panel-muted">This user has no member account yet, so no report checks are recorded.</p>`;
+                    return;
+                }
+
+                const m = data.member;
+                document.getElementById('adminUserModalName').textContent = m.name || m.email;
+                document.getElementById('adminUserModalMeta').textContent =
+                    `${m.email} · ${m.unlimited ? 'unlimited slots' : `${m.slots} slot(s)`} · ${data.summary.total} checks · ${data.summary.processing} processing`;
+
+                if (!data.reports.length) {
+                    body.innerHTML = `<p class="panel-muted">No report checks on this account yet.</p>`;
+                    return;
+                }
+
+                body.innerHTML = data.reports.map(r => {
+                    const statusClass = r.status === 'completed' ? 'green'
+                        : r.status === 'processing' ? 'amber'
+                        : r.status === 'refunded' ? 'red' : 'blue';
+                    const when = new Date(r.createdAt).toLocaleString();
+                    const paid = r.paidWith === 'slot' ? 'slot'
+                        : r.paidWith === 'cash' ? money(r.amount, r.currency) : 'free';
+                    const scores = (r.similarityScore != null || r.aiScore != null)
+                        ? ` · ${r.similarityScore ?? '–'}% similarity, ${r.aiScore ?? '–'}% AI` : '';
+
+                    return `
+                        <div class="report-row">
+                            <div style="min-width:0;flex:1;">
+                                <div class="report-row-name"><i class="fas fa-file-lines" style="color:#818cf8;margin-right:0.4rem;"></i>${r.filename}</div>
+                                <div class="report-row-meta">${when} · paid with ${paid}${scores} · ref ${r.writenixReference || '—'}</div>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:0.5rem;">
+                                <span class="panel-pill ${statusClass}">${r.status}</span>
+                                ${r.status === 'processing'
+                                    ? `<button class="panel-btn success" onclick="recoverReportFromModal(${r.id}, '${email.replace(/'/g, "\\'")}')"><i class="fas fa-wand-magic-sparkles"></i> Recover</button>`
+                                    : ''}
+                                ${r.hasSimilarityReport
+                                    ? `<a class="panel-btn" href="/api/turnitin/download/${r.id}/similarity?token=${encodeURIComponent(localStorage.getItem('memberToken'))}" target="_blank"><i class="fas fa-download"></i></a>`
+                                    : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                body.innerHTML = `<p class="panel-muted">Connection error loading this user's reports.</p>`;
+            }
+        }
+
+        function closeAdminUserModal() {
+            document.getElementById('adminUserModal').style.display = 'none';
+        }
+
+        // Runs the same auto-recovery sweep the recovery tab uses, then refreshes this user's list.
+        async function recoverReportFromModal(reportId, email) {
+            showToast('info', 'Asking Writenix for this report…');
+            try {
+                const res = await fetch('/api/turnitin/admin/auto-recover-stuck', {
+                    method: 'POST',
+                    headers: adminHeaders()
+                });
+                const data = await res.json();
+                if (res.ok && data.success) {
+                    showToast('success', `Recovered ${data.recovered}, refunded ${data.failed}`);
+                    openAdminUserReports(email);
+                    loadAdminOverview();
+                } else {
+                    showToast('error', data.error || 'Recovery failed');
+                }
+            } catch (err) {
+                showToast('error', 'Recovery request failed');
+            }
+        }
+
+        // -------- All purchases --------
+        let adminPurchasesData = [];
+
+        async function loadAdminPurchases() {
+            const container = document.getElementById('adminPurchasesContainer');
+            if (!container) return;
+
+            try {
+                const res = await fetch('/api/membership/admin/purchases', { headers: adminHeaders() });
+                if (!res.ok) {
+                    container.innerHTML = `<p class="panel-muted" style="text-align:center;padding:2rem 0;">Could not load purchases.</p>`;
+                    return;
+                }
+                const data = await res.json();
+                adminPurchasesData = data.purchases || [];
+                renderAdminPurchases();
+            } catch (err) {
+                container.innerHTML = `<p class="panel-muted" style="text-align:center;padding:2rem 0;">Connection error.</p>`;
+            }
+        }
+
+        function renderAdminPurchases() {
+            const container = document.getElementById('adminPurchasesContainer');
+            if (!container) return;
+
+            const q = (document.getElementById('adminPurchasesSearch')?.value || '').toLowerCase().trim();
+            const type = document.getElementById('adminPurchasesType')?.value || 'all';
+
+            const rows = adminPurchasesData.filter(p => {
+                const matchesType = type === 'all' || p.type === type;
+                const matchesSearch = !q ||
+                    (p.title || '').toLowerCase().includes(q) ||
+                    (p.client || '').toLowerCase().includes(q) ||
+                    (p.client_email || '').toLowerCase().includes(q) ||
+                    (p.reference || '').toLowerCase().includes(q);
+                return matchesType && matchesSearch;
+            });
+
+            if (!rows.length) {
+                container.innerHTML = `<p class="panel-muted" style="text-align:center;padding:2rem 0;">No purchases match.</p>`;
+                return;
+            }
+
+            container.innerHTML = `
+                <table class="panel-table">
+                    <thead>
+                        <tr><th>Item</th><th>Client</th><th>Reference</th><th>Date</th><th>Amount</th><th>Status</th></tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map(p => {
+                            const statusClass = ['paid', 'completed'].includes(p.status) ? 'green'
+                                : ['processing', 'pending', 'invoice_sent'].includes(p.status) ? 'amber'
+                                : p.status === 'refunded' ? 'red' : 'blue';
+                            const amount = p.paid_with === 'slot' && !p.amount ? 'Slot' : money(p.amount, p.currency);
+                            return `
+                                <tr>
+                                    <td>
+                                        <div style="display:flex;align-items:center;gap:0.6rem;">
+                                            <i class="fas ${p.icon}" style="color:#818cf8;"></i>
+                                            <div>
+                                                <div style="font-weight:600;color:#f8fafc;">${p.title}</div>
+                                                <div style="font-size:0.74rem;color:rgba(255,255,255,0.42);">${p.type_label}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="color:rgba(255,255,255,0.75);">${p.client}</td>
+                                    <td style="font-family:monospace;font-size:0.78rem;color:#cbd5e1;">${p.reference}</td>
+                                    <td style="color:rgba(255,255,255,0.5);">${new Date(p.date).toLocaleDateString()}</td>
+                                    <td style="font-weight:700;color:#f8fafc;">${amount}</td>
+                                    <td><span class="panel-pill ${statusClass}">${p.status}</span></td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
+            `;
+        }
+
+        // -------- Member-side slot balance + check history --------
+        function updatePortalSlotBalance() {
+            const el = document.getElementById('portalSlotBalance');
+            if (!el) return;
+            const unlimited = turnitinPricing.unlimited || turnitinPricing.isAdmin;
+            el.textContent = unlimited ? '∞' : (turnitinPricing.slots ?? turnitinPricing.walletCredits ?? 0);
+
+            const note = document.getElementById('portalSlotNote');
+            if (note && unlimited) {
+                note.textContent = 'Owner account — report checks are unlimited and never consume a slot.';
+            }
+        }
+
+        async function loadPortalSlotHistory() {
+            const box = document.getElementById('portalSlotHistory');
+            if (!box) return;
+
+            try {
+                const token = localStorage.getItem('memberToken');
+                const res = await fetch('/api/turnitin/my-reports', { headers: { 'Authorization': `Bearer ${token}` } });
+                if (!res.ok) {
+                    box.innerHTML = `<p class="panel-muted">Could not load your checks.</p>`;
+                    return;
+                }
+                const reports = (await res.json()).reports || [];
+                if (!reports.length) {
+                    box.innerHTML = `<p class="panel-muted">You haven't run any report checks yet.</p>`;
+                    return;
+                }
+
+                box.innerHTML = reports.slice(0, 25).map(r => {
+                    const statusClass = r.status === 'completed' ? 'green'
+                        : r.status === 'processing' ? 'amber'
+                        : r.status === 'refunded' ? 'red' : 'blue';
+                    return `
+                        <div class="report-row">
+                            <div style="min-width:0;flex:1;">
+                                <div class="report-row-name">${r.original_filename}</div>
+                                <div class="report-row-meta">${new Date(r.created_at).toLocaleString()}</div>
+                            </div>
+                            <span class="panel-pill ${statusClass}">${r.status}</span>
+                        </div>
+                    `;
+                }).join('');
+            } catch (err) {
+                box.innerHTML = `<p class="panel-muted">Connection error.</p>`;
+            }
+        }
+
         // -------- Stuck Reports Recovery --------
         async function loadStuckReports() {
             const container = document.getElementById('stuckReportsList');
@@ -6247,9 +7114,14 @@
             document.getElementById('memberRegisterForm')?.reset();
             document.getElementById('memberLoginForm')?.reset();
             
-            // Show auth, hide portal
+            // Show auth, hide both the portal and the owner admin panel
             document.getElementById('memberAuthSection').style.display = 'block';
             document.getElementById('memberPortal').classList.remove('active');
+            document.getElementById('memberPortal').style.display = '';
+            document.getElementById('adminPanel').style.display = 'none';
+            const tierRow = document.querySelector('#membership-tab .tier-indicators');
+            if (tierRow) tierRow.style.display = '';
+            isOwnerView = false;
             setupTurnitinTab();
 
             showToast('success', 'You have been signed out.');
@@ -6543,6 +7415,7 @@
                 const data = await res.json();
                 rawClientPurchasesList = data.purchases || [];
                 renderClientPurchases(rawClientPurchasesList);
+                renderPortalRecentActivity(rawClientPurchasesList);
             } catch (err) {
                 console.error('Error loading client purchases:', err);
                 container.innerHTML = `<p style="color: rgba(255,100,100,0.6); font-size: 0.85rem; text-align: center; padding: 2rem 0;">Connection error while loading purchases.</p>`;
@@ -6553,68 +7426,70 @@
             const container = document.getElementById('purchasesListContainer');
             if (!container) return;
 
-            if (list.length === 0) {
-                container.innerHTML = `<p style="color: rgba(255,255,255,0.4); font-size: 0.85rem; text-align: center; padding: 2.5rem 0;">No purchases found.</p>`;
+            if (!list.length) {
+                container.innerHTML = `<p class="panel-muted" style="text-align:center;padding:2.5rem 0;">No purchases yet.</p>`;
                 return;
             }
 
-            let html = `
-                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 0.85rem;">
+            container.innerHTML = `
+                <table class="panel-table">
                     <thead>
-                        <tr style="background: rgba(255,255,255,0.03); border-bottom: 1px solid #334155; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">
-                            <th style="padding: 0.9rem 1rem;">Item / Service</th>
-                            <th style="padding: 0.9rem 1rem;">Reference</th>
-                            <th style="padding: 0.9rem 1rem;">Date</th>
-                            <th style="padding: 0.9rem 1rem;">Amount</th>
-                            <th style="padding: 0.9rem 1rem;">Status</th>
-                            <th style="padding: 0.9rem 1rem; text-align: right;">Action</th>
-                        </tr>
+                        <tr><th>Item / Service</th><th>Reference</th><th>Date</th><th>Amount</th><th>Status</th><th style="text-align:right;">Invoice</th></tr>
                     </thead>
                     <tbody>
+                        ${list.map(p => {
+                            const statusClass = p.status === 'paid' ? 'green'
+                                : p.status === 'refunded' ? 'red'
+                                : p.status === 'completed' ? 'green' : 'amber';
+                            return `
+                                <tr>
+                                    <td>
+                                        <div style="display:flex;align-items:center;gap:0.7rem;">
+                                            <div style="width:32px;height:32px;border-radius:8px;background:rgba(99,102,241,0.15);display:flex;align-items:center;justify-content:center;color:#a5b4fc;">
+                                                <i class="fas ${p.badge_icon || 'fa-receipt'}"></i>
+                                            </div>
+                                            <div>
+                                                <div style="font-weight:700;color:#f8fafc;">${p.title}</div>
+                                                <div style="font-size:0.74rem;color:rgba(255,255,255,0.45);">${p.type_label}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style="font-family:monospace;font-size:0.78rem;color:#cbd5e1;">${p.reference}</td>
+                                    <td style="color:rgba(255,255,255,0.5);">${new Date(p.date).toLocaleDateString()}</td>
+                                    <td style="font-weight:700;color:#f8fafc;">${money(p.amount, p.currency)}</td>
+                                    <td><span class="panel-pill ${statusClass}">${p.status_label}</span></td>
+                                    <td style="text-align:right;">
+                                        <button class="panel-btn" onclick="viewPurchaseInvoice('${p.type}', '${p.raw_id}')">
+                                            <i class="fas fa-file-invoice"></i> View
+                                        </button>
+                                    </td>
+                                </tr>
+                            `;
+                        }).join('')}
+                    </tbody>
+                </table>
             `;
+        }
 
-            list.forEach(p => {
-                const symbol = p.currency === 'KES' ? 'KSh' : '$';
-                const formattedAmt = `${symbol} ${p.amount.toLocaleString()}`;
-                const dateStr = new Date(p.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-                
-                let statusStyle = 'background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3);';
-                if (p.status === 'pending') {
-                    statusStyle = 'background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3);';
-                } else if (p.status === 'refunded') {
-                    statusStyle = 'background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3);';
-                }
+        // Compact "recent activity" list on the portal overview, fed by the same data.
+        function renderPortalRecentActivity(list) {
+            const box = document.getElementById('portalRecentActivity');
+            if (!box) return;
 
-                html += `
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.02)'" onmouseout="this.style.background='transparent'">
-                        <td style="padding: 1rem;">
-                            <div style="display: flex; align-items: center; gap: 0.75rem;">
-                                <div style="width: 34px; height: 34px; border-radius: 8px; background: rgba(99, 102, 241, 0.15); display: flex; align-items: center; justify-content: center; color: #a5b4fc; font-size: 0.9rem;">
-                                    <i class="fas ${p.badge_icon || 'fa-receipt'}"></i>
-                                </div>
-                                <div>
-                                    <div style="font-weight: 700; color: #f8fafc;">${p.title}</div>
-                                    <div style="font-size: 0.75rem; color: #94a3b8;">${p.type_label}</div>
-                                </div>
-                            </div>
-                        </td>
-                        <td style="padding: 1rem; color: #cbd5e1; font-family: monospace; font-size: 0.8rem;">${p.reference}</td>
-                        <td style="padding: 1rem; color: #94a3b8;">${dateStr}</td>
-                        <td style="padding: 1rem; font-weight: 700; color: #f8fafc;">${formattedAmt}</td>
-                        <td style="padding: 1rem;">
-                            <span style="padding: 0.25rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 700; ${statusStyle}">${p.status_label}</span>
-                        </td>
-                        <td style="padding: 1rem; text-align: right;">
-                            <button onclick="viewPurchaseInvoice('${p.type}', '${p.raw_id}')" style="background: rgba(99, 102, 241, 0.15); border: 1px solid rgba(99, 102, 241, 0.35); color: #a5b4fc; padding: 0.4rem 0.85rem; border-radius: 6px; font-size: 0.78rem; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 0.4rem;" onmouseover="this.style.background='rgba(99, 102, 241, 0.3)'" onmouseout="this.style.background='rgba(99, 102, 241, 0.15)'">
-                                <i class="fas fa-file-invoice"></i> View Invoice
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            });
+            if (!list.length) {
+                box.innerHTML = `<p class="panel-muted">Nothing here yet — your orders and report checks will show up here.</p>`;
+                return;
+            }
 
-            html += `</tbody></table>`;
-            container.innerHTML = html;
+            box.innerHTML = list.slice(0, 6).map(p => `
+                <div class="report-row">
+                    <div style="min-width:0;flex:1;">
+                        <div class="report-row-name"><i class="fas ${p.badge_icon || 'fa-receipt'}" style="color:#818cf8;margin-right:0.4rem;"></i>${p.title}</div>
+                        <div class="report-row-meta">${p.type_label} · ${new Date(p.date).toLocaleDateString()}</div>
+                    </div>
+                    <span style="font-weight:700;color:#f8fafc;font-size:0.85rem;">${money(p.amount, p.currency)}</span>
+                </div>
+            `).join('');
         }
 
         function filterClientPurchases() {

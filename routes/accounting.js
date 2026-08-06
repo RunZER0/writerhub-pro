@@ -17,8 +17,10 @@ router.get('/', authenticate, isAdmin, async (req, res) => {
                     af.writer_cost,
                     af.other_costs,
                     af.payment_status,
-                    af.payment_method,
-                    af.payment_reference,
+                    -- assignment_finances has no payment_method/payment_reference columns;
+                    -- these are synthesised so the UNION shape stays consistent.
+                    'manual' as payment_method,
+                    CONCAT('HW-', CAST(af.assignment_id AS VARCHAR)) as payment_reference,
                     af.notes,
                     af.created_at,
                     af.updated_at,
@@ -54,6 +56,54 @@ router.get('/', authenticate, isAdmin, async (req, res) => {
                     qi.amount as profit
                 FROM quickpay_invoices qi
                 WHERE qi.payment_status = 'paid'
+
+                UNION ALL
+
+                -- Report checks paid for in cash count as orders/revenue in their own right.
+                -- Slot-funded checks are excluded here because that money was already booked
+                -- on the slot bundle row below; counting both would double-count revenue.
+                SELECT
+                    wr.id,
+                    NULL as assignment_id,
+                    COALESCE(wr.amount_charged, 0) as client_paid,
+                    0 as writer_cost,
+                    0 as other_costs,
+                    'paid' as payment_status,
+                    'report_check' as payment_method,
+                    COALESCE(wr.paystack_reference, CONCAT('WNX-', CAST(wr.id AS VARCHAR))) as payment_reference,
+                    CONCAT('Report check: ', wr.original_filename) as notes,
+                    wr.created_at,
+                    wr.created_at as updated_at,
+                    wr.original_filename as title,
+                    'Report Check' as domain,
+                    wr.status as assignment_status,
+                    'System' as writer_name,
+                    wr.created_at as assignment_date,
+                    COALESCE(wr.amount_charged, 0) as profit
+                FROM writenix_reports wr
+                WHERE wr.amount_charged IS NOT NULL AND wr.status <> 'refunded'
+
+                UNION ALL
+
+                SELECT
+                    sp.id,
+                    NULL as assignment_id,
+                    sp.amount as client_paid,
+                    0 as writer_cost,
+                    0 as other_costs,
+                    'paid' as payment_status,
+                    'slot_bundle' as payment_method,
+                    COALESCE(sp.paystack_reference, CONCAT('SLOT-', CAST(sp.id AS VARCHAR))) as payment_reference,
+                    CONCAT(sp.slot_count, ' report slots') as notes,
+                    sp.created_at,
+                    sp.created_at as updated_at,
+                    CONCAT(sp.slot_count, ' Report Slot Bundle') as title,
+                    'Report Slots' as domain,
+                    'completed' as assignment_status,
+                    'System' as writer_name,
+                    sp.created_at as assignment_date,
+                    sp.amount as profit
+                FROM slot_purchases sp
             ) combined_finances
             WHERE 1=1
         `;
@@ -85,17 +135,23 @@ router.get('/summary', authenticate, isAdmin, async (req, res) => {
 
         let dateFilterAf = '';
         let dateFilterQi = '';
+        let dateFilterWr = '';
+        let dateFilterSp = '';
         const params = [];
 
         if (startDate) {
             params.push(startDate);
             dateFilterAf += ` AND DATE(a.created_at) >= $${params.length}`;
             dateFilterQi += ` AND DATE(qi.created_at) >= $${params.length}`;
+            dateFilterWr += ` AND DATE(wr.created_at) >= $${params.length}`;
+            dateFilterSp += ` AND DATE(sp.created_at) >= $${params.length}`;
         }
         if (endDate) {
             params.push(endDate);
             dateFilterAf += ` AND DATE(a.created_at) <= $${params.length}`;
             dateFilterQi += ` AND DATE(qi.created_at) <= $${params.length}`;
+            dateFilterWr += ` AND DATE(wr.created_at) <= $${params.length}`;
+            dateFilterSp += ` AND DATE(sp.created_at) <= $${params.length}`;
         }
 
         const summaryResult = await pool.query(`
@@ -132,6 +188,34 @@ router.get('/summary', authenticate, isAdmin, async (req, res) => {
                     0 as pending_orders
                 FROM quickpay_invoices qi
                 WHERE qi.payment_status = 'paid' ${dateFilterQi}
+
+                UNION ALL
+
+                -- Every report check is an order. Cash-paid ones also carry revenue;
+                -- slot-funded ones are revenue-neutral here (booked on the bundle instead).
+                SELECT
+                    COALESCE(SUM(wr.amount_charged), 0) as revenue,
+                    0 as writer_costs,
+                    0 as other_costs,
+                    COALESCE(SUM(wr.amount_charged), 0) as profit,
+                    COUNT(*) as total_orders,
+                    COUNT(*) FILTER (WHERE wr.status <> 'refunded') as paid_orders,
+                    COUNT(*) FILTER (WHERE wr.status = 'processing') as pending_orders
+                FROM writenix_reports wr
+                WHERE wr.status <> 'refunded' ${dateFilterWr}
+
+                UNION ALL
+
+                SELECT
+                    COALESCE(SUM(sp.amount), 0) as revenue,
+                    0 as writer_costs,
+                    0 as other_costs,
+                    COALESCE(SUM(sp.amount), 0) as profit,
+                    COUNT(*) as total_orders,
+                    COUNT(*) as paid_orders,
+                    0 as pending_orders
+                FROM slot_purchases sp
+                WHERE 1=1 ${dateFilterSp}
             ) combined
         `, params);
 
@@ -160,6 +244,26 @@ router.get('/summary', authenticate, isAdmin, async (req, res) => {
                     COALESCE(qi.amount, 0) as profit
                 FROM quickpay_invoices qi
                 WHERE qi.payment_status = 'paid' AND qi.created_at >= NOW() - INTERVAL '12 months'
+
+                UNION ALL
+
+                SELECT
+                    DATE_TRUNC('month', wr.created_at) as month,
+                    COALESCE(wr.amount_charged, 0) as revenue,
+                    0 as costs,
+                    COALESCE(wr.amount_charged, 0) as profit
+                FROM writenix_reports wr
+                WHERE wr.status <> 'refunded' AND wr.created_at >= NOW() - INTERVAL '12 months'
+
+                UNION ALL
+
+                SELECT
+                    DATE_TRUNC('month', sp.created_at) as month,
+                    COALESCE(sp.amount, 0) as revenue,
+                    0 as costs,
+                    COALESCE(sp.amount, 0) as profit
+                FROM slot_purchases sp
+                WHERE sp.created_at >= NOW() - INTERVAL '12 months'
             ) combined
             GROUP BY month
             ORDER BY month
@@ -339,9 +443,9 @@ router.get('/invoices', authenticate, isAdmin, async (req, res) => {
                 af.id,
                 'assignment' as type,
                 'Homework Assignment' as type_label,
-                COALESCE(a.order_number, CONCAT('HW-', a.id)) as reference,
-                cm.email as client_email,
-                cm.client_code,
+                COALESCE(co.order_number, CONCAT('HW-', CAST(a.id AS VARCHAR))) as reference,
+                COALESCE(cm.email, co.guest_email) as client_email,
+                qc.client_code,
                 a.title as description,
                 af.client_paid as amount,
                 'USD' as currency,
@@ -350,7 +454,9 @@ router.get('/invoices', authenticate, isAdmin, async (req, res) => {
                 af.payment_date as paid_at
             FROM assignment_finances af
             JOIN assignments a ON af.assignment_id = a.id
-            LEFT JOIN client_members cm ON a.client_id = cm.id
+            LEFT JOIN client_orders co ON co.assignment_id = a.id
+            LEFT JOIN client_members cm ON co.member_id = cm.id
+            LEFT JOIN quickpay_clients qc ON LOWER(qc.email) = LOWER(COALESCE(cm.email, co.guest_email))
             ORDER BY af.created_at DESC
         `);
 
@@ -362,7 +468,7 @@ router.get('/invoices', authenticate, isAdmin, async (req, res) => {
                 'Plagiarism/AI Scan' as type_label,
                 CONCAT('WNX-', COALESCE(wr.writenix_reference, CAST(wr.id AS VARCHAR))) as reference,
                 cm.email as client_email,
-                cm.client_code,
+                qc.client_code,
                 CONCAT('Scan: ', wr.original_filename) as description,
                 COALESCE(wr.amount_charged, CASE WHEN wr.currency = 'KES' THEN 300 ELSE 8 END) as amount,
                 COALESCE(wr.currency, 'USD') as currency,
@@ -371,10 +477,32 @@ router.get('/invoices', authenticate, isAdmin, async (req, res) => {
                 wr.completed_at as paid_at
             FROM writenix_reports wr
             JOIN client_members cm ON wr.member_id = cm.id
+            LEFT JOIN quickpay_clients qc ON LOWER(qc.email) = LOWER(cm.email)
             ORDER BY wr.created_at DESC
         `);
 
-        let invoices = [...qp.rows, ...hw.rows, ...wnx.rows];
+        // 4. Report Slot Bundles
+        const slots = await pool.query(`
+            SELECT
+                sp.id,
+                'slots' as type,
+                'Report Slot Bundle' as type_label,
+                CONCAT('SLOT-', CAST(sp.id AS VARCHAR)) as reference,
+                cm.email as client_email,
+                qc.client_code,
+                CONCAT(sp.slot_count, ' report check slots') as description,
+                sp.amount,
+                COALESCE(sp.currency, 'USD') as currency,
+                'paid' as status,
+                sp.created_at as date,
+                sp.created_at as paid_at
+            FROM slot_purchases sp
+            LEFT JOIN client_members cm ON sp.member_id = cm.id
+            LEFT JOIN quickpay_clients qc ON LOWER(qc.email) = LOWER(cm.email)
+            ORDER BY sp.created_at DESC
+        `);
+
+        let invoices = [...qp.rows, ...hw.rows, ...wnx.rows, ...slots.rows];
 
         // Apply filters if provided
         if (search) {

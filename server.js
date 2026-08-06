@@ -161,7 +161,39 @@ async function runMigrations() {
             ALTER TABLE users
             ADD COLUMN IF NOT EXISTS push_subscription TEXT
         `);
-        
+
+        // Report slot bundle sales — the money side of turnitin_wallet_credits, so slot
+        // revenue can be reported on instead of only appearing as a credit increment.
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS slot_purchases (
+                id SERIAL PRIMARY KEY,
+                member_id INTEGER REFERENCES client_members(id) ON DELETE SET NULL,
+                slot_count INTEGER NOT NULL,
+                amount DECIMAL(10,2) NOT NULL DEFAULT 0,
+                currency VARCHAR(10) DEFAULT 'USD',
+                paystack_reference VARCHAR(100) UNIQUE,
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+
+        // Audit trail for manual slot grants/removals from the admin panel
+        await pool.query(`
+            CREATE TABLE IF NOT EXISTS slot_adjustments (
+                id SERIAL PRIMARY KEY,
+                member_id INTEGER REFERENCES client_members(id) ON DELETE CASCADE,
+                email VARCHAR(255),
+                delta INTEGER NOT NULL,
+                new_balance INTEGER NOT NULL,
+                adjusted_by VARCHAR(255),
+                created_at TIMESTAMP DEFAULT NOW()
+            )
+        `);
+
+        await pool.query(`
+            CREATE INDEX IF NOT EXISTS idx_slot_purchases_member ON slot_purchases(member_id);
+            CREATE INDEX IF NOT EXISTS idx_slot_adjustments_member ON slot_adjustments(member_id);
+        `);
+
         console.log('✅ Database migrations complete');
     } catch (error) {
         console.error('⚠️ Migration warning:', error.message);

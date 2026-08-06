@@ -5,8 +5,9 @@ const path = require('path');
 const fs = require('fs');
 const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
-const { isAdminBypassEmail } = require('../utils/admin-emails');
+const { isAdminBypassEmail, isOwnerEmail } = require('../utils/admin-emails');
 const writenixClient = require('../writenix/client');
+const { updateMemberStats } = require('./membership');
 
 const Brevo = require('@getbrevo/brevo');
 const brevoApi = new Brevo.TransactionalEmailsApi();
@@ -180,6 +181,11 @@ async function buildReportAttachment(reportUrl, originalFilename, suffix) {
     }
 }
 
+async function getSlotBalance(memberId) {
+    const result = await pool.query('SELECT turnitin_wallet_credits FROM client_members WHERE id = $1', [memberId]);
+    return parseInt(result.rows[0]?.turnitin_wallet_credits || 0, 10);
+}
+
 async function refundToWallet(reportId, memberId, member, reason) {
     // Atomically credit 1 check back to the member's Turnitin wallet
     await pool.query(
@@ -207,18 +213,24 @@ async function refundToWallet(reportId, memberId, member, reason) {
 
 // ============ ROUTES ============
 
-// Pricing + wallet balance for the logged-in member
+// Pricing + slot balance for the logged-in member
 router.get('/pricing', authenticateMember, async (req, res) => {
     try {
         const result = await pool.query(
             'SELECT turnitin_wallet_credits, email FROM client_members WHERE id = $1',
             [req.member.memberId]
         );
+        const email = result.rows[0]?.email;
+        const slots = parseInt(result.rows[0]?.turnitin_wallet_credits || 0, 10);
+        // Only owner accounts are unlimited. Staff and writers pay/spend slots like anyone else.
+        const unlimited = isOwnerEmail(email);
         res.json({
             kes: TURNITIN_PRICE_KES,
             usd: TURNITIN_PRICE_USD,
-            walletCredits: result.rows[0]?.turnitin_wallet_credits || 0,
-            isAdmin: isAdminBypassEmail(result.rows[0]?.email)
+            walletCredits: slots,
+            slots,
+            unlimited,
+            isAdmin: unlimited
         });
     } catch (error) {
         console.error('Error fetching turnitin pricing:', error);
@@ -251,16 +263,20 @@ router.post('/submit', authenticateMember, (req, res, next) => {
         }
         const member = memberResult.rows[0];
 
-        const useWallet = req.body.useWallet === 'true';
+        // Slot accounting is decided here, on the server — the client's `useWallet` hint is not
+        // trusted. Order of precedence: owner (unlimited) → deduct a slot if one is available →
+        // otherwise this single check must be paid for.
         let usedWalletCredit = false;
         let amountCharged = null;
         let currency = null;
         let paystackReference = null;
-        const isAdmin = isAdminBypassEmail(member.email);
+        const unlimited = isOwnerEmail(member.email);
 
-        if (isAdmin) {
-            // Admin accounts skip payment/wallet entirely.
-        } else if (useWallet) {
+        if (unlimited) {
+            // Owner accounts skip payment/slots entirely.
+        } else {
+            // Atomic: the WHERE guard means two concurrent submits can never both spend the
+            // last slot.
             const decrement = await pool.query(
                 `UPDATE client_members
                  SET turnitin_wallet_credits = turnitin_wallet_credits - 1
@@ -268,16 +284,22 @@ router.post('/submit', authenticateMember, (req, res, next) => {
                  RETURNING turnitin_wallet_credits`,
                 [memberId]
             );
-            if (decrement.rows.length === 0) {
-                fs.unlink(uploadedFilePath, () => {});
-                return res.status(400).json({ error: 'You have no free checks available' });
+            if (decrement.rows.length > 0) {
+                usedWalletCredit = true;
             }
-            usedWalletCredit = true;
-        } else {
+        }
+
+        if (!unlimited && !usedWalletCredit) {
             paystackReference = req.body.paystackReference;
             if (!paystackReference) {
                 fs.unlink(uploadedFilePath, () => {});
-                return res.status(400).json({ error: 'Payment reference is required' });
+                return res.status(402).json({
+                    error: 'You have no report slots left. Pay for this single check, or recharge your slots.',
+                    needsPayment: true,
+                    slots: 0,
+                    priceKes: TURNITIN_PRICE_KES,
+                    priceUsd: TURNITIN_PRICE_USD
+                });
             }
 
             const alreadyUsed = await pool.query(
@@ -328,7 +350,25 @@ router.post('/submit', authenticateMember, (req, res, next) => {
                 [writenixReference, reportId]
             );
 
-            return res.json({ success: true, reportId, status: 'processing' });
+            // A report check is an order. Count it against the member's tier progress and let it
+            // accrue on the admin dashboard. Slot-funded checks add no revenue here — the money
+            // was already booked when the slot bundle was bought — but they still count as orders.
+            try {
+                const revenueUsd = currency === 'KES'
+                    ? (amountCharged || 0) / (TURNITIN_PRICE_KES / TURNITIN_PRICE_USD)
+                    : (amountCharged || 0);
+                await updateMemberStats(member.email, revenueUsd);
+            } catch (statsError) {
+                console.error('Failed to accrue report as order:', statsError.message);
+            }
+
+            return res.json({
+                success: true,
+                reportId,
+                status: 'processing',
+                usedSlot: usedWalletCredit,
+                slotsRemaining: unlimited ? null : await getSlotBalance(memberId)
+            });
         } catch (writenixError) {
             console.error('Writenix submission failed:', writenixError.message);
 
@@ -617,7 +657,9 @@ router.post('/buy-slots', authenticateMember, async (req, res) => {
         }
 
         const alreadyUsed = await pool.query(
-            'SELECT id FROM writenix_reports WHERE paystack_reference = $1',
+            `SELECT id FROM writenix_reports WHERE paystack_reference = $1
+             UNION ALL
+             SELECT id FROM slot_purchases WHERE paystack_reference = $1`,
             [paystackReference]
         );
         if (alreadyUsed.rows.length > 0) {
@@ -629,12 +671,23 @@ router.post('/buy-slots', authenticateMember, async (req, res) => {
             return res.status(400).json({ error: 'Payment verification failed' });
         }
 
+        const paidAmount = transaction.amount / 100;
+        const paidCurrency = (transaction.currency || 'USD').toUpperCase();
+
         const updateRes = await pool.query(`
             UPDATE client_members
             SET turnitin_wallet_credits = turnitin_wallet_credits + $1
             WHERE id = $2
             RETURNING turnitin_wallet_credits
         `, [slots, req.member.memberId]);
+
+        // Persist the sale so slot revenue shows up on the admin dashboard instead of
+        // vanishing into a bare credit increment.
+        await pool.query(
+            `INSERT INTO slot_purchases (member_id, slot_count, amount, currency, paystack_reference)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [req.member.memberId, slots, paidAmount, paidCurrency, paystackReference]
+        );
 
         await notifyMember(
             req.member.memberId,

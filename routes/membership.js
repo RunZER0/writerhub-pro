@@ -5,6 +5,7 @@ const jwt = require('jsonwebtoken');
 const { pool } = require('../db');
 const crypto = require('crypto');
 const { isDisposableEmail } = require('../utils/disposable-emails');
+const { isOwnerEmail } = require('../utils/admin-emails');
 
 // Brevo email setup
 const Brevo = require('@getbrevo/brevo');
@@ -729,13 +730,160 @@ router.put('/notifications/read-all', authenticateMember, async (req, res) => {
 });
 
 // ============ ADMIN ENDPOINTS ============
+//
+// Everything under /admin/* is owner-only. These used to be completely unauthenticated,
+// which meant anyone who knew the URL could list every user in the system and mint
+// themselves free report slots — hence the hard gate below.
 
-// Get all users in the system (client members, quickpay guests, and staff)
-router.get('/admin/list', async (req, res) => {
+async function authenticateOwner(req, res, next) {
+    const authHeader = req.headers['authorization'];
+    const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
+
+    if (!token) {
+        return res.status(401).json({ error: 'Authentication required' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET || 'homework-pal-secret');
+
+        // Member-issued token (the client portal / admin panel path)
+        if (decoded.memberId) {
+            const result = await pool.query('SELECT id, email FROM client_members WHERE id = $1', [decoded.memberId]);
+            const email = result.rows[0]?.email;
+            if (!isOwnerEmail(email)) {
+                return res.status(403).json({ error: 'Admin access required' });
+            }
+            req.owner = { memberId: decoded.memberId, email };
+            return next();
+        }
+
+        // Staff-app token — still has to belong to an owner email, staff alone is not enough.
+        if (decoded.userId) {
+            const result = await pool.query('SELECT id, email FROM users WHERE id = $1', [decoded.userId]);
+            const email = result.rows[0]?.email;
+            if (!isOwnerEmail(email)) {
+                return res.status(403).json({ error: 'Admin access required' });
+            }
+            req.owner = { userId: decoded.userId, email };
+            return next();
+        }
+
+        return res.status(403).json({ error: 'Admin access required' });
+    } catch (error) {
+        return res.status(401).json({ error: 'Invalid or expired token' });
+    }
+}
+
+// Cheap probe the front-end uses to decide whether to render the admin panel
+// instead of the client portal.
+router.get('/admin/whoami', authenticateOwner, (req, res) => {
+    res.json({ isOwner: true, email: req.owner.email });
+});
+
+// Headline numbers for the admin panel. Report checks and slot purchases are counted as
+// orders here alongside assignments and QuickPay invoices — a scan is a sale like any other.
+router.get('/admin/overview', authenticateOwner, async (req, res) => {
+    try {
+        const safe = async (sql, params = []) => {
+            try {
+                return (await pool.query(sql, params)).rows[0] || {};
+            } catch (e) {
+                // A table may not exist yet on a fresh database — an empty tile beats a 500.
+                return {};
+            }
+        };
+
+        const members = await safe(`
+            SELECT COUNT(*) AS total,
+                   COUNT(*) FILTER (WHERE is_verified) AS verified,
+                   COALESCE(SUM(turnitin_wallet_credits), 0) AS outstanding_slots
+            FROM client_members
+        `);
+
+        const reports = await safe(`
+            SELECT COUNT(*) AS total,
+                   COUNT(*) FILTER (WHERE status = 'processing') AS processing,
+                   COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+                   COUNT(*) FILTER (WHERE status = 'refunded') AS refunded,
+                   COALESCE(SUM(amount_charged) FILTER (WHERE currency = 'USD'), 0) AS revenue_usd,
+                   COALESCE(SUM(amount_charged) FILTER (WHERE currency = 'KES'), 0) AS revenue_kes
+            FROM writenix_reports
+        `);
+
+        const slots = await safe(`
+            SELECT COUNT(*) AS purchases,
+                   COALESCE(SUM(slot_count), 0) AS slots_sold,
+                   COALESCE(SUM(amount) FILTER (WHERE currency = 'USD'), 0) AS revenue_usd,
+                   COALESCE(SUM(amount) FILTER (WHERE currency = 'KES'), 0) AS revenue_kes
+            FROM slot_purchases
+        `);
+
+        const quickpay = await safe(`
+            SELECT COUNT(*) FILTER (WHERE payment_status = 'paid') AS paid_invoices,
+                   COALESCE(SUM(amount) FILTER (WHERE payment_status = 'paid' AND currency = 'KES'), 0) AS revenue_kes,
+                   COALESCE(SUM(amount) FILTER (WHERE payment_status = 'paid' AND COALESCE(currency, 'USD') <> 'KES'), 0) AS revenue_usd
+            FROM quickpay_invoices
+        `);
+
+        const assignments = await safe(`
+            SELECT COUNT(*) AS total,
+                   COUNT(*) FILTER (WHERE status = 'completed') AS completed,
+                   COALESCE(SUM(amount) FILTER (WHERE status = 'completed'), 0) AS revenue_usd
+            FROM assignments
+        `);
+
+        const num = (v) => parseFloat(v || 0);
+        const int = (v) => parseInt(v || 0, 10);
+
+        const totalOrders = int(reports.total) + int(slots.purchases) + int(quickpay.paid_invoices) + int(assignments.total);
+        const revenueUsd = num(reports.revenue_usd) + num(slots.revenue_usd) + num(quickpay.revenue_usd) + num(assignments.revenue_usd);
+        const revenueKes = num(reports.revenue_kes) + num(slots.revenue_kes) + num(quickpay.revenue_kes);
+
+        res.json({
+            members: {
+                total: int(members.total),
+                verified: int(members.verified),
+                outstandingSlots: int(members.outstanding_slots)
+            },
+            reports: {
+                total: int(reports.total),
+                processing: int(reports.processing),
+                completed: int(reports.completed),
+                refunded: int(reports.refunded),
+                revenueUsd: num(reports.revenue_usd),
+                revenueKes: num(reports.revenue_kes)
+            },
+            slots: {
+                purchases: int(slots.purchases),
+                slotsSold: int(slots.slots_sold),
+                revenueUsd: num(slots.revenue_usd),
+                revenueKes: num(slots.revenue_kes)
+            },
+            quickpay: {
+                paidInvoices: int(quickpay.paid_invoices),
+                revenueUsd: num(quickpay.revenue_usd),
+                revenueKes: num(quickpay.revenue_kes)
+            },
+            assignments: {
+                total: int(assignments.total),
+                completed: int(assignments.completed),
+                revenueUsd: num(assignments.revenue_usd)
+            },
+            totals: { orders: totalOrders, revenueUsd, revenueKes }
+        });
+    } catch (error) {
+        console.error('Admin overview error:', error);
+        res.status(500).json({ error: 'Failed to load admin overview' });
+    }
+});
+
+// Get all users in the system (client members, quickpay guests, and staff).
+// Slot balances are real for everyone — staff are not exempt; only owner accounts are.
+router.get('/admin/list', authenticateOwner, async (req, res) => {
     try {
         // 1. Registered Client Members
         const membersResult = await pool.query(`
-            SELECT 
+            SELECT
                 id, email, name, phone, membership_tier, discount_percent,
                 total_orders, total_spent, is_verified, status, turnitin_wallet_credits, created_at
             FROM client_members
@@ -744,7 +892,7 @@ router.get('/admin/list', async (req, res) => {
 
         // 2. QuickPay Clients who don't have a registered member account
         const quickpayResult = await pool.query(`
-            SELECT 
+            SELECT
                 q.id, q.email, q.name, q.client_code, q.is_verified, q.status, q.created_at,
                 COALESCE(SUM(i.amount), 0) AS total_spent,
                 COUNT(i.id) AS total_orders
@@ -755,28 +903,35 @@ router.get('/admin/list', async (req, res) => {
             ORDER BY q.created_at DESC
         `);
 
-        // 3. Staff / Admin Users
+        // 3. Staff / Admin Users. Their slot balance lives on the matching client_members row
+        //    (created lazily the first time slots are granted), so LEFT JOIN it in.
         const staffResult = await pool.query(`
-            SELECT id, name, email, role, status, created_at
-            FROM users
-            ORDER BY created_at DESC
+            SELECT u.id, u.name, u.email, u.role, u.status, u.created_at,
+                   COALESCE(cm.turnitin_wallet_credits, 0) AS turnitin_wallet_credits
+            FROM users u
+            LEFT JOIN client_members cm ON LOWER(cm.email) = LOWER(u.email)
+            ORDER BY u.created_at DESC
         `);
 
-        const members = membersResult.rows.map(m => ({
-            id: m.id,
-            email: m.email,
-            name: m.name || m.email.split('@')[0],
-            phone: m.phone || '',
-            tier: m.membership_tier || 'basic',
-            discount: parseFloat(m.discount_percent || 0),
-            orders: parseInt(m.total_orders || 0),
-            totalSpent: parseFloat(m.total_spent || 0),
-            verified: m.is_verified,
-            status: m.status || 'active',
-            scanCredits: parseInt(m.turnitin_wallet_credits || 0),
-            userType: 'Registered Member',
-            joinedAt: m.created_at
-        }));
+        const members = membersResult.rows
+            // Owner accounts are listed separately below via the staff/owner path; keep them
+            // out of the manageable-member list so nobody tries to dock the owner's slots.
+            .map(m => ({
+                id: m.id,
+                email: m.email,
+                name: m.name || m.email.split('@')[0],
+                phone: m.phone || '',
+                tier: m.membership_tier || 'basic',
+                discount: parseFloat(m.discount_percent || 0),
+                orders: parseInt(m.total_orders || 0),
+                totalSpent: parseFloat(m.total_spent || 0),
+                verified: m.is_verified,
+                status: m.status || 'active',
+                scanCredits: parseInt(m.turnitin_wallet_credits || 0),
+                unlimited: isOwnerEmail(m.email),
+                userType: isOwnerEmail(m.email) ? 'Owner' : 'Registered Member',
+                joinedAt: m.created_at
+            }));
 
         const quickpayUsers = quickpayResult.rows.map(q => ({
             id: `qp_${q.id}`,
@@ -790,25 +945,31 @@ router.get('/admin/list', async (req, res) => {
             verified: q.is_verified,
             status: q.status || 'active',
             scanCredits: 0,
+            unlimited: false,
             userType: 'QuickPay Guest',
             joinedAt: q.created_at
         }));
 
-        const staffUsers = staffResult.rows.map(s => ({
-            id: `staff_${s.id}`,
-            email: s.email,
-            name: s.name,
-            phone: '',
-            tier: (s.role || 'staff').toUpperCase(),
-            discount: 0,
-            orders: 0,
-            totalSpent: 0,
-            verified: true,
-            status: s.status || 'active',
-            scanCredits: 9999,
-            userType: `Staff (${s.role})`,
-            joinedAt: s.created_at
-        }));
+        // Staff who also hold a member account are already in `members` — skip the duplicate row.
+        const memberEmails = new Set(members.map(m => (m.email || '').toLowerCase()));
+        const staffUsers = staffResult.rows
+            .filter(s => !memberEmails.has((s.email || '').toLowerCase()))
+            .map(s => ({
+                id: `staff_${s.id}`,
+                email: s.email,
+                name: s.name,
+                phone: '',
+                tier: (s.role || 'staff').toUpperCase(),
+                discount: 0,
+                orders: 0,
+                totalSpent: 0,
+                verified: true,
+                status: s.status || 'active',
+                scanCredits: parseInt(s.turnitin_wallet_credits || 0),
+                unlimited: isOwnerEmail(s.email),
+                userType: isOwnerEmail(s.email) ? 'Owner' : `Staff (${s.role})`,
+                joinedAt: s.created_at
+            }));
 
         const allUsers = [...members, ...quickpayUsers, ...staffUsers];
 
@@ -816,73 +977,317 @@ router.get('/admin/list', async (req, res) => {
             total: allUsers.length,
             registeredMembers: members.length,
             quickpayGuests: quickpayUsers.length,
-            staff: staffUsers.length
+            staff: staffUsers.length,
+            totalSlotsHeld: allUsers.reduce((sum, u) => sum + (u.unlimited ? 0 : u.scanCredits), 0)
         };
 
-        res.json({
-            members: allUsers,
-            stats
-        });
+        res.json({ members: allUsers, stats });
     } catch (error) {
         console.error('Get members list error:', error);
         res.status(500).json({ error: 'Failed to fetch members' });
     }
 });
 
-// Admin endpoint to add or subtract report scan credits for a user
-router.post('/admin/adjust-credits', async (req, res) => {
+// Resolves an email to a client_members row, creating one on the fly for QuickPay guests and
+// staff so slots can be granted to anyone in the system, not just registered members.
+async function resolveSlotAccount(emailLower) {
+    const existing = await pool.query(
+        'SELECT id, email, name, turnitin_wallet_credits FROM client_members WHERE LOWER(email) = $1',
+        [emailLower]
+    );
+    if (existing.rows.length > 0) return existing.rows[0];
+
+    const qpRes = await pool.query('SELECT name FROM quickpay_clients WHERE LOWER(email) = $1', [emailLower]);
+    if (qpRes.rows.length > 0) {
+        const created = await pool.query(`
+            INSERT INTO client_members (email, name, password_hash, is_verified, turnitin_wallet_credits)
+            VALUES ($1, $2, 'quickpay-guest-no-password', TRUE, 0)
+            RETURNING id, email, name, turnitin_wallet_credits
+        `, [emailLower, qpRes.rows[0].name]);
+        return created.rows[0];
+    }
+
+    const staffRes = await pool.query('SELECT name FROM users WHERE LOWER(email) = $1', [emailLower]);
+    if (staffRes.rows.length > 0) {
+        const created = await pool.query(`
+            INSERT INTO client_members (email, name, password_hash, is_verified, turnitin_wallet_credits)
+            VALUES ($1, $2, 'staff-account-no-password', TRUE, 0)
+            RETURNING id, email, name, turnitin_wallet_credits
+        `, [emailLower, staffRes.rows[0].name]);
+        return created.rows[0];
+    }
+
+    return null;
+}
+
+async function writeSlotChange(member, newCredits, delta, actorEmail) {
+    const message = delta > 0
+        ? `${delta} report check slot(s) were added to your account.`
+        : `${Math.abs(delta)} report check slot(s) were removed from your account. You now have ${newCredits}.`;
+
+    await pool.query(
+        `INSERT INTO member_notifications (member_id, title, message, type)
+         VALUES ($1, $2, $3, $4)`,
+        [member.id, delta > 0 ? 'Report Slots Added' : 'Report Slots Adjusted', message, delta > 0 ? 'success' : 'info']
+    );
+
+    try {
+        await pool.query(
+            `INSERT INTO slot_adjustments (member_id, email, delta, new_balance, adjusted_by)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [member.id, member.email, delta, newCredits, actorEmail || 'admin']
+        );
+    } catch (e) {
+        // Audit log is best-effort — never block the adjustment itself on it.
+        console.error('Slot adjustment audit write failed:', e.message);
+    }
+}
+
+// Add or remove slots by a relative amount
+router.post('/admin/adjust-credits', authenticateOwner, async (req, res) => {
     try {
         const { email, delta } = req.body;
-        if (!email || typeof delta !== 'number') {
-            return res.status(400).json({ error: 'Email and valid delta number required' });
+        const amount = Number(delta);
+        if (!email || !Number.isFinite(amount) || amount === 0) {
+            return res.status(400).json({ error: 'Email and a non-zero delta are required' });
         }
 
         const emailLower = email.toLowerCase().trim();
+        const member = await resolveSlotAccount(emailLower);
+        if (!member) return res.status(404).json({ error: 'User not found in the system' });
 
-        // Check if member exists in client_members
-        let memberRes = await pool.query('SELECT id, email, turnitin_wallet_credits FROM client_members WHERE LOWER(email) = $1', [emailLower]);
-
-        if (memberRes.rows.length === 0) {
-            // Check if user exists in quickpay_clients, if so create a client_members entry for them
-            const qpRes = await pool.query('SELECT name, email FROM quickpay_clients WHERE LOWER(email) = $1', [emailLower]);
-            if (qpRes.rows.length > 0) {
-                const qp = qpRes.rows[0];
-                memberRes = await pool.query(`
-                    INSERT INTO client_members (email, name, password_hash, is_verified, turnitin_wallet_credits)
-                    VALUES ($1, $2, 'quickpay-guest-no-password', TRUE, 0)
-                    RETURNING id, email, turnitin_wallet_credits
-                `, [emailLower, qp.name]);
-            } else {
-                return res.status(404).json({ error: 'User not found in the system' });
-            }
-        }
-
-        const member = memberRes.rows[0];
         const updateRes = await pool.query(`
             UPDATE client_members
             SET turnitin_wallet_credits = GREATEST(0, turnitin_wallet_credits + $1)
             WHERE id = $2
             RETURNING turnitin_wallet_credits
-        `, [delta, member.id]);
+        `, [Math.trunc(amount), member.id]);
 
-        const newCredits = updateRes.rows[0].turnitin_wallet_credits;
-
-        const message = delta > 0
-            ? `Admin added ${delta} plagiarism/AI report check slot(s) to your account!`
-            : `Admin adjusted your plagiarism/AI report check slots (${delta}).`;
-
-        await pool.query(
-            `INSERT INTO member_notifications (member_id, title, message, type)
-             VALUES ($1, $2, $3, $4)`,
-            [member.id, 'Report Credits Adjusted', message, 'info']
-        );
+        const newCredits = parseInt(updateRes.rows[0].turnitin_wallet_credits, 10);
+        await writeSlotChange(member, newCredits, Math.trunc(amount), req.owner.email);
 
         res.json({ success: true, email: emailLower, newCredits });
     } catch (error) {
         console.error('Adjust credits error:', error);
-        res.status(500).json({ error: 'Failed to adjust report credits' });
+        res.status(500).json({ error: 'Failed to adjust report slots' });
+    }
+});
+
+// Set a user's slot balance to an exact number
+router.post('/admin/set-credits', authenticateOwner, async (req, res) => {
+    try {
+        const { email, credits } = req.body;
+        const target = Number(credits);
+        if (!email || !Number.isFinite(target) || target < 0) {
+            return res.status(400).json({ error: 'Email and a slot count of 0 or more are required' });
+        }
+
+        const emailLower = email.toLowerCase().trim();
+        const member = await resolveSlotAccount(emailLower);
+        if (!member) return res.status(404).json({ error: 'User not found in the system' });
+
+        const previous = parseInt(member.turnitin_wallet_credits || 0, 10);
+        const updateRes = await pool.query(
+            'UPDATE client_members SET turnitin_wallet_credits = $1 WHERE id = $2 RETURNING turnitin_wallet_credits',
+            [Math.trunc(target), member.id]
+        );
+
+        const newCredits = parseInt(updateRes.rows[0].turnitin_wallet_credits, 10);
+        if (newCredits !== previous) {
+            await writeSlotChange(member, newCredits, newCredits - previous, req.owner.email);
+        }
+
+        res.json({ success: true, email: emailLower, newCredits });
+    } catch (error) {
+        console.error('Set credits error:', error);
+        res.status(500).json({ error: 'Failed to set report slots' });
+    }
+});
+
+// Drill-down for a single user: every report check they've run, by the name of the file they
+// uploaded, so a stuck one can be spotted and recovered without hunting through a global list.
+router.get('/admin/user-reports', authenticateOwner, async (req, res) => {
+    try {
+        const email = (req.query.email || '').toLowerCase().trim();
+        if (!email) return res.status(400).json({ error: 'email query parameter is required' });
+
+        const memberRes = await pool.query(
+            'SELECT id, name, email, turnitin_wallet_credits, total_orders, total_spent FROM client_members WHERE LOWER(email) = $1',
+            [email]
+        );
+
+        if (memberRes.rows.length === 0) {
+            return res.json({ member: null, reports: [], summary: { total: 0, processing: 0, completed: 0, refunded: 0 } });
+        }
+
+        const member = memberRes.rows[0];
+        const reportsRes = await pool.query(
+            `SELECT id, original_filename, status, similarity_score, ai_score,
+                    similarity_report_url, ai_report_url, writenix_reference,
+                    amount_charged, currency, used_wallet_credit, created_at, completed_at
+             FROM writenix_reports
+             WHERE member_id = $1
+             ORDER BY created_at DESC`,
+            [member.id]
+        );
+
+        const reports = reportsRes.rows.map(r => ({
+            id: r.id,
+            filename: r.original_filename,
+            status: r.status,
+            similarityScore: r.similarity_score,
+            aiScore: r.ai_score,
+            hasSimilarityReport: !!r.similarity_report_url,
+            hasAiReport: !!r.ai_report_url,
+            writenixReference: r.writenix_reference,
+            amount: r.amount_charged ? parseFloat(r.amount_charged) : 0,
+            currency: r.currency || null,
+            paidWith: r.used_wallet_credit ? 'slot' : (r.amount_charged ? 'cash' : 'free'),
+            createdAt: r.created_at,
+            completedAt: r.completed_at
+        }));
+
+        res.json({
+            member: {
+                id: member.id,
+                name: member.name,
+                email: member.email,
+                slots: parseInt(member.turnitin_wallet_credits || 0, 10),
+                unlimited: isOwnerEmail(member.email),
+                totalOrders: parseInt(member.total_orders || 0, 10),
+                totalSpent: parseFloat(member.total_spent || 0)
+            },
+            reports,
+            summary: {
+                total: reports.length,
+                processing: reports.filter(r => r.status === 'processing').length,
+                completed: reports.filter(r => r.status === 'completed').length,
+                refunded: reports.filter(r => r.status === 'refunded').length
+            }
+        });
+    } catch (error) {
+        console.error('Admin user-reports error:', error);
+        res.status(500).json({ error: 'Failed to load user reports' });
+    }
+});
+
+// Every purchase across every channel, for the admin panel's purchases view.
+router.get('/admin/purchases', authenticateOwner, async (req, res) => {
+    try {
+        const rows = [];
+        const push = (r) => rows.push(r);
+
+        const run = async (sql) => {
+            try {
+                return (await pool.query(sql)).rows;
+            } catch (e) {
+                return [];
+            }
+        };
+
+        (await run(`
+            SELECT wr.id, wr.original_filename, wr.status, wr.amount_charged, wr.currency,
+                   wr.paystack_reference, wr.used_wallet_credit, wr.writenix_reference,
+                   wr.created_at, cm.email, cm.name
+            FROM writenix_reports wr
+            LEFT JOIN client_members cm ON wr.member_id = cm.id
+            ORDER BY wr.created_at DESC
+        `)).forEach(r => push({
+            id: `wnx_${r.id}`,
+            type: 'plagiarism_check',
+            type_label: 'Report Check',
+            icon: 'fa-shield-halved',
+            title: r.original_filename,
+            client: r.name || r.email || 'Unknown',
+            client_email: r.email || '',
+            reference: r.writenix_reference ? `WNX-${r.writenix_reference}` : `WNX-${r.id}`,
+            payment_reference: r.paystack_reference || (r.used_wallet_credit ? 'Slot' : 'N/A'),
+            amount: parseFloat(r.amount_charged || 0),
+            currency: r.currency || 'USD',
+            paid_with: r.used_wallet_credit ? 'slot' : (r.amount_charged ? 'cash' : 'free'),
+            status: r.status,
+            date: r.created_at
+        }));
+
+        (await run(`
+            SELECT sp.id, sp.slot_count, sp.amount, sp.currency, sp.paystack_reference,
+                   sp.created_at, cm.email, cm.name
+            FROM slot_purchases sp
+            LEFT JOIN client_members cm ON sp.member_id = cm.id
+            ORDER BY sp.created_at DESC
+        `)).forEach(r => push({
+            id: `slot_${r.id}`,
+            type: 'slot_purchase',
+            type_label: 'Slot Bundle',
+            icon: 'fa-layer-group',
+            title: `${r.slot_count} report slots`,
+            client: r.name || r.email || 'Unknown',
+            client_email: r.email || '',
+            reference: `SLOT-${r.id}`,
+            payment_reference: r.paystack_reference || 'N/A',
+            amount: parseFloat(r.amount || 0),
+            currency: r.currency || 'USD',
+            paid_with: 'cash',
+            status: 'paid',
+            date: r.created_at
+        }));
+
+        (await run(`
+            SELECT id, invoice_number, client_email, client_name, work_paid_for, amount, currency,
+                   payment_status, paystack_reference, created_at, paid_at
+            FROM quickpay_invoices
+            ORDER BY created_at DESC
+        `)).forEach(r => push({
+            id: `qp_${r.id}`,
+            type: 'quickpay_invoice',
+            type_label: 'QuickPay Invoice',
+            icon: 'fa-receipt',
+            title: r.work_paid_for || `Invoice ${r.invoice_number}`,
+            client: r.client_name || r.client_email || 'Unknown',
+            client_email: r.client_email || '',
+            reference: r.invoice_number,
+            payment_reference: r.paystack_reference || 'N/A',
+            amount: parseFloat(r.amount || 0),
+            currency: r.currency || 'KES',
+            paid_with: 'cash',
+            status: r.payment_status,
+            date: r.paid_at || r.created_at
+        }));
+
+        // Homework orders come from client_orders — that's the table that carries the member
+        // link, order number and price. `assignments` has no client_id/order_number columns.
+        (await run(`
+            SELECT co.id, co.order_number, co.final_price, co.payment_status, co.created_at, co.paid_at,
+                   co.guest_email, co.guest_name, a.title, cm.email, cm.name
+            FROM client_orders co
+            LEFT JOIN client_members cm ON co.member_id = cm.id
+            LEFT JOIN assignments a ON co.assignment_id = a.id
+            ORDER BY co.created_at DESC
+        `)).forEach(r => push({
+            id: `ord_${r.id}`,
+            type: 'assignment_order',
+            type_label: 'Homework Order',
+            icon: 'fa-file-invoice',
+            title: r.title || r.order_number || `HW-${r.id}`,
+            client: r.name || r.guest_name || r.email || r.guest_email || 'Guest',
+            client_email: r.email || r.guest_email || '',
+            reference: r.order_number || `HW-${r.id}`,
+            payment_reference: 'Gateway',
+            amount: parseFloat(r.final_price || 0),
+            currency: 'USD',
+            paid_with: 'cash',
+            status: r.payment_status || 'pending',
+            date: r.paid_at || r.created_at
+        }));
+
+        rows.sort((a, b) => new Date(b.date) - new Date(a.date));
+        res.json({ success: true, count: rows.length, purchases: rows });
+    } catch (error) {
+        console.error('Admin purchases error:', error);
+        res.status(500).json({ error: 'Failed to fetch purchases' });
     }
 });
 
 module.exports = router;
 module.exports.updateMemberStats = updateMemberStats;
+module.exports.authenticateOwner = authenticateOwner;
