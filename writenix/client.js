@@ -13,6 +13,15 @@
 
 const crypto = require('crypto');
 const { Readable } = require('stream');
+const { fetch: undiciFetch, ProxyAgent, FormData: UndiciFormData } = require('undici');
+
+function getDispatcher() {
+    const proxyUrl = (process.env.WRITENIX_PROXY_URL || '').trim();
+    if (proxyUrl) {
+        return new ProxyAgent(proxyUrl);
+    }
+    return undefined;
+}
 
 function getBaseUrl() {
     let url = (process.env.WRITENIX_BASE_URL || 'https://app.writenix.com/api/v1').trim().replace(/\/+$/, '');
@@ -53,18 +62,31 @@ function buildRequestHeaders() {
  * @param {string} originalFilename
  * @returns {Promise<{ writenixReference: string|null, raw: object }>}
  * @throws if the request fails or Writenix returns a non-2xx (including a Cloudflare
- *         challenge page instead of JSON — the thrown message includes the raw response body).
+ *         challenge page instead of JSON - the thrown message includes the raw response body).
  */
 async function submitDocument(fileBuffer, originalFilename) {
-    const formData = new FormData();
-    formData.append('file', new Blob([fileBuffer]), originalFilename);
-
     const baseUrl = getBaseUrl();
-    const response = await fetch(`${baseUrl}/documents/process`, {
-        method: 'POST',
-        headers: buildRequestHeaders(),
-        body: formData
-    });
+    const dispatcher = getDispatcher();
+
+    let response;
+    if (dispatcher) {
+        const formData = new UndiciFormData();
+        formData.append('file', new Blob([fileBuffer]), originalFilename);
+        response = await undiciFetch(`${baseUrl}/documents/process`, {
+            method: 'POST',
+            headers: buildRequestHeaders(),
+            body: formData,
+            dispatcher
+        });
+    } else {
+        const formData = new FormData();
+        formData.append('file', new Blob([fileBuffer]), originalFilename);
+        response = await fetch(`${baseUrl}/documents/process`, {
+            method: 'POST',
+            headers: buildRequestHeaders(),
+            body: formData
+        });
+    }
 
     if (!response.ok) {
         const errBody = await response.text().catch(() => '');
@@ -74,7 +96,7 @@ async function submitDocument(fileBuffer, originalFilename) {
             throw new Error(`Writenix API error (${response.status}): ${errJson.message}`);
         }
         if (response.status === 403) {
-            throw new Error(`Writenix request blocked by Cloudflare (403). Ensure WRITENIX_BASE_URL worker proxy is configured: ${errBody.slice(0, 200)}`);
+            throw new Error(`Writenix request blocked by Cloudflare (403). Ensure WRITENIX_PROXY_URL or bypass rules are configured: ${errBody.slice(0, 200)}`);
         }
         if (response.status === 402) {
             throw new Error(`Writenix account is out of report slots (402). Please recharge your account at app.writenix.com.`);
@@ -97,9 +119,11 @@ async function submitDocument(fileBuffer, originalFilename) {
 async function getReportStatus(writenixReference) {
     try {
         const baseUrl = getBaseUrl();
-        const response = await fetch(`${baseUrl}/documents/${writenixReference}`, {
+        const dispatcher = getDispatcher();
+        const response = await (dispatcher ? undiciFetch : fetch)(`${baseUrl}/documents/${writenixReference}`, {
             method: 'GET',
-            headers: buildRequestHeaders()
+            headers: buildRequestHeaders(),
+            ...(dispatcher ? { dispatcher } : {})
         });
 
         if (!response.ok) {
@@ -176,7 +200,10 @@ function parseWebhookPayload(payload) {
  */
 async function downloadReportBuffer(reportUrl) {
     if (!reportUrl) return null;
-    const response = await fetch(reportUrl);
+    const dispatcher = getDispatcher();
+    const response = await (dispatcher ? undiciFetch : fetch)(reportUrl, {
+        ...(dispatcher ? { dispatcher } : {})
+    });
     if (!response.ok) return null;
     return Buffer.from(await response.arrayBuffer());
 }
@@ -192,7 +219,10 @@ async function downloadReportBuffer(reportUrl) {
  */
 async function streamReportToResponse(reportUrl, res, downloadFilename) {
     try {
-        const upstream = await fetch(reportUrl);
+        const dispatcher = getDispatcher();
+        const upstream = await (dispatcher ? undiciFetch : fetch)(reportUrl, {
+            ...(dispatcher ? { dispatcher } : {})
+        });
         if (!upstream.ok || !upstream.body) throw new Error(`Upstream returned ${upstream.status}`);
 
         const contentType = upstream.headers.get('content-type') || 'application/pdf';
