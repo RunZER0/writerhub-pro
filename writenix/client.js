@@ -34,7 +34,7 @@ function getBaseUrl() {
 // how often the challenge fires even if it doesn't eliminate it entirely.
 function buildRequestHeaders() {
     return {
-        'X-Api-Key': process.env.WRITENIX_API_KEY,
+        'X-Api-Key': (process.env.WRITENIX_API_KEY || '').trim().replace(/^["']|["']$/g, ''),
         'Accept': 'application/json, text/plain, */*',
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
         'sec-ch-ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
@@ -68,8 +68,13 @@ async function submitDocument(fileBuffer, originalFilename) {
 
     if (!response.ok) {
         const errBody = await response.text().catch(() => '');
+        let errJson = null;
+        try { errJson = JSON.parse(errBody); } catch (_) {}
+        if (errJson && errJson.message) {
+            throw new Error(`Writenix API error (${response.status}): ${errJson.message}`);
+        }
         if (response.status === 403) {
-            throw new Error(`Writenix request blocked by Cloudflare (403). Ensure server IP or bypass rules are enabled: ${errBody.slice(0, 200)}`);
+            throw new Error(`Writenix request blocked by Cloudflare (403). Ensure WRITENIX_BASE_URL worker proxy is configured: ${errBody.slice(0, 200)}`);
         }
         if (response.status === 402) {
             throw new Error(`Writenix account is out of report slots (402). Please recharge your account at app.writenix.com.`);
