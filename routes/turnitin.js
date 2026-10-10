@@ -370,7 +370,7 @@ router.post('/submit', authenticateMember, (req, res, next) => {
                 slotsRemaining: unlimited ? null : await getSlotBalance(memberId)
             });
         } catch (writenixError) {
-            console.error('Writenix submission failed:', writenixError.message);
+            console.error('Writenix submission failed:', writenixError.message, writenixError.cause?.message || writenixError.cause?.code || writenixError.cause || '');
 
             await pool.query(
                 "UPDATE writenix_reports SET status = 'failed' WHERE id = $1",

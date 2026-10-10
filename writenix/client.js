@@ -4,7 +4,7 @@
  * Every outbound HTTP call to app.writenix.com, and every bit of parsing of
  * data that comes back from them (webhook payloads included), lives in this
  * one file. Nothing about our own database, payment, or membership logic is
- * in here — this is the file to hand to Writenix's team if they ever need to
+ * in here - this is the file to hand to Writenix's team if they ever need to
  * see exactly what we send/receive, without exposing anything else.
  *
  * See README.md in this folder for the request/response lifecycle and the
@@ -15,12 +15,37 @@ const crypto = require('crypto');
 const { Readable } = require('stream');
 const { fetch: undiciFetch, ProxyAgent, FormData: UndiciFormData } = require('undici');
 
+let cachedDispatcher = null;
+let cachedProxyUrl = null;
+
 function getDispatcher() {
     const proxyUrl = (process.env.WRITENIX_PROXY_URL || '').trim();
-    if (proxyUrl) {
-        return new ProxyAgent(proxyUrl);
+    if (!proxyUrl) return undefined;
+
+    if (cachedDispatcher && cachedProxyUrl === proxyUrl) {
+        return cachedDispatcher;
     }
-    return undefined;
+
+    cachedDispatcher = new ProxyAgent({
+        uri: proxyUrl,
+        connect: {
+            timeout: 30000, // 30s connection timeout for residential/ISP proxy
+            keepAlive: true,
+            keepAliveInitialDelay: 10000
+        },
+        headersTimeout: 60000,
+        bodyTimeout: 60000
+    });
+    cachedProxyUrl = proxyUrl;
+    return cachedDispatcher;
+}
+
+function resetDispatcher() {
+    if (cachedDispatcher && typeof cachedDispatcher.close === 'function') {
+        cachedDispatcher.close().catch(() => {});
+    }
+    cachedDispatcher = null;
+    cachedProxyUrl = null;
 }
 
 function getBaseUrl() {
@@ -36,11 +61,7 @@ function getBaseUrl() {
 }
 
 // Writenix's own docs recommend a realistic browser User-Agent + Accept: application/json
-// to avoid their Cloudflare bot protection. In practice this has NOT been sufficient by
-// itself — we're still seeing Cloudflare's Managed Challenge (cType: 'managed') on some
-// requests, which requires an actual browser JS challenge and can't be solved by any HTTP
-// client header. Kept here anyway since it's still correct per their docs and may reduce
-// how often the challenge fires even if it doesn't eliminate it entirely.
+// to avoid their Cloudflare bot protection.
 function buildRequestHeaders() {
     return {
         'X-Api-Key': (process.env.WRITENIX_API_KEY || '').trim().replace(/^["']|["']$/g, ''),
@@ -58,55 +79,85 @@ function buildRequestHeaders() {
 
 /**
  * Submit a document for plagiarism/AI checking.
+ * Includes automatic retry on transient network/proxy socket timeouts.
  * @param {Buffer} fileBuffer - raw bytes of the uploaded PDF/DOCX
  * @param {string} originalFilename
+ * @param {number} maxRetries - retries on transient network failures (default: 2)
  * @returns {Promise<{ writenixReference: string|null, raw: object }>}
- * @throws if the request fails or Writenix returns a non-2xx (including a Cloudflare
- *         challenge page instead of JSON - the thrown message includes the raw response body).
  */
-async function submitDocument(fileBuffer, originalFilename) {
+async function submitDocument(fileBuffer, originalFilename, maxRetries = 2) {
     const baseUrl = getBaseUrl();
-    const dispatcher = getDispatcher();
+    let lastError = null;
 
-    let response;
-    if (dispatcher) {
-        const formData = new UndiciFormData();
-        formData.append('file', new Blob([fileBuffer]), originalFilename);
-        response = await undiciFetch(`${baseUrl}/documents/process`, {
-            method: 'POST',
-            headers: buildRequestHeaders(),
-            body: formData,
-            dispatcher
-        });
-    } else {
-        const formData = new FormData();
-        formData.append('file', new Blob([fileBuffer]), originalFilename);
-        response = await fetch(`${baseUrl}/documents/process`, {
-            method: 'POST',
-            headers: buildRequestHeaders(),
-            body: formData
-        });
+    for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
+        const dispatcher = getDispatcher();
+        try {
+            let response;
+            if (dispatcher) {
+                const formData = new UndiciFormData();
+                formData.append('file', new Blob([fileBuffer]), originalFilename);
+                response = await undiciFetch(`${baseUrl}/documents/process`, {
+                    method: 'POST',
+                    headers: buildRequestHeaders(),
+                    body: formData,
+                    dispatcher
+                });
+            } else {
+                const formData = new FormData();
+                formData.append('file', new Blob([fileBuffer]), originalFilename);
+                response = await fetch(`${baseUrl}/documents/process`, {
+                    method: 'POST',
+                    headers: buildRequestHeaders(),
+                    body: formData
+                });
+            }
+
+            if (!response.ok) {
+                const errBody = await response.text().catch(() => '');
+                let errJson = null;
+                try { errJson = JSON.parse(errBody); } catch (_) {}
+                if (errJson && errJson.message) {
+                    throw new Error(`Writenix API error (${response.status}): ${errJson.message}`);
+                }
+                if (response.status === 403) {
+                    throw new Error(`Writenix request blocked by Cloudflare (403). Ensure WRITENIX_PROXY_URL or bypass rules are configured: ${errBody.slice(0, 200)}`);
+                }
+                if (response.status === 402) {
+                    throw new Error(`Writenix account is out of report slots (402). Please recharge your account at app.writenix.com.`);
+                }
+                throw new Error(`Writenix returned ${response.status}: ${errBody}`);
+            }
+
+            const data = await response.json().catch(() => ({}));
+            const writenixReference = data.report_id || data.reference || data.document_id || data.id || null;
+            return { writenixReference, raw: data };
+        } catch (err) {
+            lastError = err;
+
+            // Never retry validation / auth / account errors
+            const isApiError = err.message && (
+                err.message.startsWith('Writenix API error') ||
+                err.message.startsWith('Writenix account is out of report slots') ||
+                err.message.startsWith('Writenix request blocked')
+            );
+            if (isApiError || attempt > maxRetries) {
+                break;
+            }
+
+            const causeDetail = err.cause?.message || err.cause?.code || '';
+            console.warn(`Writenix submission attempt ${attempt} failed (${err.message}${causeDetail ? ': ' + causeDetail : ''}). Retrying in 1.5s...`);
+            resetDispatcher();
+            await new Promise(r => setTimeout(r, 1500));
+        }
     }
 
-    if (!response.ok) {
-        const errBody = await response.text().catch(() => '');
-        let errJson = null;
-        try { errJson = JSON.parse(errBody); } catch (_) {}
-        if (errJson && errJson.message) {
-            throw new Error(`Writenix API error (${response.status}): ${errJson.message}`);
-        }
-        if (response.status === 403) {
-            throw new Error(`Writenix request blocked by Cloudflare (403). Ensure WRITENIX_PROXY_URL or bypass rules are configured: ${errBody.slice(0, 200)}`);
-        }
-        if (response.status === 402) {
-            throw new Error(`Writenix account is out of report slots (402). Please recharge your account at app.writenix.com.`);
-        }
-        throw new Error(`Writenix returned ${response.status}: ${errBody}`);
-    }
-
-    const data = await response.json().catch(() => ({}));
-    const writenixReference = data.report_id || data.reference || data.document_id || data.id || null;
-    return { writenixReference, raw: data };
+    const causeMsg = lastError?.cause?.message || lastError?.cause?.code;
+    const enrichedMessage = causeMsg
+        ? `${lastError.message} (${causeMsg})`
+        : lastError.message;
+    const finalError = new Error(enrichedMessage);
+    finalError.cause = lastError.cause;
+    throw finalError;
 }
 
 /**
@@ -114,7 +165,6 @@ async function submitDocument(fileBuffer, originalFilename) {
  * Useful for recovering reports where the webhook was missed.
  * @param {string} writenixReference
  * @returns {Promise<{ status: string, raw: object }>}
- * @throws if the request fails (e.g. 404 if not found)
  */
 async function getReportStatus(writenixReference) {
     try {
@@ -160,11 +210,7 @@ function verifyWebhookSignature(signature, rawBody) {
 }
 
 /**
- * Extract the fields we care about from a parsed webhook payload, matching Writenix's
- * documented shape (report_id, files.report_1 = similarity report, files.report_2 = AI
- * report). Older/alternate field names are kept as fallbacks defensively in case a
- * payload variant ever omits the primary one - this has already changed once between
- * their docs revisions.
+ * Extract the fields we care about from a parsed webhook payload.
  * @param {object} payload - already JSON.parse()'d webhook body
  * @returns {{ event: string, writenixRef: string|null, similarityReportUrl: string|null, aiReportUrl: string|null, similarityScore: number|string|null, aiScore: number|string|null }}
  */
