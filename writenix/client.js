@@ -13,6 +13,7 @@
 
 const crypto = require('crypto');
 const { Readable } = require('stream');
+const AdmZip = require('adm-zip');
 const { fetch: undiciFetch, ProxyAgent, FormData: UndiciFormData } = require('undici');
 
 let cachedDispatcher = null;
@@ -61,7 +62,6 @@ function getBaseUrl() {
 }
 
 // Writenix's own docs recommend a realistic browser User-Agent + Accept: application/json
-// to avoid their Cloudflare bot protection.
 function buildRequestHeaders() {
     return {
         'X-Api-Key': (process.env.WRITENIX_API_KEY || '').trim().replace(/^["']|["']$/g, ''),
@@ -78,6 +78,37 @@ function buildRequestHeaders() {
 }
 
 /**
+ * Sanitizes DOCX zip structure. Certain document editors (Google Docs, Mac Word, LibreOffice)
+ * insert empty directory entries in the zip table that cause PHP finfo_file / libmagic on Linux
+ * to misclassify the file as generic application/zip instead of docx, triggering a 422 error.
+ * Stripping directory entries and repacking produces a clean standard DOCX that passes validation.
+ * @param {Buffer} buffer
+ * @param {string} filename
+ * @returns {Buffer}
+ */
+function normalizeDocumentBuffer(buffer, filename) {
+    if (!filename || !filename.toLowerCase().endsWith('.docx')) {
+        return buffer;
+    }
+    try {
+        const zip = new AdmZip(buffer);
+        const entries = zip.getEntries();
+        const hasWordDoc = entries.some(e => e.entryName === 'word/document.xml');
+        if (!hasWordDoc) return buffer;
+
+        const cleanZip = new AdmZip();
+        for (const entry of entries) {
+            if (!entry.isDirectory) {
+                cleanZip.addFile(entry.entryName, entry.getData());
+            }
+        }
+        return cleanZip.toBuffer();
+    } catch (_) {
+        return buffer;
+    }
+}
+
+/**
  * Submit a document for plagiarism/AI checking.
  * Includes automatic retry on transient network/proxy socket timeouts.
  * @param {Buffer} fileBuffer - raw bytes of the uploaded PDF/DOCX
@@ -87,6 +118,7 @@ function buildRequestHeaders() {
  */
 async function submitDocument(fileBuffer, originalFilename, maxRetries = 2) {
     const baseUrl = getBaseUrl();
+    const cleanBuffer = normalizeDocumentBuffer(fileBuffer, originalFilename);
     let lastError = null;
 
     for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
@@ -95,7 +127,7 @@ async function submitDocument(fileBuffer, originalFilename, maxRetries = 2) {
             let response;
             if (dispatcher) {
                 const formData = new UndiciFormData();
-                formData.append('file', new Blob([fileBuffer]), originalFilename);
+                formData.append('file', new Blob([cleanBuffer]), originalFilename);
                 response = await undiciFetch(`${baseUrl}/documents/process`, {
                     method: 'POST',
                     headers: buildRequestHeaders(),
@@ -104,7 +136,7 @@ async function submitDocument(fileBuffer, originalFilename, maxRetries = 2) {
                 });
             } else {
                 const formData = new FormData();
-                formData.append('file', new Blob([fileBuffer]), originalFilename);
+                formData.append('file', new Blob([cleanBuffer]), originalFilename);
                 response = await fetch(`${baseUrl}/documents/process`, {
                     method: 'POST',
                     headers: buildRequestHeaders(),
@@ -241,16 +273,22 @@ function parseWebhookPayload(payload) {
 
 /**
  * Fetch a report file's raw bytes (used for email attachments).
+ * Falls back to direct fetch if proxy fetch has a transient network error.
  * @param {string} reportUrl
  * @returns {Promise<Buffer|null>} null if the URL is missing or the fetch fails
  */
 async function downloadReportBuffer(reportUrl) {
     if (!reportUrl) return null;
     const dispatcher = getDispatcher();
-    const response = await (dispatcher ? undiciFetch : fetch)(reportUrl, {
-        ...(dispatcher ? { dispatcher } : {})
-    });
-    if (!response.ok) return null;
+    let response;
+    try {
+        response = await (dispatcher ? undiciFetch : fetch)(reportUrl, {
+            ...(dispatcher ? { dispatcher } : {})
+        });
+    } catch (_) {
+        response = await fetch(reportUrl).catch(() => null);
+    }
+    if (!response || !response.ok) return null;
     return Buffer.from(await response.arrayBuffer());
 }
 
@@ -258,6 +296,7 @@ async function downloadReportBuffer(reportUrl) {
  * Proxy a report file straight to an Express response, so the client gets a friendly
  * filename and Writenix's underlying (possibly signed/expiring) URL never appears in
  * their browser's address bar or history.
+ * Falls back to direct fetch if proxy fetch has a transient network error.
  * @param {string} reportUrl
  * @param {object} res - Express response object
  * @param {string} downloadFilename - filename to present, including extension
@@ -266,10 +305,15 @@ async function downloadReportBuffer(reportUrl) {
 async function streamReportToResponse(reportUrl, res, downloadFilename) {
     try {
         const dispatcher = getDispatcher();
-        const upstream = await (dispatcher ? undiciFetch : fetch)(reportUrl, {
-            ...(dispatcher ? { dispatcher } : {})
-        });
-        if (!upstream.ok || !upstream.body) throw new Error(`Upstream returned ${upstream.status}`);
+        let upstream;
+        try {
+            upstream = await (dispatcher ? undiciFetch : fetch)(reportUrl, {
+                ...(dispatcher ? { dispatcher } : {})
+            });
+        } catch (_) {
+            upstream = await fetch(reportUrl);
+        }
+        if (!upstream || !upstream.ok || !upstream.body) throw new Error(`Upstream returned ${upstream?.status || 'no response'}`);
 
         const contentType = upstream.headers.get('content-type') || 'application/pdf';
         res.setHeader('Content-Type', contentType);
