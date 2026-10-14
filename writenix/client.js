@@ -121,13 +121,23 @@ async function submitDocument(fileBuffer, originalFilename, maxRetries = 2) {
     const cleanBuffer = normalizeDocumentBuffer(fileBuffer, originalFilename);
     let lastError = null;
 
+    // Derive explicit MIME type from the filename so multipart Content-Type is
+    // recognised by Writenix's PHP finfo validation (not just a magic-byte check).
+    const ext = (originalFilename || '').split('.').pop().toLowerCase();
+    const mimeMap = {
+        pdf:  'application/pdf',
+        docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        doc:  'application/msword',
+    };
+    const mimeType = mimeMap[ext] || 'application/octet-stream';
+
     for (let attempt = 1; attempt <= maxRetries + 1; attempt++) {
         const dispatcher = getDispatcher();
         try {
             let response;
             if (dispatcher) {
                 const formData = new UndiciFormData();
-                formData.append('file', new Blob([cleanBuffer]), originalFilename);
+                formData.append('file', new Blob([cleanBuffer], { type: mimeType }), originalFilename);
                 response = await undiciFetch(`${baseUrl}/documents/process`, {
                     method: 'POST',
                     headers: buildRequestHeaders(),
@@ -136,7 +146,7 @@ async function submitDocument(fileBuffer, originalFilename, maxRetries = 2) {
                 });
             } else {
                 const formData = new FormData();
-                formData.append('file', new Blob([cleanBuffer]), originalFilename);
+                formData.append('file', new Blob([cleanBuffer], { type: mimeType }), originalFilename);
                 response = await fetch(`${baseUrl}/documents/process`, {
                     method: 'POST',
                     headers: buildRequestHeaders(),
